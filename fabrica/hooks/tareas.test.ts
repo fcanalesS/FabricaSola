@@ -830,11 +830,11 @@ describe('La memoria no la escribe un agente', () => {
   })
 
   test('tampoco la de la planta, si la corrida trae su carpeta', () => {
-    const planta = 'C:/Users/el/compania/comun/fabrica/memoria'
-    expect(frenaMemoria('C:/Users/el/compania/comun/fabrica/memoria/ficha.md', 'agente-1', planta)).toBe(MEMORIA_SOLO_EL_USUARIO)
-    expect(frenaMemoria('c:\\users\\el\\compania\\comun\\fabrica\\memoria\\decisiones\\D-0001.md', 'agente-1', `${planta}/`)).toBe(MEMORIA_SOLO_EL_USUARIO)
-    expect(frenaMemoria('C:/Users/el/compania/comun/fabrica/memoria-otra/ficha.md', 'agente-1', planta)).toBeNull()
-    expect(frenaMemoria('C:/Users/el/compania/comun/fabrica/ajustes.json', 'agente-1', planta)).toBeNull()
+    const planta = 'C:/Users/el/factoria/datos/memoria'
+    expect(frenaMemoria('C:/Users/el/factoria/datos/memoria/ficha.md', 'agente-1', planta)).toBe(MEMORIA_SOLO_EL_USUARIO)
+    expect(frenaMemoria('c:\\users\\el\\factoria\\datos\\memoria\\decisiones\\D-0001.md', 'agente-1', `${planta}/`)).toBe(MEMORIA_SOLO_EL_USUARIO)
+    expect(frenaMemoria('C:/Users/el/factoria/datos/memoria-otra/ficha.md', 'agente-1', planta)).toBeNull()
+    expect(frenaMemoria('C:/Users/el/factoria/datos/ajustes.json', 'agente-1', planta)).toBeNull()
     expect(esDeLaMemoria('C:/x/ficha.md', '  ')).toBe(false)
   })
 })

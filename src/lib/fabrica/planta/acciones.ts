@@ -10,7 +10,7 @@ import { cambiosDeLaTarea, descartarTarea, elegirProyecto, escribirRespuesta, es
  * tarea, contestarle, aprobarla, rechazarla o descartarla. Cada acción lleva su línea, y una línea
  * que no existe es un error, nunca otra. Correr una línea la deja como la activa: corre una a la vez.
  *
- * En la línea activa, la acción va por el mismo camino que la columna de ella (`hacerEnLaFabrica`):
+ * En la línea activa, la acción va por el mismo camino que la portada (`hacerEnLaFabrica`):
  * después del veredicto, la fábrica sigue sola con esa tarea. En otra línea, la acción queda
  * escrita en su `factory/` y la tarea sigue cuando corra esa línea: hoy corre una a la vez, y
  * lanzar una corrida en otra línea llega con el cambio a la fábrica (etapa 6 del plan de la planta).
@@ -132,7 +132,7 @@ export async function hacerEnLaLinea(a: AccionDeLinea, contexto: { origen?: stri
     }
   }
 
-  // En la activa, como desde la columna: con lo que sigue después.
+  // En la activa, como desde la portada: con lo que sigue después.
   if ((await leerAjustes()).lineaActiva === linea.id) {
     const accion: Accion =
       a.accion === "responder" ? { accion: "responder", tarea: a.tarea, texto: a.texto, correr: false } : a.accion === "rechazar" ? { accion: "rechazar", tarea: a.tarea, motivo: a.motivo } : a.accion === "descartar" ? { accion: "descartar", tarea: a.tarea, motivo: a.motivo } : { accion: "aprobar", tarea: a.tarea };

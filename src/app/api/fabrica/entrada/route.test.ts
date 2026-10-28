@@ -20,11 +20,11 @@ beforeEach(() => {
   reiniciarGuarda();
   // La base es una sola en todo el archivo: cada prueba empieza sin fuentes ni Bandeja.
   baseDeDatos().exec("delete from fuentes; delete from bandeja;");
-  process.env.COMPANIA_FUENTE_GITHUB_TOKEN = TOKEN;
+  process.env.FACTORIA_FUENTE_GITHUB_TOKEN = TOKEN;
 });
 afterEach(async () => {
   await red.calma();
-  delete process.env.COMPANIA_FUENTE_GITHUB_TOKEN;
+  delete process.env.FACTORIA_FUENTE_GITHUB_TOKEN;
 });
 
 type Respuesta = { nota?: string; error?: string; errores?: Record<string, string>; tarea?: { linea: string; id: string; titulo: string }; entrada: Entrada };
@@ -103,7 +103,7 @@ const ISSUE_SUYO = { number: 132, title: "Ticket promedio por cajero", body: "##
 const ISSUE_AJENO = { number: 133, title: "El total no cuadra con notas de crédito", body: "Las suma en vez de restarlas.", user: { login: "jvaldes" }, labels: [{ name: "fabrica" }], created_at: "2026-10-26T12:20:00Z", updated_at: "2026-10-26T12:20:00Z" };
 
 async function conFuente(linea: string, regla = "etiqueta") {
-  const r = await hacer({ accion: "fuente_agregar", fuente: { proveedor: "github", nombre: "GitHub · fcanalesS", variable: "COMPANIA_FUENTE_GITHUB_TOKEN", regla, etiqueta: "fabrica", repos: [{ repo: "fcanalesS/pos-tiendas", linea }] } });
+  const r = await hacer({ accion: "fuente_agregar", fuente: { proveedor: "github", nombre: "GitHub · fcanalesS", variable: "FACTORIA_FUENTE_GITHUB_TOKEN", regla, etiqueta: "fabrica", repos: [{ repo: "fcanalesS/pos-tiendas", linea }] } });
   assert.equal(r.estado, 200, r.error);
   return r.entrada.fuentes.at(-1)!.id;
 }
@@ -134,24 +134,24 @@ test("una línea a la que la Entrada le lleva algo no se quita: ni con una conex
 
 test("una fuente guarda solo el nombre de su variable: nunca una clave de IA, y el token no vuelve en ninguna respuesta", async () => {
   const a = await lineaNueva("pos");
-  for (const variable of ["COMPANIA_CLAUDE_API_KEY", "ANTHROPIC_API_KEY"]) {
+  for (const variable of ["FACTORIA_CLAUDE_API_KEY", "ANTHROPIC_API_KEY"]) {
     const r = await hacer({ accion: "fuente_agregar", fuente: { proveedor: "github", nombre: "Mala", variable, etiqueta: "fabrica", repos: [] } });
     assert.equal(r.estado, 409);
-    assert.match(r.error ?? "", /COMPANIA_FUENTE_<NOMBRE>_TOKEN/);
+    assert.match(r.error ?? "", /FACTORIA_FUENTE_<NOMBRE>_TOKEN/);
   }
-  assert.equal((await hacer({ accion: "fuente_agregar", fuente: { proveedor: "gitlab", servidor: "http://gitlab.empresa.test", nombre: "X", variable: "COMPANIA_FUENTE_GITLAB_TOKEN", etiqueta: "fabrica", repos: [] } })).estado, 409);
+  assert.equal((await hacer({ accion: "fuente_agregar", fuente: { proveedor: "gitlab", servidor: "http://gitlab.empresa.test", nombre: "X", variable: "FACTORIA_FUENTE_GITLAB_TOKEN", etiqueta: "fabrica", repos: [] } })).estado, 409);
   const id = await conFuente(a.id);
   const vista = await ver();
-  assert.deepEqual(vista.fuentes.map((f) => [f.variable, f.tieneToken]), [["COMPANIA_FUENTE_GITHUB_TOKEN", true]]);
-  assert.deepEqual(vista.variables, [{ nombre: "COMPANIA_FUENTE_GITHUB_TOKEN", usadaPor: "GitHub · fcanalesS" }]);
+  assert.deepEqual(vista.fuentes.map((f) => [f.variable, f.tieneToken]), [["FACTORIA_FUENTE_GITHUB_TOKEN", true]]);
+  assert.deepEqual(vista.variables, [{ nombre: "FACTORIA_FUENTE_GITHUB_TOKEN", usadaPor: "GitHub · fcanalesS" }]);
   // La misma variable, en otra conexión: no.
-  assert.equal((await hacer({ accion: "fuente_agregar", fuente: { proveedor: "github", nombre: "Otra", variable: "COMPANIA_FUENTE_GITHUB_TOKEN", etiqueta: "fabrica", repos: [] } })).estado, 409);
+  assert.equal((await hacer({ accion: "fuente_agregar", fuente: { proveedor: "github", nombre: "Otra", variable: "FACTORIA_FUENTE_GITHUB_TOKEN", etiqueta: "fabrica", repos: [] } })).estado, 409);
   // Ninguna respuesta de la Entrada trae el token.
   github([ISSUE_SUYO]);
   const respuestas = [JSON.stringify(await ver()), (await hacer({ accion: "traer", id })).texto, (await hacer({ accion: "fuente_encender", id, encendida: false })).texto];
   for (const t of respuestas) assert.doesNotMatch(t, new RegExp(TOKEN));
   // Sin la variable, la fuente dice que falta y no pide nada.
-  delete process.env.COMPANIA_FUENTE_GITHUB_TOKEN;
+  delete process.env.FACTORIA_FUENTE_GITHUB_TOKEN;
   await hacer({ accion: "fuente_encender", id, encendida: true });
   red.aServicios.length = 0;
   const sin = await hacer({ accion: "traer", id });

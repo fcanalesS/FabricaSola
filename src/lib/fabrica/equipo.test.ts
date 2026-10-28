@@ -48,13 +48,13 @@ test("encuentra un archivo de verdad en el PATH", () => {
 });
 
 test("la variable manda; sin ella, lo encontrado en el PATH; en las pruebas, nada", () => {
-  assert.deepEqual(claudeCodeDeEsteEquipo({ COMPANIA_CLAUDE_CODE_BIN: " /opt/claude " }), { ruta: "/opt/claude", de: "variable" });
+  assert.deepEqual(claudeCodeDeEsteEquipo({ FACTORIA_CLAUDE_CODE_BIN: " /opt/claude " }), { ruta: "/opt/claude", de: "variable" });
   // Las pruebas no miran el PATH de quien las corre.
   assert.equal(claudeCodeDeEsteEquipo({}), null);
   fijarClaudeEnElPath("/usr/local/bin/claude");
   try {
     assert.deepEqual(claudeCodeDeEsteEquipo({}), { ruta: "/usr/local/bin/claude", de: "path" });
-    assert.deepEqual(claudeCodeDeEsteEquipo({ COMPANIA_CLAUDE_CODE_BIN: "/opt/claude" }), { ruta: "/opt/claude", de: "variable" });
+    assert.deepEqual(claudeCodeDeEsteEquipo({ FACTORIA_CLAUDE_CODE_BIN: "/opt/claude" }), { ruta: "/opt/claude", de: "variable" });
   } finally {
     fijarClaudeEnElPath(null);
   }
@@ -72,7 +72,7 @@ test("de la sesión se toman solo si está iniciada, el método y el plan: ni el
 });
 
 const fuente = (o: Partial<FuenteALaVista>): FuenteALaVista =>
-  ({ id: 1, proveedor: "github", servidor: null, nombre: "trabajo", variable: "COMPANIA_FUENTE_TRABAJO_TOKEN", encendida: true, regla: "suyos", etiqueta: "", cadaMin: 15, repos: [], estado: "listo", motivo: null, leida: null, usuario: null, tieneToken: true, ...o }) as FuenteALaVista;
+  ({ id: 1, proveedor: "github", servidor: null, nombre: "trabajo", variable: "FACTORIA_FUENTE_TRABAJO_TOKEN", encendida: true, regla: "suyos", etiqueta: "", cadaMin: 15, repos: [], estado: "listo", motivo: null, leida: null, usuario: null, tieneToken: true, ...o }) as FuenteALaVista;
 
 const sondas = (o: Partial<Sondas> = {}): Sondas => ({
   claude: () => null,
@@ -80,7 +80,7 @@ const sondas = (o: Partial<Sondas> = {}): Sondas => ({
   sesion: async () => null,
   existe: () => false,
   fuentes: () => [],
-  telefono: async () => ({ listo: false, faltan: ["COMPANIA_TELNYX_API_KEY", "COMPANIA_TELEFONO"], destino: "", origen: "", auto: false, conAudio: false, recientes: [], autoHoy: 0, topeAutoDiario: 3 }),
+  telefono: async () => ({ listo: false, faltan: ["FACTORIA_TELNYX_API_KEY", "FACTORIA_TELEFONO"], destino: "", origen: "", auto: false, conAudio: false, recientes: [], autoHoy: 0, topeAutoDiario: 3 }),
   entorno: {},
   ...o,
 });
@@ -90,15 +90,15 @@ const piezas = async (s: Sondas) => Object.fromEntries((await loQueTieneEsteEqui
 test("en un equipo vacío falta lo necesario para correr, y lo opcional queda apagado con qué agregar", async () => {
   const p = await piezas(sondas());
   assert.equal(p.claude!.estado, "falta");
-  assert.match(p.claude!.hacer!, /COMPANIA_CLAUDE_CODE_BIN/);
+  assert.match(p.claude!.hacer!, /FACTORIA_CLAUDE_CODE_BIN/);
   assert.equal(p.sesion, undefined);
   assert.equal(p.git!.estado, "falta");
   for (const id of ["gh", "glab", "jev", "fuentes", "telefono", "codex", "antigravity"]) {
     assert.equal(p[id]!.estado, "apagada", id);
     assert.ok(p[id]!.hacer, id);
   }
-  assert.match(p.gh!.hacer!, /COMPANIA_GH_BIN/);
-  assert.match(p.telefono!.como, /COMPANIA_TELNYX_API_KEY, COMPANIA_TELEFONO/);
+  assert.match(p.gh!.hacer!, /FACTORIA_GH_BIN/);
+  assert.match(p.telefono!.como, /FACTORIA_TELNYX_API_KEY, FACTORIA_TELEFONO/);
 });
 
 test("Claude Code del PATH, con su versión, su ruta y la sesión con la cuenta de Claude", async () => {
@@ -128,17 +128,17 @@ test("la sesión sin iniciar falta; con otro método, se avisa que puede gastar 
   // Si Claude Code no contesta, no se le pregunta por la sesión.
   const mudo = await piezas(sondas({ claude: () => ({ ruta: "/bin/claude", de: "variable" }), sesion: async () => assert.fail("no debía preguntar") }));
   assert.equal(mudo.claude!.estado, "revisar");
-  assert.match(mudo.claude!.hacer!, /COMPANIA_CLAUDE_CODE_BIN/);
+  assert.match(mudo.claude!.hacer!, /FACTORIA_CLAUDE_CODE_BIN/);
   assert.equal(mudo.sesion, undefined);
 });
 
 test("de las claves y los tokens se dice si están, nunca su valor; una ruta que no existe se revisa", async () => {
-  const entorno = { TYPESAFE_AI_KEY: "secreto-de-jev", COMPANIA_GH_BIN: "C:\\gh\\gh.exe", COMPANIA_GLAB_BIN: "C:\\no\\glab.exe", COMPANIA_FUENTE_TRABAJO_TOKEN: "secreto-de-github", COMPANIA_CODEX_BIN: "C:\\codex.cmd" };
+  const entorno = { TYPESAFE_AI_KEY: "secreto-de-jev", FACTORIA_GH_BIN: "C:\\gh\\gh.exe", FACTORIA_GLAB_BIN: "C:\\no\\glab.exe", FACTORIA_FUENTE_TRABAJO_TOKEN: "secreto-de-github", FACTORIA_CODEX_BIN: "C:\\codex.cmd" };
   const grupos = await loQueTieneEsteEquipo(
     sondas({
       entorno,
       existe: (r) => r === "C:\\gh\\gh.exe" || r === "C:\\codex.cmd",
-      fuentes: () => [fuente({}), fuente({ id: 2, nombre: "cliente", proveedor: "gitlab", variable: "COMPANIA_FUENTE_CLIENTE_TOKEN", tieneToken: false }), fuente({ id: 3, nombre: "viejo", estado: "rechazado" })],
+      fuentes: () => [fuente({}), fuente({ id: 2, nombre: "cliente", proveedor: "gitlab", variable: "FACTORIA_FUENTE_CLIENTE_TOKEN", tieneToken: false }), fuente({ id: 3, nombre: "viejo", estado: "rechazado" })],
       telefono: async () => ({ listo: true, faltan: [], destino: "+56 ••••• 5678", origen: "+1 ••••• 0000", auto: true, conAudio: false, recientes: [], autoHoy: 0, topeAutoDiario: 3 }),
     }),
   );
@@ -151,7 +151,7 @@ test("de las claves y los tokens se dice si están, nunca su valor; una ruta que
   assert.equal(p["fuente-1"]!.estado, "lista");
   assert.equal(p["fuente-1"]!.nombre, "GitHub · trabajo");
   assert.equal(p["fuente-2"]!.estado, "revisar");
-  assert.match(p["fuente-2"]!.como, /COMPANIA_FUENTE_CLIENTE_TOKEN/);
+  assert.match(p["fuente-2"]!.como, /FACTORIA_FUENTE_CLIENTE_TOKEN/);
   assert.match(p["fuente-3"]!.como, /rechazó/);
   assert.equal(p.telefono!.estado, "lista");
   assert.match(p.telefono!.como, /\+56 ••••• 5678/);

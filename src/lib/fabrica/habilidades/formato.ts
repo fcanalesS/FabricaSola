@@ -144,8 +144,8 @@ export type EtapaConEspecialidades = (typeof ETAPAS_CON_ESPECIALIDADES)[number];
 export type Especialidad = { nombre: string; cuando: string; etapa: EtapaConEspecialidades };
 
 /**
- * Las especialidades: cuatro de la spec (fabrica/docs/Plan-Spec.md, etapa 3) y tres del
- * constructor (fabrica/docs/Plan-Builder.md, etapa 3). El «cuándo» de cada una en el catálogo:
+ * Las especialidades: cuatro de la spec y tres del
+ * constructor. El «cuándo» de cada una en el catálogo:
  * hasta 150 caracteres, como cualquier uso.
  */
 export const ESPECIALIDADES: readonly Especialidad[] = [
@@ -171,7 +171,7 @@ export const especialidadesDe = (etapa: EtapaConEspecialidades) => ESPECIALIDADE
  */
 export type HabilidadDelCerebro = { nombre: string; etapas: readonly Etapa[]; cuando: string; resumen: string };
 
-/** La Ley 21.719 (fabrica/docs/Plan-Spec.md, etapa 4): marca riesgos en la spec y los comprueba en la revisión. */
+/** La Ley 21.719: marca riesgos en la spec y los comprueba en la revisión. */
 export const LEY = {
   nombre: "ley-21719",
   etapas: ["spec", "revision"],
@@ -179,7 +179,7 @@ export const LEY = {
   resumen: "La Ley 21.719, para toda la fábrica: en la spec marca los riesgos y en la revisión los comprueba. No certifica el cumplimiento.",
 } as const satisfies HabilidadDelCerebro;
 
-/** Construir con IA (fabrica/docs/Plan-Builder.md, etapa 4): lo que la fábrica sabe de construir con un modelo. */
+/** Construir con IA: lo que la fábrica sabe de construir con un modelo. */
 export const IA = {
   nombre: "construir-con-ia",
   etapas: ["construccion"],

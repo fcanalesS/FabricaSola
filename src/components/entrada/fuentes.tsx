@@ -33,7 +33,7 @@ const CADA = [
 ];
 
 type Borrador = { proveedor: "github" | "gitlab"; servidor: string; nombre: string; variable: string; regla: string; etiqueta: string; cadaMin: number; repos: { repo: string; linea: string }[] };
-const vacio = (linea: string): Borrador => ({ proveedor: "github", servidor: "", nombre: "", variable: "COMPANIA_FUENTE_GITHUB_TOKEN", regla: "suyos", etiqueta: "fabrica", cadaMin: 5, repos: [{ repo: "", linea }] });
+const vacio = (linea: string): Borrador => ({ proveedor: "github", servidor: "", nombre: "", variable: "FACTORIA_FUENTE_GITHUB_TOKEN", regla: "suyos", etiqueta: "fabrica", cadaMin: 5, repos: [{ repo: "", linea }] });
 const desde = (f: FuenteALaVista): Borrador => ({ proveedor: f.proveedor, servidor: f.servidor ?? "", nombre: f.nombre, variable: f.variable, regla: f.regla, etiqueta: f.etiqueta, cadaMin: f.cadaMin, repos: f.repos.map((r) => ({ ...r })) });
 
 export function Fuentes({ inicial }: { inicial: EntradaALaVista }) {
@@ -56,7 +56,7 @@ export function Fuentes({ inicial }: { inicial: EntradaALaVista }) {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="max-w-2xl text-sm text-tenue">Cada conexión toma su token de una variable de .env.local con la forma COMPANIA_FUENTE_&lt;NOMBRE&gt;_TOKEN. La aplicación solo mira si está; para cambiarlo, edita el archivo y reinicia si no lo toma.</p>
+        <p className="max-w-2xl text-sm text-tenue">Cada conexión toma su token de una variable de .env.local con la forma FACTORIA_FUENTE_&lt;NOMBRE&gt;_TOKEN. La aplicación solo mira si está; para cambiarlo, edita el archivo y reinicia si no lo toma.</p>
         <div className="flex gap-2">
           <button type="button" disabled={ocupada || !entrada.fuentes.length} className={BOTON} onClick={() => void hacer({ accion: "traer" })}>
             Traer ahora
@@ -151,7 +151,7 @@ function Editor({ inicial, nueva, entrada, ocupada, alGuardar, alCancelar }: { i
   const id = useId();
   const [b, setB] = useState(inicial);
   const poner = <K extends keyof Borrador>(k: K, v: Borrador[K]) => setB((x) => ({ ...x, [k]: v }));
-  const forma = /^COMPANIA_FUENTE_[A-Z0-9][A-Z0-9_]{0,60}_TOKEN$/.test(b.variable);
+  const forma = /^FACTORIA_FUENTE_[A-Z0-9][A-Z0-9_]{0,60}_TOKEN$/.test(b.variable);
   const esta = entrada.variables.find((v) => v.nombre === b.variable);
   const usadaPorOtra = esta?.usadaPor && esta.usadaPor !== inicial.nombre ? esta.usadaPor : null;
 
@@ -190,7 +190,7 @@ function Editor({ inicial, nueva, entrada, ocupada, alGuardar, alCancelar }: { i
         </label>
         <p id={`${id}-variable`} role="status" className={`text-sm font-bold ${!forma || usadaPorOtra || !esta ? "text-aviso" : ""}`}>
           {!forma
-            ? "Tiene que llamarse COMPANIA_FUENTE_<NOMBRE>_TOKEN: así ninguna conexión usa una clave de IA."
+            ? "Tiene que llamarse FACTORIA_FUENTE_<NOMBRE>_TOKEN: así ninguna conexión usa una clave de IA."
             : usadaPorOtra
               ? `La usa «${usadaPorOtra}»: dos conexiones no comparten token.`
               : esta

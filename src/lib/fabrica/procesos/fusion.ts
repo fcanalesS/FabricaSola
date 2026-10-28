@@ -1,5 +1,5 @@
 /**
- * El paso `fusion` de un proceso (fabrica/docs/Plan-Integracion.md, etapa 5): fusiona en `main` el PR
+ * El paso `fusion` de un proceso: fusiona en `main` el PR
  * que abrió el mismo proceso, sin que nadie apriete un botón. Lo decidió él el 27 de octubre de
  * 2026. La fusión la hace el servicio (GitHub o GitLab) con el PR: la fábrica nunca empuja a `main`,
  * nunca usa `--admin` y respeta la protección de la rama. Solo fusiona si:

@@ -446,8 +446,7 @@ async function hEstado($: EngineInterface, _e: Record<string, unknown>): Promise
 }
 
 /**
- * Lo que escribe el agente de las notas en una tarea aprobada y clasificada (fabrica/docs/Plan-Integracion.md,
- * etapa 4). Solo él (`fabrica-anuncio`), y solo en su sección, que decide la clase de la tarea.
+ * Lo que escribe el agente de las notas en una tarea aprobada y clasificada. Solo él (`fabrica-anuncio`), y solo en su sección, que decide la clase de la tarea.
  */
 async function hAnuncio($: EngineInterface, e: Record<string, unknown>): Promise<Respuesta> {
   const tipo = await tipoDeAgente($, texto(e.agentId) || undefined)
@@ -1218,7 +1217,7 @@ async function cambiosEn($: EngineInterface, cwd: string, base: string): Promise
 }
 
 /**
- * Si una tarea aprobada es sencilla o grande (fabrica/docs/Plan-Integracion.md). Queda en la tarea
+ * Si una tarea aprobada es sencilla o grande. Queda en la tarea
  * (`integracion_clase`, `integracion_por`, `integracion_motivo`) y en su bitácora, una vez por
  * resultado: si el orquestador vuelve a preguntar y nada cambió, no se anota otra vez.
  */
@@ -1438,7 +1437,7 @@ const enCurso = (id: string, quien: string, inicio: number, otra: string) =>
 
 /**
  * La ruta exacta de Codex o de Antigravity en este equipo, o vacío si no está. La aplicación la pasa
- * a la corrida con estos nombres, de COMPANIA_CODEX_BIN y COMPANIA_ANTIGRAVITY_BIN. No se buscan en
+ * a la corrida con estos nombres, de FACTORIA_CODEX_BIN y FACTORIA_ANTIGRAVITY_BIN. No se buscan en
  * el PATH: lo decidió Felipe el 17 de octubre de 2026. Sin ella, ese agente no corre y entra el de
  * Claude.
  */
@@ -1461,7 +1460,7 @@ async function hRevisarConCodex($: EngineInterface, e: Record<string, unknown>):
     await $.fs.write(esquema, JSON.stringify(ESQUEMA_REVISION))
     await $.fs.write(salida, '')
     const bin = await rutaDeCodex($)
-    if (!bin) return { result: `${id}: Codex no está configurado en este equipo (falta COMPANIA_CODEX_BIN, su ruta exacta). Lanza el revisor de código de Claude en su lugar.` }
+    if (!bin) return { result: `${id}: Codex no está configurado en este equipo (falta FACTORIA_CODEX_BIN, su ruta exacta). Lanza el revisor de código de Claude en su lugar.` }
     const donde = datos.worktree || raiz
     const base = ramaDeOrigen(datos, cfg)
     // Contra el commit donde se separó, no contra la rama: así ve solo lo de la tarea.
@@ -1496,9 +1495,9 @@ async function hSpecConAntigravity($: EngineInterface, e: Record<string, unknown
   if ((await leerTrabajo($, dir)).estado === 'ninguno') {
     const notas = partir((await leer($, rutas(raiz).config)) ?? '').cuerpo
     const bin = await rutaDeAntigravity($)
-    if (!bin) return { result: `${id}: Antigravity no está configurado en este equipo (falta COMPANIA_ANTIGRAVITY_BIN, su ruta exacta). Lanza el agente de spec de Claude en su lugar.` }
+    if (!bin) return { result: `${id}: Antigravity no está configurado en este equipo (falta FACTORIA_ANTIGRAVITY_BIN, su ruta exacta). Lanza el agente de spec de Claude en su lugar.` }
     const comando = comandoDeAntigravity(bin, pedidoDeSpec(id, datos.titulo ?? id, seccion(cuerpo, 'Pedido'), notas))
-    if (!comando) return { result: `${id}: la ruta de Antigravity es un .cmd o un .bat, y el pedido no puede pasar por cmd.exe: COMPANIA_ANTIGRAVITY_BIN tiene que ser su ejecutable. Lanza el agente de spec de Claude en su lugar.` }
+    if (!comando) return { result: `${id}: la ruta de Antigravity es un .cmd o un .bat, y el pedido no puede pasar por cmd.exe: FACTORIA_ANTIGRAVITY_BIN tiene que ser su ejecutable. Lanza el agente de spec de Claude en su lugar.` }
     const lanzado = await iniciarTrabajo($, dir, comando, raiz, '')
     if (!lanzado.ok) return { result: `${id}: no se pudo lanzar Antigravity (${lanzado.error.slice(-300) || 'sin detalle'}; hace falta node en el PATH). Lanza el agente de spec de Claude en su lugar.` }
   }

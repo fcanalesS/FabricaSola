@@ -4,8 +4,7 @@ import { accionDeEntrada, hacerEnLaEntrada, vistaDeLaEntrada } from "@/lib/entra
 /**
  * La Entrada de la fábrica: el formulario de petición, la Bandeja y las
  * fuentes. Cada cambio sale de un clic suyo, y lo que se devuelve nunca trae
- * un token: de cada fuente solo el nombre de su variable y si está. En casa no
- * existe.
+ * un token: de cada fuente solo el nombre de su variable y si está.
  */
 
 

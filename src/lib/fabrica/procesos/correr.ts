@@ -78,7 +78,7 @@ import { consultaParaOSV, DIRECCION_DE_OSV, esArchivoDePaquetes, lineasDeVulnera
  * Queda una línea en el registro del repositorio
  * (`factory/procesos/registro/AAAA-MM.md`) y la salida entera en
  * `datos/procesos/<linea>/`, fuera del repositorio. Las claves
- * (`COMPANIA_PROCESO_*`) llegan solo al paso que las nombra y van tapadas en
+ * (`FACTORIA_PROCESO_*`) llegan solo al paso que las nombra y van tapadas en
  * todo lo que se guarda. Solo para el servidor.
  */
 
@@ -785,8 +785,8 @@ export async function porQueNoSinClicEn(lineaId: string, procesoId: string): Pro
 
 /**
  * Un paso aprobacion: espera su clic. Si él quitó el clic en esta línea y el proceso cumple las
- * condiciones, pasa solo, y lo dice. Si no, la ejecución queda «esperando» (ella lo cuenta; el
- * teléfono suena si él lo pidió) hasta que él apruebe, no apruebe o la detenga, o hasta 12 horas.
+ * condiciones, pasa solo, y lo dice. Si no, la ejecución queda «esperando» (la planta lo
+ * muestra; el teléfono suena si él lo pidió) hasta que él apruebe, no apruebe o la detenga, o hasta 12 horas.
  * Al aprobar se mira otra vez la raíz: producción recibe el mismo commit que pasó por prueba.
  */
 async function esperarSuClic(m: EnMarcha, prep: Preparada, visto: PasoEjecutado): Promise<{ ok: boolean; nota: string; noAprobado?: boolean }> {
@@ -948,7 +948,7 @@ async function integradasDe(raiz: string): Promise<string[]> {
 /**
  * Lo que no llegó a arrancar solo (la raíz con cambios, un borrador, una clave que falta): queda
  * como una ejecución que falló antes de empezar, con su motivo y su línea en el registro, para que
- * él lo vea y ella lo cuente.
+ * él lo vea.
  */
 async function registrarQueNoCorrio(linea: { id: string; raiz: string }, proceso: string, motivo: string, origen: Origen = "al-integrar"): Promise<Ejecucion> {
   const ahora = new Date();

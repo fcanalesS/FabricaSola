@@ -12,7 +12,7 @@ test("se ve la sección que dice la dirección; sin una que exista, la primera",
   // Las partes de la fábrica, y el «#comandos» del tablero, abren la fábrica.
   assert.equal(seccionDe("fabrica-agentes", conFabrica), "fabrica");
   assert.equal(seccionDe("comandos", conFabrica), "fabrica");
-  // En casa no hay fábrica: se ve la primera.
+  // Sin fábrica: se ve la primera.
   assert.equal(seccionDe("fabrica-agentes", sinFabrica), "equipo");
 });
 

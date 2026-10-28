@@ -1,5 +1,5 @@
-// Solo servidor: «Lo que tiene este equipo», todo lo que la fábrica puede usar en un solo lugar
-// (decisión 5 de `fabrica/docs/Plan-Compartir-Fabrica.md`). De cada pieza: si está, qué permite y
+// Solo servidor: «Lo que tiene este equipo», todo lo que la fábrica puede usar en un solo lugar.
+// De cada pieza: si está, qué permite y
 // qué agregar si falta. De las claves y los tokens se dice solo si están, nunca su valor. De los
 // programas, solo la ruta de Claude Code, para que se sepa cuál encontró.
 
@@ -101,15 +101,15 @@ async function deClaudeCode(s: Sondas): Promise<Pieza[]> {
         id: "claude",
         nombre: "Claude Code",
         estado: "falta",
-        como: "No lo encontré: no está en el PATH ni en COMPANIA_CLAUDE_CODE_BIN.",
+        como: "No lo encontré: no está en el PATH ni en FACTORIA_CLAUDE_CODE_BIN.",
         permite,
-        hacer: `Instálalo (claude.com/claude-code) y reinicia la aplicación desde una terminal donde \`claude\` funcione. Si está en otra parte, pon su ruta en COMPANIA_CLAUDE_CODE_BIN, en .env.local, ${REINICIA}.`,
+        hacer: `Instálalo (claude.com/claude-code) y reinicia la aplicación desde una terminal donde \`claude\` funcione. Si está en otra parte, pon su ruta en FACTORIA_CLAUDE_CODE_BIN, en .env.local, ${REINICIA}.`,
       },
     ];
   }
   // La sesión se le pregunta solo si contestó como Claude Code: a otro programa no se le pasa `auth`.
   const version = await s.version(cc.ruta);
-  const de = cc.de === "path" ? "la encontré en el PATH" : "de COMPANIA_CLAUDE_CODE_BIN";
+  const de = cc.de === "path" ? "la encontré en el PATH" : "de FACTORIA_CLAUDE_CODE_BIN";
   const claude: Pieza = version
     ? { id: "claude", nombre: "Claude Code", estado: "lista", como: `${version}, en ${cc.ruta} (${de}).`, permite }
     : {
@@ -118,7 +118,7 @@ async function deClaudeCode(s: Sondas): Promise<Pieza[]> {
         estado: "revisar",
         como: `Está en ${cc.ruta} (${de}), pero no contestó a --version.`,
         permite,
-        hacer: cc.de === "path" ? `Revisa que \`claude\` funcione en una terminal. Si quieres otro, pon su ruta en COMPANIA_CLAUDE_CODE_BIN ${REINICIA}.` : `Revisa la ruta de COMPANIA_CLAUDE_CODE_BIN ${REINICIA}.`,
+        hacer: cc.de === "path" ? `Revisa que \`claude\` funcione en una terminal. Si quieres otro, pon su ruta en FACTORIA_CLAUDE_CODE_BIN ${REINICIA}.` : `Revisa la ruta de FACTORIA_CLAUDE_CODE_BIN ${REINICIA}.`,
       };
   if (!version) return [claude];
   const sesion = await s.sesion(cc.ruta);
@@ -183,7 +183,7 @@ function deTelefono(t: EstadoTelefono | null): Pieza {
   const permite = "Que la fábrica te llame cuando una tarea te espera, aunque no tengas la página abierta.";
   if (!t) return { id: "telefono", nombre: "El teléfono (Telnyx)", estado: "revisar", como: "No pude leer cómo está.", permite };
   if (!t.listo) return { id: "telefono", nombre: "El teléfono (Telnyx)", estado: "apagada", como: `Faltan ${t.faltan.join(", ")}.`, permite, hacer: `Ponlas en .env.local (los números, con + y el código del país) ${REINICIA}.` };
-  return { id: "telefono", nombre: "El teléfono (Telnyx)", estado: "lista", como: `Llama a ${t.destino}; al contestar, ${t.conAudio ? "suena tu audio" : "silencio (COMPANIA_TELNYX_AUDIO_URL pone un audio)"}.`, permite };
+  return { id: "telefono", nombre: "El teléfono (Telnyx)", estado: "lista", como: `Llama a ${t.destino}; al contestar, ${t.conAudio ? "suena tu audio" : "silencio (FACTORIA_TELNYX_AUDIO_URL pone un audio)"}.`, permite };
 }
 
 /** Todo lo que la fábrica puede usar en este equipo, en grupos. Se mira en cada visita. */
@@ -195,8 +195,8 @@ export async function loQueTieneEsteEquipo(s: Sondas = SONDAS): Promise<Grupo[]>
     {
       titulo: "Para integrar",
       piezas: [
-        porSuRuta(s, { id: "gh", nombre: "gh (GitHub)", variable: "COMPANIA_GH_BIN", permite: "Abrir el PR al empujar, esperar la integración continua y fusionar, en GitHub.", sin: "Sin él, el push empuja, pero el PR no se abre, y los pasos ci y fusion no corren.", donde: "en Windows, where.exe gh; en Mac y Linux, command -v gh" }),
-        porSuRuta(s, { id: "glab", nombre: "glab (GitLab)", variable: "COMPANIA_GLAB_BIN", permite: "Lo mismo en GitLab: el merge request, el pipeline y la fusión.", sin: "Sin él, el push empuja, pero el merge request no se abre, y los pasos ci y fusion no corren.", donde: "en Windows, where.exe glab; en Mac y Linux, command -v glab" }),
+        porSuRuta(s, { id: "gh", nombre: "gh (GitHub)", variable: "FACTORIA_GH_BIN", permite: "Abrir el PR al empujar, esperar la integración continua y fusionar, en GitHub.", sin: "Sin él, el push empuja, pero el PR no se abre, y los pasos ci y fusion no corren.", donde: "en Windows, where.exe gh; en Mac y Linux, command -v gh" }),
+        porSuRuta(s, { id: "glab", nombre: "glab (GitLab)", variable: "FACTORIA_GLAB_BIN", permite: "Lo mismo en GitLab: el merge request, el pipeline y la fusión.", sin: "Sin él, el push empuja, pero el merge request no se abre, y los pasos ci y fusion no corren.", donde: "en Windows, where.exe glab; en Mac y Linux, command -v glab" }),
       ],
     },
     {
@@ -219,8 +219,8 @@ export async function loQueTieneEsteEquipo(s: Sondas = SONDAS): Promise<Grupo[]>
     {
       titulo: "Otros agentes",
       piezas: [
-        porSuRuta(s, { id: "codex", nombre: "Codex", variable: "COMPANIA_CODEX_BIN", permite: "Que Codex revise el código, solo o junto a Claude, con su propia suscripción.", sin: "No está: el código lo revisa Claude Code.", donde: "en Windows, where.exe codex" }),
-        porSuRuta(s, { id: "antigravity", nombre: "Antigravity", variable: "COMPANIA_ANTIGRAVITY_BIN", permite: "Que Antigravity escriba la spec, con su propia suscripción.", sin: "No está: la spec la escribe Claude Code.", donde: "en Windows, where.exe agy; tiene que ser su ejecutable, no un .cmd" }),
+        porSuRuta(s, { id: "codex", nombre: "Codex", variable: "FACTORIA_CODEX_BIN", permite: "Que Codex revise el código, solo o junto a Claude, con su propia suscripción.", sin: "No está: el código lo revisa Claude Code.", donde: "en Windows, where.exe codex" }),
+        porSuRuta(s, { id: "antigravity", nombre: "Antigravity", variable: "FACTORIA_ANTIGRAVITY_BIN", permite: "Que Antigravity escriba la spec, con su propia suscripción.", sin: "No está: la spec la escribe Claude Code.", donde: "en Windows, where.exe agy; tiene que ser su ejecutable, no un .cmd" }),
       ],
     },
   ];

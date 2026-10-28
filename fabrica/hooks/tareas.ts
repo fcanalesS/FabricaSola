@@ -528,7 +528,7 @@ export function mover(datos: Datos, mov: Movimiento, cfg: Config): Resultado {
     if (verif(datos.verificacion) !== 'ok') faltan.push('verificación en "ok"')
     if (pideAgente(cfg) && datos.aprobacion_agente !== 'aprobada') faltan.push('el veredicto "aprobada" del agente aprobador')
     if (pideExterna(cfg) && mov.veredictoExterno !== 'aprobada') faltan.push('el veredicto "aprobada" del orquestador externo (factory/veredictos/<id>.json)')
-    // Una grande espera que la persona la pruebe a mano (fabrica/docs/Plan-Integracion.md): su
+    // Una grande espera que la persona la pruebe a mano: su
     // veredicto llega por el mismo camino, y tiene que ser de esta vuelta.
     else if (datos.integracion_clase === 'grande' && mov.veredictoExterno !== 'aprobada')
       faltan.push(`tu prueba a mano: es grande (${datos.integracion_motivo || 'sin motivo'}), y espera tu veredicto "aprobada" desde la aplicación. Déjala en aprobación y sigue con las demás`)
@@ -635,7 +635,7 @@ const MOTIVO_DE_SALIDA_MAX = 200
 const PLAN_DE_VUELTA_MAX = 4000
 
 /**
- * Lo que deja en la tarea la decisión del agente de salida (fabrica/docs/Plan-Aprobador.md, etapa 4).
+ * Lo que deja en la tarea la decisión del agente de salida.
  * Solo endurece: `tu-clic` hace que el paso de producción espere a la persona aunque ella lo haya
  * quitado, con su motivo y su plan de vuelta; `sin-objecion` no cambia nada, y nunca desmarca una
  * tarea que ya pedía su clic. Solo sobre una tarea aprobada. Es lógica pura.
@@ -666,7 +666,7 @@ export function salidaEnLaTarea(
 }
 // ---- Lo que escribe el agente de las notas --------------------------------------------------------------------
 
-/** El agente que escribe lo que se lee sin mirar el código (fabrica/docs/Plan-Integracion.md, etapa 4). Lo arma la aplicación. */
+/** El agente que escribe lo que se lee sin mirar el código. Lo arma la aplicación. */
 export const AGENTE_DE_ANUNCIO = 'fabrica-anuncio'
 /** Su sección en una sencilla: lo que va al PR que se fusiona solo. */
 export const PARA_EL_PR = 'Para el PR'

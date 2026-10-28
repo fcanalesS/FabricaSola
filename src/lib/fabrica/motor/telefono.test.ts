@@ -11,7 +11,7 @@ const { carpetaDeLaFabrica, elegirProyecto, fijarLlamarSola } = await import("./
 const { enmascarar, esE164, llamar, motivoParaLlamar, PAUSA_POR_TAREA_MS, TOPE_AUTO_DIARIO } = await import("./telefono.ts");
 const { olvidarLoLeido, revisarLaFabrica } = await import("./vigia.ts");
 
-const VARIABLES = { COMPANIA_TELNYX_API_KEY: "clave-telnyx-de-prueba", COMPANIA_TELNYX_CONNECTION_ID: "conexion-1", COMPANIA_TELNYX_NUMERO_ORIGEN: "+12025550123", COMPANIA_TELEFONO: "+56912345678" };
+const VARIABLES = { FACTORIA_TELNYX_API_KEY: "clave-telnyx-de-prueba", FACTORIA_TELNYX_CONNECTION_ID: "conexion-1", FACTORIA_TELNYX_NUMERO_ORIGEN: "+12025550123", FACTORIA_TELEFONO: "+56912345678" };
 const configurar = () => Object.assign(process.env, VARIABLES);
 const registro = () => path.join(carpetaDeLaFabrica(), "llamadas.json");
 /** Deja anotadas llamadas de hace un rato, como si ya hubieran pasado. */
@@ -21,7 +21,7 @@ const pedir = (ruta: string, cuerpo?: unknown, metodo: "GET" | "POST" | "PUT" = 
 
 beforeEach(async () => {
   red.reiniciar();
-  for (const k of Object.keys(process.env)) if (/^COMPANIA_TELNYX_|^COMPANIA_TELEFONO$/.test(k)) delete process.env[k];
+  for (const k of Object.keys(process.env)) if (/^FACTORIA_TELNYX_|^FACTORIA_TELEFONO$/.test(k)) delete process.env[k];
   mkdirSync(carpetaDeLaFabrica(), { recursive: true });
   writeFileSync(registro(), "[]");
   await fijarLlamarSola(false);
@@ -36,13 +36,13 @@ test("los números se enmascaran y solo vale el formato internacional", () => {
 });
 
 test("sin configurar, dice qué variables faltan y no llama a nadie", async () => {
-  process.env.COMPANIA_TELNYX_NUMERO_ORIGEN = "202-555-0123";
+  process.env.FACTORIA_TELNYX_NUMERO_ORIGEN = "202-555-0123";
   const estado = (await pedir("/api/telefono")).datos as { listo: boolean; faltan: string[] };
   assert.equal(estado.listo, false);
-  assert.deepEqual(estado.faltan, ["COMPANIA_TELNYX_API_KEY", "COMPANIA_TELNYX_CONNECTION_ID", "COMPANIA_TELNYX_NUMERO_ORIGEN", "COMPANIA_TELEFONO"]);
+  assert.deepEqual(estado.faltan, ["FACTORIA_TELNYX_API_KEY", "FACTORIA_TELNYX_CONNECTION_ID", "FACTORIA_TELNYX_NUMERO_ORIGEN", "FACTORIA_TELEFONO"]);
   const r = await pedir("/api/telefono", { accion: "probar" });
   assert.equal(r.estado, 409);
-  assert.match(String((r.datos as { error: string }).error), /Falta configurar en \.env\.local: COMPANIA_TELNYX_API_KEY/);
+  assert.match(String((r.datos as { error: string }).error), /Falta configurar en \.env\.local: FACTORIA_TELNYX_API_KEY/);
   assert.equal(red.aTelnyx.length, 0);
 });
 
@@ -130,14 +130,14 @@ test("el vigía no llama por lo que ya estaba; por lo nuevo que lo espera, sí, 
 
 test("al contestar suena el audio fijo si lo hay, o nada", async () => {
   configurar();
-  process.env.COMPANIA_TELNYX_AUDIO_URL = "https://ejemplo.invalid/aviso.mp3";
+  process.env.FACTORIA_TELNYX_AUDIO_URL = "https://ejemplo.invalid/aviso.mp3";
   const r = await pedir("/api/telefono", { accion: "probar" });
   assert.equal(r.estado, 200);
   assert.equal(red.aTelnyx[0].cuerpo.audio_url, "https://ejemplo.invalid/aviso.mp3");
   assert.equal((r.datos as { conAudio: boolean }).conAudio, true);
 
   writeFileSync(registro(), "[]");
-  delete process.env.COMPANIA_TELNYX_AUDIO_URL;
+  delete process.env.FACTORIA_TELNYX_AUDIO_URL;
   const otra = await pedir("/api/telefono", { accion: "probar" });
   assert.equal(otra.estado, 200);
   assert.deepEqual(Object.keys(red.aTelnyx[1].cuerpo).sort(), ["connection_id", "from", "time_limit_secs", "timeout_secs", "to"]);

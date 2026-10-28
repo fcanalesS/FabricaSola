@@ -67,7 +67,7 @@ export const esModeloDeRol = (v: unknown): v is ModeloDeRol => v === "inherit" |
  */
 export function modeloDeRolDesde(valor: string | undefined, rol: RolConModelo): ModeloDeRol {
   const v = valor?.trim();
-  // La aprobación en Opus: lo decidió él el 27 de octubre de 2026 (fabrica/docs/Plan-Aprobador.md).
+  // La aprobación en Opus: lo decidió él el 27 de octubre de 2026.
   return esModeloDeRol(v) ? v : rol === "spec" || rol === "aprobacion" ? "opus" : rol === "revision" ? "sonnet" : "inherit";
 }
 /** Cuántas tareas puede trabajar la fábrica a la vez: lo mismo que acepta el plugin. */

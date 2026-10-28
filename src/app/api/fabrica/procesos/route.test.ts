@@ -44,7 +44,7 @@ appendFileSync("factory/orden.txt", nombre + "\\n");
 console.log("hice " + nombre);
 if (que === "falla") { console.error("algo salió mal"); process.exit(3); }
 `;
-const ECO = `const otras = Object.keys(process.env).filter((k) => /^(COMPANIA_|ANTHROPIC_|FABRICA_)/.test(k));
+const ECO = `const otras = Object.keys(process.env).filter((k) => /^(FACTORIA_|ANTHROPIC_|FABRICA_)/.test(k));
 console.log("TOKEN=" + process.env.TOKEN);
 console.log("otras=" + otras.length);
 `;
@@ -108,7 +108,7 @@ test("una clave llega solo a su paso y queda tapada en todo lo guardado; la salu
   const l = await lineaConProcesos({
     eco: proceso("eco", ["- [comando] node scripts/eco.mjs · deshacer: — · clave: TOKEN", "- [salud] GET https://prueba.proceso.test/salud → 200 · tope 5s", "- [tarea] avisar a quien despliega"], "rama: desarrollo\n"),
   });
-  const variable = `COMPANIA_PROCESO_${l.id.toUpperCase().replace(/-/g, "_")}_TOKEN`;
+  const variable = `FACTORIA_PROCESO_${l.id.toUpperCase().replace(/-/g, "_")}_TOKEN`;
   const secreto = "secreto-de-prueba-123";
 
   // Sin la clave no empieza, y se dice qué variable falta, nunca un valor.
@@ -253,12 +253,12 @@ test("el push empuja solo la rama del proceso, en el commit con que empezó, y a
   const l = await lineaConProcesos({ publicar: PUBLICAR });
   const remoto = conRemoto(l.raiz);
   const gh = ghDeMentira();
-  process.env.COMPANIA_GH_BIN = gh.bin;
+  process.env.FACTORIA_GH_BIN = gh.bin;
   try {
     assert.equal((await hacer({ accion: "correr", proceso: "publicar" })).estado, 200);
     await esperarLaEjecucion();
   } finally {
-    delete process.env.COMPANIA_GH_BIN;
+    delete process.env.FACTORIA_GH_BIN;
   }
   const e = (await ver()).ejecucion!;
   assert.equal(e.estado, "llego", e.motivo ?? "");
@@ -282,17 +282,17 @@ test("sin la ruta de gh empuja igual y dice que el PR no se abrió; si ya había
   await esperarLaEjecucion();
   let e = (await ver()).ejecucion!;
   assert.equal(e.estado, "llego");
-  assert.equal(e.pasos[0]!.nota, "Empujó desarrollo a origin. El PR no se abrió: falta COMPANIA_GH_BIN en .env.local, con la ruta exacta de gh.");
+  assert.equal(e.pasos[0]!.nota, "Empujó desarrollo a origin. El PR no se abrió: falta FACTORIA_GH_BIN en .env.local, con la ruta exacta de gh.");
   assert.equal(enElRemoto(remoto, "desarrollo"), l.commit);
 
   const gh = ghDeMentira();
-  process.env.COMPANIA_GH_BIN = gh.bin;
+  process.env.FACTORIA_GH_BIN = gh.bin;
   process.env.FALSO_GH = "existe";
   try {
     assert.equal((await hacer({ accion: "correr", proceso: "publicar" })).estado, 200);
     await esperarLaEjecucion();
   } finally {
-    delete process.env.COMPANIA_GH_BIN;
+    delete process.env.FACTORIA_GH_BIN;
     delete process.env.FALSO_GH;
   }
   e = (await ver()).ejecucion!;
@@ -354,11 +354,11 @@ cambiarRitmo({ ciMs: 50, ciSinMs: 400 });
 const CON_CI = (siFalla = "") =>
   proceso("ci", ["- [push] y PR contra main", `- [ci] la integración continua del commit · tope 1m${siFalla}`, "- [comando] node scripts/paso.mjs tras-ci · deshacer: —"], "rama: desarrollo\n");
 const conGh = async <T,>(gh: { bin: string }, hacerlo: () => Promise<T>) => {
-  process.env.COMPANIA_GH_BIN = gh.bin;
+  process.env.FACTORIA_GH_BIN = gh.bin;
   try {
     return await hacerlo();
   } finally {
-    delete process.env.COMPANIA_GH_BIN;
+    delete process.env.FACTORIA_GH_BIN;
   }
 };
 
@@ -389,7 +389,7 @@ test("sin la ruta de gh, el paso ci falla y dice qué falta; si no aparece ningu
   await esperarLaEjecucion();
   let e = (await ver()).ejecucion!;
   assert.equal(e.estado, "fallo");
-  assert.equal(e.pasos[1]!.nota, "No se puede leer la integración continua: falta COMPANIA_GH_BIN en .env.local, con la ruta exacta de gh.");
+  assert.equal(e.pasos[1]!.nota, "No se puede leer la integración continua: falta FACTORIA_GH_BIN en .env.local, con la ruta exacta de gh.");
 
   await conGh(ghDeMentira([]), async () => {
     assert.equal((await hacer({ accion: "correr", proceso: "ci" })).estado, 200);
@@ -438,7 +438,7 @@ test("antes de correr dice qué no va a poder en este equipo; con algo que falta
   const l = await lineaConProcesos({ ci: alIntegrar, clave: proceso("clave", ["- [comando] node scripts/eco.mjs · deshacer: — · clave: TOKEN"]) });
   type ConAvisos = Respuesta & { avisos?: Record<string, string[]>; solos?: string[] };
   const verAvisos = async (): Promise<ConAvisos> => (await (await pedir(GET, undefined, "http://127.0.0.1:3000/api/fabrica/procesos")).json()) as ConAvisos;
-  const variable = `COMPANIA_PROCESO_${l.id.toUpperCase().replace(/-/g, "_")}_TOKEN`;
+  const variable = `FACTORIA_PROCESO_${l.id.toUpperCase().replace(/-/g, "_")}_TOKEN`;
 
   // Sin remoto, el push y el ci no van a poder; sin la clave, el comando tampoco. Solo nombres.
   let v = await verAvisos();
@@ -450,8 +450,8 @@ test("antes de correr dice qué no va a poder en este equipo; con algo que falta
   conRemoto(l.raiz);
   v = await verAvisos();
   assert.deepEqual(v.avisos!.ci, [
-    "Línea 8 (push): empuja, pero el PR no se abre: falta COMPANIA_GH_BIN en .env.local, con la ruta de gh.",
-    "Línea 9 (ci): no puede leer la integración continua: falta COMPANIA_GH_BIN en .env.local, con la ruta de gh.",
+    "Línea 8 (push): empuja, pero el PR no se abre: falta FACTORIA_GH_BIN en .env.local, con la ruta de gh.",
+    "Línea 9 (ci): no puede leer la integración continua: falta FACTORIA_GH_BIN en .env.local, con la ruta de gh.",
   ]);
 
   // Así no se enciende para arrancar solo.
@@ -616,7 +616,7 @@ test("aprobado, pero la raíz ya está en otro commit: producción no recibe otr
 
 test("detenerlo mientras espera no sigue ni deshace; si él lo pidió, el teléfono suena", async () => {
   const l = await lineaConProcesos({ prod: PROD() });
-  const variables = { COMPANIA_TELNYX_API_KEY: "clave-telnyx-de-prueba", COMPANIA_TELNYX_CONNECTION_ID: "conexion-1", COMPANIA_TELNYX_NUMERO_ORIGEN: "+12025550123", COMPANIA_TELEFONO: "+56912345678" };
+  const variables = { FACTORIA_TELNYX_API_KEY: "clave-telnyx-de-prueba", FACTORIA_TELNYX_CONNECTION_ID: "conexion-1", FACTORIA_TELNYX_NUMERO_ORIGEN: "+12025550123", FACTORIA_TELEFONO: "+56912345678" };
   Object.assign(process.env, variables);
   await fijarLlamarSola(true);
   try {
@@ -947,7 +947,7 @@ test("una evaluación cuyo comando falla no mide, y lo último que dijo se ve pa
   assert.deepEqual((await (await pedir(GET, undefined, "http://127.0.0.1:3000/api/fabrica/procesos")).json()).puntajes, { evaluacion: [] });
 });
 
-// ---- La fusión del PR (fabrica/docs/Plan-Integracion.md, etapa 5) --------------------------------
+// ---- La fusión del PR --------------------------------
 
 /**
  * Un `gh` de mentira para la fusión: anota cada pedido; la CI pasa; `pr view` contesta el PR que se

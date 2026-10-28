@@ -8,7 +8,7 @@ import { leerDelServicio } from "./proveedores.ts";
  * El lector de la Entrada: cada tanto lee los issues abiertos de las fuentes
  * encendidas y los deja en la Bandeja. Corre en el servidor aunque nadie
  * tenga la página abierta, como el vigía de la fábrica, y lo arranca
- * `instrumentation.ts` en el modo trabajo. Solo lee (ver `proveedores.ts`).
+ * `instrumentation.ts`. Solo lee (ver `proveedores.ts`).
  * Solo para el servidor.
  *
  * Una fuente rechazada no se vuelve a intentar sola: espera a que él diga que

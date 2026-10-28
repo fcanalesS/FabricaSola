@@ -263,7 +263,7 @@ export const AGENTE_DE_SALIDA = "fabrica-salida";
 export const archivoDelAgenteDeSalida = (carpetaDelPlugin: string) => path.join(carpetaDelPlugin, "plantillas", "agentes", "salida.md");
 
 /**
- * Lo que viaja con `--agents` para el agente de salida (fabrica/docs/Plan-Aprobador.md, etapa 4):
+ * Lo que viaja con `--agents` para el agente de salida:
  * su definición con sus oficios (Plan de reversión y Compatibilidad hacia atrás), como los agentes
  * con habilidades. Sin definición, nada. Es lógica pura.
  */
@@ -280,8 +280,7 @@ export const AGENTE_DE_ANUNCIO = "fabrica-anuncio";
 export const archivoDelAgenteDeAnuncio = (carpetaDelPlugin: string) => path.join(carpetaDelPlugin, "plantillas", "agentes", "anuncio.md");
 
 /**
- * Lo que viaja con `--agents` para el agente de las notas (fabrica/docs/Plan-Integracion.md, etapa
- * 4): su definición con su oficio (Notas de versión y avisos). Sin definición, nada. Es lógica pura.
+ * Lo que viaja con `--agents` para el agente de las notas: su definición con su oficio (Notas de versión y avisos). Sin definición, nada. Es lógica pura.
  */
 export function agenteDeAnuncio(def: DefinicionDeAgente | null, textos: ReadonlyMap<string, string>): Record<string, { description: string; prompt: string; tools?: string[]; model?: string }> {
   return agenteDePlantilla(AGENTE_DE_ANUNCIO, def, textos);
@@ -296,7 +295,7 @@ export const AGENTE_DE_RETRABAJO = "fabrica-retrabajo";
 export const archivoDelAgenteDeRetrabajo = (carpetaDelPlugin: string) => path.join(carpetaDelPlugin, "plantillas", "agentes", "retrabajo.md");
 
 /**
- * Lo que viaja con `--agents` para el retrabajo (fabrica/docs/Plan-Integracion.md, etapa 6): su
+ * Lo que viaja con `--agents` para el retrabajo: su
  * definición con sus oficios (Arreglo de raíz y Pruebas), y las habilidades de construcción de la
  * línea (`skills:`). Los oficios de las especialidades de construcción no van: el retrabajo
  * corrige lo bloqueante, y sus habilidades ya traen el estándar de la línea. Sin `model`: lo pone el

@@ -1,10 +1,7 @@
 @import "tailwindcss";
 
-/* El formato aprobado para la compañera: suave, redondeado y en modo oscuro.
-   Estos colores son los de siempre, los de las maquetas de `../interfaz/`.
-   Cada personaje puede traer los suyos en su `paleta.json`: la página los
-   pone encima de estos, y por eso van como variables y no escritos en cada
-   clase. */
+/* El formato de la fábrica: suave, redondeado y en modo oscuro. Los colores
+   van como variables y no escritos en cada clase. */
 @theme {
   --color-fondo: #1b1e2b;
   --color-ficha: #262a3b;
@@ -20,7 +17,7 @@
   /* El rojo para texto: el acento sirve de fondo, pero como letra sobre las fichas no se lee
      (2,9:1). Este da 5,3:1 sobre la ficha y 6,2:1 sobre el fondo. */
   --color-peligro: #ef7b86;
-  /* Los anillos de pantalla de la portada: un cian, como en la aplicación de origen. */
+  /* Los anillos de pantalla de la portada: un cian. */
   --color-hud: #4fd3e3;
 
   /* Una pantalla de 2560 de ancho o parecida: desde aquí caben ella, la tele

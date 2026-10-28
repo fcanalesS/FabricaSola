@@ -2,14 +2,12 @@
 
 ## Qué es esto
 
-La fábrica de software v2, como programa aparte para compartir: la planta, las líneas, las
-tareas, la Entrada, la memoria, las habilidades y los procesos, con el plugin `fabrica/`. Sale de
-la aplicación de compañía (`../compania/`), que sigue siendo otra cosa: aquí no hay personaje, ni
-modo, ni la API de Claude. El plan está en `fabrica/docs/Plan-Compartir-Fabrica.md`. `README.md`
-dice cómo levantarla y qué hay en cada carpeta.
+La fábrica de software, como programa para compartir: la planta, las líneas, las tareas, la
+Entrada, la memoria, las habilidades y los procesos, con el plugin `fabrica/`. No usa la API de
+Claude: todo corre con la sesión de Claude Code de quien la usa. `README.md` dice cómo levantarla
+y qué hay en cada carpeta.
 
-Por un tiempo el código de la fábrica está en los dos repositorios: lo que se arregle en uno hay
-que llevarlo al otro.
+Es un proyecto independiente: no depende de otro repositorio ni se sincroniza con ninguno.
 
 ## Reglas del proyecto
 
@@ -19,7 +17,7 @@ que llevarlo al otro.
 - **Todo corre con la sesión de Claude Code de quien la usa.** No se usa la API de Claude ni una
   clave suya. Lo que necesite algo más (Jev, `gh`, `glab`, un token, el teléfono) queda apagado,
   con un mensaje que dice qué falta, hasta que se agregue su variable.
-- **Claude Code se busca en el PATH si falta `COMPANIA_CLAUDE_CODE_BIN`** (`src/lib/fabrica/motor/claude-code.ts`),
+- **Claude Code se busca en el PATH si falta `FACTORIA_CLAUDE_CODE_BIN`** (`src/lib/fabrica/motor/claude-code.ts`),
   una vez al arrancar y solo en carpetas absolutas. Es la única diferencia con la aplicación de
   origen, donde va solo por su ruta exacta: `gh`, `glab`, Codex y Antigravity siguen por la suya.
   Las pruebas no miran el PATH de quien las corre (`fijarClaudeEnElPath(null)`, en
@@ -43,8 +41,8 @@ que llevarlo al otro.
   que había al compilar.
 - Las reglas de la fábrica (la Entrada solo lee, nada pasa a una línea sin su clic, la memoria de
   la fábrica la escribe la persona, los procesos los corre el código, la fusión, producción con su
-  clic, los tokens solo se nombran) son las mismas que en la aplicación de origen: están en los
-  comentarios de cada módulo y en `fabrica/README.md`.
+  clic, los tokens solo se nombran) están en los comentarios de cada módulo y en
+  `fabrica/README.md`.
 
 ## Comandos
 

@@ -90,7 +90,7 @@ test("Python, Rust y Go, por la tabla de /fabrica:init", () => {
 });
 
 test("los comandos del proyecto corren sin las claves de la aplicación, en la shell del sistema", () => {
-  assert.deepEqual(entornoDelProyecto({ PATH: "/bin", COMPANIA_CLAUDE_API_KEY: "x", ANTHROPIC_API_KEY: "y", FABRICA_JEV_KEY: "z", TYPESAFE_AI_KEY: "j" }), { PATH: "/bin" });
+  assert.deepEqual(entornoDelProyecto({ PATH: "/bin", FACTORIA_CLAUDE_API_KEY: "x", ANTHROPIC_API_KEY: "y", FABRICA_JEV_KEY: "z", TYPESAFE_AI_KEY: "j" }), { PATH: "/bin" });
   assert.deepEqual(enShell("npm test", true), ["powershell", "-NoProfile", "-NonInteractive", "-Command", "npm test"]);
   assert.deepEqual(enShell("npm test", false), ["sh", "-c", "npm test"]);
 });

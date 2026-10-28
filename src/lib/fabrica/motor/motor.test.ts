@@ -30,7 +30,7 @@ function ponerEnEstado(id: string, estado: string, mas: Record<string, string> =
 }
 
 beforeEach(async () => {
-  delete process.env.COMPANIA_CLAUDE_CODE_BIN;
+  delete process.env.FACTORIA_CLAUDE_CODE_BIN;
   await elegirProyecto(null);
 });
 
@@ -98,11 +98,11 @@ test("los modelos de cada rol y los agentes externos quedan en factory/config.md
   // Sin su ruta exacta en este equipo, Codex no se enciende: no se busca en el PATH.
   const sinRuta = await pedir("/api/ajustes", { agenteExterno: { cual: "revisorCodigo", valor: "codex" } }, "PUT");
   assert.equal(sinRuta.estado, 409);
-  assert.match(String((sinRuta.datos as { error: string }).error), /COMPANIA_CODEX_BIN/);
-  assert.match(String(((await pedir("/api/ajustes", { agenteExterno: { cual: "escritorSpec", valor: "antigravity" } }, "PUT")).datos as { error: string }).error), /COMPANIA_ANTIGRAVITY_BIN/);
-  process.env.COMPANIA_CODEX_BIN = "/opt/bin/codex";
+  assert.match(String((sinRuta.datos as { error: string }).error), /FACTORIA_CODEX_BIN/);
+  assert.match(String(((await pedir("/api/ajustes", { agenteExterno: { cual: "escritorSpec", valor: "antigravity" } }, "PUT")).datos as { error: string }).error), /FACTORIA_ANTIGRAVITY_BIN/);
+  process.env.FACTORIA_CODEX_BIN = "/opt/bin/codex";
   await pedir("/api/ajustes", { agenteExterno: { cual: "revisorCodigo", valor: "codex" } }, "PUT");
-  delete process.env.COMPANIA_CODEX_BIN;
+  delete process.env.FACTORIA_CODEX_BIN;
   await pedir("/api/ajustes", { modelo: "sonnet" }, "PUT");
   assert.equal((await pedir("/api/ajustes", { modelo: "gpt-9" }, "PUT")).estado, 409);
   const datos = partir(readFileSync(path.join(proyectoActual, "factory", "config.md"), "utf8")).datos;
@@ -115,12 +115,12 @@ test("los modelos de cada rol y los agentes externos quedan en factory/config.md
 });
 
 test("a la corrida no le llega nada de la aplicación: ni sus claves ni ANTHROPIC_; la de Jev y las rutas de los otros agentes, con su nombre del plugin", () => {
-  const env = entornoDeLaCorrida({ PATH: "/bin", HOME: "/home/el", COMPANIA_CLAUDE_API_KEY: "x", COMPANIA_ELEVENLABS_API_KEY: "y", ANTHROPIC_API_KEY: "z", TYPESAFE_AI_KEY: "jev" });
+  const env = entornoDeLaCorrida({ PATH: "/bin", HOME: "/home/el", FACTORIA_CLAUDE_API_KEY: "x", FACTORIA_ELEVENLABS_API_KEY: "y", ANTHROPIC_API_KEY: "z", TYPESAFE_AI_KEY: "jev" });
   assert.deepEqual(env, { PATH: "/bin", HOME: "/home/el", FABRICA_JEV_KEY: "jev" });
   // Codex y Antigravity, por la ruta de .env.local; una FABRICA_ que viniera de antes no pasa.
-  const conOtros = entornoDeLaCorrida({ PATH: "/bin", COMPANIA_CODEX_BIN: " C:\\npm\\codex.cmd ", COMPANIA_ANTIGRAVITY_BIN: "/opt/agy", FABRICA_CODEX_BIN: "/viejo/codex" });
+  const conOtros = entornoDeLaCorrida({ PATH: "/bin", FACTORIA_CODEX_BIN: " C:\\npm\\codex.cmd ", FACTORIA_ANTIGRAVITY_BIN: "/opt/agy", FABRICA_CODEX_BIN: "/viejo/codex" });
   assert.deepEqual(conOtros, { PATH: "/bin", FABRICA_CODEX_BIN: "C:\\npm\\codex.cmd", FABRICA_ANTIGRAVITY_BIN: "/opt/agy" });
-  assert.deepEqual(entornoDeLaCorrida({ PATH: "/bin", COMPANIA_CODEX_BIN: " ", FABRICA_ANTIGRAVITY_BIN: "/viejo/agy" }), { PATH: "/bin" });
+  assert.deepEqual(entornoDeLaCorrida({ PATH: "/bin", FACTORIA_CODEX_BIN: " ", FABRICA_ANTIGRAVITY_BIN: "/viejo/agy" }), { PATH: "/bin" });
   // Claude Code por su ruta exacta; un .cmd de Windows, por la consola.
   assert.deepEqual(lanzadorDeClaude("/usr/local/bin/claude", ["-p", "x"], "darwin"), { programa: "/usr/local/bin/claude", argumentos: ["-p", "x"] });
   assert.deepEqual(lanzadorDeClaude("C:\\npm\\claude.cmd", ["-p", "x"], "win32"), { programa: "cmd.exe", argumentos: ["/d", "/s", "/c", "C:\\npm\\claude.cmd", "-p", "x"] });
@@ -133,7 +133,7 @@ test("sin la ruta de Claude Code no se corre, y se dice cuál variable falta", a
   await pedir("/api/ajustes", { accion: "inicializar" });
   const r = await pedir("/api/corridas", { accion: "iniciar" });
   assert.equal(r.estado, 409);
-  assert.match(String((r.datos as { error: string }).error), /COMPANIA_CLAUDE_CODE_BIN/);
+  assert.match(String((r.datos as { error: string }).error), /FACTORIA_CLAUDE_CODE_BIN/);
 });
 
 test("una corrida lanza Claude Code con el plugin de la aplicación, sin otros mods, y su resultado y su telemetría quedan en el informe", { skip: process.platform === "win32" }, async () => {
@@ -155,8 +155,8 @@ echo '{"type":"result","subtype":"success","is_error":false,"total_cost_usd":0.4
 `,
   );
   chmodSync(falso, 0o755);
-  process.env.COMPANIA_CLAUDE_CODE_BIN = falso;
-  process.env.COMPANIA_CLAUDE_API_KEY = "clave-de-prueba";
+  process.env.FACTORIA_CLAUDE_CODE_BIN = falso;
+  process.env.FACTORIA_CLAUDE_API_KEY = "clave-de-prueba";
   process.env.TYPESAFE_AI_KEY = "clave-de-jev";
 
   const lanzada = await pedir("/api/corridas", { accion: "iniciar", tareas: ["F-001", "nada"] });
@@ -180,7 +180,7 @@ echo '{"type":"result","subtype":"success","is_error":false,"total_cost_usd":0.4
   assert.deepEqual(ajustes.enabledPlugins, { "fabrica@factoria": false });
   assert.equal(ajustes.env.OTEL_EXPORTER_OTLP_ENDPOINT, "http://127.0.0.1:3211/api/fabrica/telemetria");
   const entorno = readFileSync(path.join(fuera, "entorno.txt"), "utf8");
-  assert.doesNotMatch(entorno, /^COMPANIA_|^TYPESAFE_AI_KEY=/m);
+  assert.doesNotMatch(entorno, /^FACTORIA_|^TYPESAFE_AI_KEY=/m);
   assert.match(entorno, /^FABRICA_JEV_KEY=clave-de-jev$/m);
   // La carpeta de la memoria de la planta, para que el plugin lea su ficha.
   assert.match(entorno, new RegExp(`^FABRICA_MEMORIA_PLANTA=${path.join(carpetaDeLaFabrica(), "memoria").replace(/[\\^$.*+?()[\]{}|]/g, "\\$&")}$`, "m"));
@@ -223,7 +223,7 @@ echo '{"type":"result","subtype":"success","is_error":false,"total_cost_usd":0.3
 `,
   );
   chmodSync(falso, 0o755);
-  process.env.COMPANIA_CLAUDE_CODE_BIN = falso;
+  process.env.FACTORIA_CLAUDE_CODE_BIN = falso;
   await pedir("/api/corridas", { accion: "iniciar" });
   await new Promise((listo) => setTimeout(listo, 400));
   // Ya dio un resultado, pero su proceso sigue: la corrida sigue.
@@ -329,7 +329,7 @@ test("sin comandos de verificación la corrida no se lanza, y se dice por qué",
   proyectoActual = proyectoNuevo();
   await pedir("/api/ajustes", { raiz: proyectoActual }, "PUT");
   await pedir("/api/ajustes", { accion: "inicializar" });
-  process.env.COMPANIA_CLAUDE_CODE_BIN = path.join(proyectoActual, "no-se-lanza", "claude");
+  process.env.FACTORIA_CLAUDE_CODE_BIN = path.join(proyectoActual, "no-se-lanza", "claude");
   const r = await pedir("/api/corridas", { accion: "iniciar" });
   assert.equal(r.estado, 409);
   assert.match(String((r.datos as { error: string }).error), /no tiene comandos de build, test ni lint/);
@@ -352,7 +352,7 @@ test("la rama de trabajo: una local que no sea main ni de la fábrica; sin ella 
   assert.deepEqual(await leer(), { elegida: "", raizEn: "main", opciones: ["developer/fcanales"] });
 
   // Con la raíz en main y sin rama de trabajo, la corrida no se lanza.
-  process.env.COMPANIA_CLAUDE_CODE_BIN = path.join(proyectoActual, "no-se-lanza", "claude");
+  process.env.FACTORIA_CLAUDE_CODE_BIN = path.join(proyectoActual, "no-se-lanza", "claude");
   const r = await pedir("/api/corridas", { accion: "iniciar" });
   assert.equal(r.estado, 409);
   assert.match(String((r.datos as { error: string }).error), /La raíz está en «main» y la fábrica no trabaja sobre esa rama/);
@@ -458,9 +458,9 @@ test("lo que él aprobó con otra corrida en marcha queda anotado, y se lanza de
   // Si alguna sigue en aprobación, se lanza su corrida (aquí falla antes: no hay ruta de Claude Code).
   ponerEnEstado("F-002", "aprobacion");
   await anotarPorRetomar(["F-001", "F-002"], null);
-  await assert.rejects(lanzarLoPorRetomar(), /COMPANIA_CLAUDE_CODE_BIN/);
+  await assert.rejects(lanzarLoPorRetomar(), /FACTORIA_CLAUDE_CODE_BIN/);
   // Pedir que siga, sin corrida en marcha, intenta lanzarla ahora.
-  assert.match(String(((await pedir("/api/corridas", { accion: "continuar", tareas: ["F-002"] })).datos as { error: string }).error), /COMPANIA_CLAUDE_CODE_BIN/);
+  assert.match(String(((await pedir("/api/corridas", { accion: "continuar", tareas: ["F-002"] })).datos as { error: string }).error), /FACTORIA_CLAUDE_CODE_BIN/);
 
   // Lo que espera a una persona se lanza solo si ya tiene una respuesta suya que nadie retomó.
   ponerEnEstado("F-002", "hecho");
@@ -469,7 +469,7 @@ test("lo que él aprobó con otra corrida en marcha queda anotado, y se lanza de
   assert.deepEqual(await lanzarLoPorRetomar(), []);
   await pedir("/api/respuesta", { tarea: "F-001", texto: "La primera.", por: "persona" });
   await anotarPorRetomar(["F-001"], null);
-  await assert.rejects(lanzarLoPorRetomar(), /COMPANIA_CLAUDE_CODE_BIN/);
+  await assert.rejects(lanzarLoPorRetomar(), /FACTORIA_CLAUDE_CODE_BIN/);
 });
 
 test("de la salida de la corrida sale quién trabaja cada tarea y qué está haciendo", async () => {
@@ -671,7 +671,7 @@ test("los topes de gasto: con el del día alcanzado no se lanza; y el costo de c
   assert.equal(gastoPorDia.length, 14);
   assert.deepEqual(gastoPorDia.at(-1), { dia: ahora.toLocaleDateString("sv"), usd: 5 });
   assert.equal(gastoPorDia.slice(0, -1).reduce((t, d) => t + d.usd, 0), 0);
-  process.env.COMPANIA_CLAUDE_CODE_BIN = path.join(proyectoActual, "no-se-lanza", "claude");
+  process.env.FACTORIA_CLAUDE_CODE_BIN = path.join(proyectoActual, "no-se-lanza", "claude");
   const r = await pedir("/api/corridas", { accion: "iniciar" });
   assert.equal(r.estado, 409);
   assert.match(String((r.datos as { error: string }).error), /hoy van 5,00 USD[^]*tope del día es 3,00 USD/);

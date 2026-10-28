@@ -33,7 +33,7 @@ y el lock cambiado entra con el commit.
 Abre <http://127.0.0.1:3000>. La aplicación escucha solo en este equipo: nadie más en tu red la ve.
 
 Levántala desde una terminal donde `claude` funcione. La fábrica usa ese Claude Code, el del PATH.
-Si quieres otro, pon su ruta en `COMPANIA_CLAUDE_CODE_BIN`, en un archivo `.env.local` en esta
+Si quieres otro, pon su ruta en `FACTORIA_CLAUDE_CODE_BIN`, en un archivo `.env.local` en esta
 carpeta (copia `.env.example`), y reinicia.
 
 ## Los primeros pasos
@@ -73,14 +73,14 @@ Todo es opcional, y **Este equipo** dice qué falta y qué permite. Van en `.env
 
 | Qué | Para qué |
 | --- | --- |
-| `gh` o `glab` (`COMPANIA_GH_BIN`, `COMPANIA_GLAB_BIN`) | Que un proceso abra el PR, espere la integración continua y fusione |
+| `gh` o `glab` (`FACTORIA_GH_BIN`, `FACTORIA_GLAB_BIN`) | Que un proceso abra el PR, espere la integración continua y fusione |
 | Jev (`TYPESAFE_AI_KEY`) | Gastar menos: decide qué pruebas y revisores necesita cada tarea, y revisa los issues de otras personas |
-| Un token por fuente (`COMPANIA_FUENTE_<NOMBRE>_TOKEN`) | Traer issues de GitHub o GitLab a la Bandeja, en solo lectura |
-| Telnyx (`COMPANIA_TELNYX_…`, `COMPANIA_TELEFONO`) | Que la fábrica te llame cuando una tarea te espera |
-| Codex o Antigravity (`COMPANIA_CODEX_BIN`, `COMPANIA_ANTIGRAVITY_BIN`) | Que revisen el código o escriban la spec con su propia suscripción |
+| Un token por fuente (`FACTORIA_FUENTE_<NOMBRE>_TOKEN`) | Traer issues de GitHub o GitLab a la Bandeja, en solo lectura |
+| Telnyx (`FACTORIA_TELNYX_…`, `FACTORIA_TELEFONO`) | Que la fábrica te llame cuando una tarea te espera |
+| Codex o Antigravity (`FACTORIA_CODEX_BIN`, `FACTORIA_ANTIGRAVITY_BIN`) | Que revisen el código o escriban la spec con su propia suscripción |
 | Un modelo Live2D y el Core de Cubism, en `public/live2d/` (no en `.env.local`) | Que la portada muestre el modelo que elijas dentro de su anillo. Sin modelo, queda la vista simple. Qué poner y dónde: `public/live2d/LEEME.md` |
 
-Las variables se llaman `COMPANIA_…` porque el código viene de otra aplicación y sigue igual en
+Las variables se llaman `FACTORIA_…` porque el código viene de otra aplicación y sigue igual en
 las dos.
 
 ## Si algo falla
@@ -131,5 +131,5 @@ sesiones de verdad de Claude Code en un repositorio desechable: gastan.
 | `fabrica/` | El plugin de Claude Code que usan las corridas: sus agentes, sus comandos y el mod que cuida cada paso |
 | `datos/` | Lo de este equipo: ajustes, corridas, registros de los procesos y el vault de la planta. No entra al repositorio |
 
-Los documentos de `fabrica/docs/` son los planes con que se construyó la fábrica en la aplicación
-de origen: cuentan por qué es como es, y todavía hablan de ella.
+`fabrica/docs/puente-orquestador.md` es el contrato entre la aplicación y el plugin: qué campos de una
+tarea cambia cada uno.

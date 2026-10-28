@@ -34,18 +34,18 @@ test("el pedido de la petición lleva sus secciones, y un título suyo no corta 
   assert.doesNotMatch(pedido, /Archivos o zonas/);
 });
 
-test("una fuente solo puede usar una variable COMPANIA_FUENTE_…_TOKEN: nunca una clave de IA", () => {
-  assert.equal(esVariableDeFuente("COMPANIA_FUENTE_GITHUB_TOKEN"), true);
-  assert.equal(esVariableDeFuente("COMPANIA_FUENTE_GITLAB_EMPRESA_TOKEN"), true);
-  for (const otra of ["COMPANIA_CLAUDE_API_KEY", "ANTHROPIC_API_KEY", "COMPANIA_FUENTE__TOKEN", "COMPANIA_FUENTE_github_TOKEN", "COMPANIA_FUENTE_X_TOKEN_Y", "TYPESAFE_AI_KEY"]) {
+test("una fuente solo puede usar una variable FACTORIA_FUENTE_…_TOKEN: nunca una clave de IA", () => {
+  assert.equal(esVariableDeFuente("FACTORIA_FUENTE_GITHUB_TOKEN"), true);
+  assert.equal(esVariableDeFuente("FACTORIA_FUENTE_GITLAB_EMPRESA_TOKEN"), true);
+  for (const otra of ["FACTORIA_CLAUDE_API_KEY", "ANTHROPIC_API_KEY", "FACTORIA_FUENTE__TOKEN", "FACTORIA_FUENTE_github_TOKEN", "FACTORIA_FUENTE_X_TOKEN_Y", "TYPESAFE_AI_KEY"]) {
     assert.equal(esVariableDeFuente(otra), false, otra);
-    assert.throws(() => datosDeFuente({ proveedor: "github", nombre: "X", variable: otra, etiqueta: "fabrica", repos: [] }, LINEAS), /COMPANIA_FUENTE_<NOMBRE>_TOKEN/);
+    assert.throws(() => datosDeFuente({ proveedor: "github", nombre: "X", variable: otra, etiqueta: "fabrica", repos: [] }, LINEAS), /FACTORIA_FUENTE_<NOMBRE>_TOKEN/);
   }
   // Aunque alguien cambie la fila a mano, `tokenDe` no lee otra clave.
-  assert.equal(tokenDe({ variable: "COMPANIA_CLAUDE_API_KEY" }, { COMPANIA_CLAUDE_API_KEY: "sk-de-mentira" }), null);
-  assert.equal(tokenDe({ variable: "COMPANIA_FUENTE_GITHUB_TOKEN" }, { COMPANIA_FUENTE_GITHUB_TOKEN: " gh-de-mentira " }), "gh-de-mentira");
+  assert.equal(tokenDe({ variable: "FACTORIA_CLAUDE_API_KEY" }, { FACTORIA_CLAUDE_API_KEY: "sk-de-mentira" }), null);
+  assert.equal(tokenDe({ variable: "FACTORIA_FUENTE_GITHUB_TOKEN" }, { FACTORIA_FUENTE_GITHUB_TOKEN: " gh-de-mentira " }), "gh-de-mentira");
   // De las variables se dan los nombres, nunca los valores, y solo las de fuente.
-  assert.deepEqual(variablesDeFuente({ COMPANIA_FUENTE_B_TOKEN: "x", COMPANIA_FUENTE_A_TOKEN: "y", COMPANIA_FUENTE_VACIA_TOKEN: " ", COMPANIA_CLAUDE_API_KEY: "z" }), ["COMPANIA_FUENTE_A_TOKEN", "COMPANIA_FUENTE_B_TOKEN"]);
+  assert.deepEqual(variablesDeFuente({ FACTORIA_FUENTE_B_TOKEN: "x", FACTORIA_FUENTE_A_TOKEN: "y", FACTORIA_FUENTE_VACIA_TOKEN: " ", FACTORIA_CLAUDE_API_KEY: "z" }), ["FACTORIA_FUENTE_A_TOKEN", "FACTORIA_FUENTE_B_TOKEN"]);
 });
 
 test("un servidor propio va por https, sin usuario ni clave en la dirección", () => {
@@ -68,10 +68,10 @@ test("los repositorios van a una línea que existe, una sola vez cada uno", () =
 
 test("la vista de una fuente dice si el token está, sin traerlo, y una sin token no lee", () => {
   const db = abrirBaseDeDatos(":memory:");
-  const datos: DatosDeFuente = { proveedor: "github", servidor: null, nombre: "GitHub", variable: "COMPANIA_FUENTE_GITHUB_TOKEN", regla: "suyos", etiqueta: "fabrica", cadaMin: 5, repos: [] };
+  const datos: DatosDeFuente = { proveedor: "github", servidor: null, nombre: "GitHub", variable: "FACTORIA_FUENTE_GITHUB_TOKEN", regla: "suyos", etiqueta: "fabrica", cadaMin: 5, repos: [] };
   const f = agregarFuente(db, datos);
   assert.throws(() => agregarFuente(db, { ...datos, nombre: "Otra" }), /ya la usa otra conexión/);
-  const conToken = { COMPANIA_FUENTE_GITHUB_TOKEN: "gh-de-mentira" };
+  const conToken = { FACTORIA_FUENTE_GITHUB_TOKEN: "gh-de-mentira" };
   const vista = vistaDeFuente(f, conToken);
   assert.equal(vista.tieneToken, true);
   assert.doesNotMatch(JSON.stringify(vista), /gh-de-mentira/);

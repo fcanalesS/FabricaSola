@@ -1,5 +1,5 @@
 // Mide si Jev reconoce un cambio superficial, el que una tarea aprobada puede integrar sin que él
-// lo pruebe a mano (fabrica/docs/Plan-Integracion.md, etapa 2). Usa los casos escritos a mano de
+// lo pruebe a mano. Usa los casos escritos a mano de
 // scripts/fabrica/casos-integracion.json y le hace a Jev la misma pregunta que el mod, con lo mismo:
 // el título y los archivos con sus líneas, nunca código.
 //

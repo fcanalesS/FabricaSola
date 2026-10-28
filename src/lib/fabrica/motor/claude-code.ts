@@ -2,11 +2,9 @@ import { accessSync, constants, statSync } from "node:fs";
 import path from "node:path";
 
 /**
- * Dónde está Claude Code en este equipo. Primero la ruta de `COMPANIA_CLAUDE_CODE_BIN`, si está;
+ * Dónde está Claude Code en este equipo. Primero la ruta de `FACTORIA_CLAUDE_CODE_BIN`, si está;
  * si no, `claude` en el PATH, buscado una sola vez por proceso: el mismo que correría quien
- * levantó la aplicación desde su terminal. Así se corre sin configurar nada (decisión 1 de
- * `fabrica/docs/Plan-Compartir-Fabrica.md`, 27 de octubre de 2026). La aplicación de origen no
- * hace esto: allá va solo por su ruta exacta.
+ * levantó la aplicación desde su terminal. Así se corre sin configurar nada.
  *
  * No importa nada de la aplicación: lo usan también los scripts de `scripts/fabrica/`.
  */
@@ -14,7 +12,7 @@ import path from "node:path";
 export type ClaudeCode = { ruta: string; de: "variable" | "path" };
 
 export const SIN_CLAUDE_CODE =
-  "No encontré Claude Code: no está en el PATH y falta COMPANIA_CLAUDE_CODE_BIN en .env.local. Instálalo (o pon su ruta en esa variable) y reinicia la aplicación.";
+  "No encontré Claude Code: no está en el PATH y falta FACTORIA_CLAUDE_CODE_BIN en .env.local. Instálalo (o pon su ruta en esa variable) y reinicia la aplicación.";
 
 /** Las extensiones que se pueden lanzar en Windows: un `.exe`, o un `.cmd`/`.bat` con `cmd /c`. */
 const LANZABLES = [".com", ".exe", ".bat", ".cmd"];
@@ -66,7 +64,7 @@ const memoria = globalThis as { __claudeEnElPath?: string | null };
 
 /** Claude Code en este equipo, y de dónde salió; `null` si no está: sin él no hay corridas. */
 export function claudeCodeDeEsteEquipo(entorno: Record<string, string | undefined> = process.env): ClaudeCode | null {
-  const variable = entorno.COMPANIA_CLAUDE_CODE_BIN?.trim();
+  const variable = entorno.FACTORIA_CLAUDE_CODE_BIN?.trim();
   if (variable) return { ruta: variable, de: "variable" };
   if (memoria.__claudeEnElPath === undefined) memoria.__claudeEnElPath = buscarEnElPath("claude");
   return memoria.__claudeEnElPath ? { ruta: memoria.__claudeEnElPath, de: "path" } : null;

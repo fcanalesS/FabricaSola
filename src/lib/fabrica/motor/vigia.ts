@@ -9,8 +9,8 @@ import { arrancarAlIntegrar, arrancarLosPeriodicos } from "../procesos/correr.ts
  * El vigía de la fábrica: cada tanto lee los eventos nuevos del proyecto y, si
  * algo pasó a esperarlo y llamar sola está encendido, hace sonar el teléfono.
  * Corre en el servidor aunque nadie tenga la página abierta: la fábrica
- * trabaja sola, y lo que la frena es él. Lo arranca `instrumentation.ts` en el
- * modo trabajo. Solo para el servidor.
+ * trabaja sola, y lo que la frena es él. Lo arranca `instrumentation.ts`. Solo
+ * para el servidor.
  *
  * Los eventos que ya estaban cuando arranca, o cuando se cambia de proyecto,
  * no llaman a nadie: solo lo que llega después.

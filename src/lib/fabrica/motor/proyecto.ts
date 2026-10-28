@@ -20,10 +20,7 @@ import { esEstado, type Config, type Estado, type Evento, type HallazgoDeDeuda, 
  * respuesta, un veredicto, tareas nuevas). El estado de una tarea lo cambia
  * solo el plugin. Solo para el servidor.
  *
- * Viene del orquestador de Factory-IA, que fue la prueba de concepto: él
- * pidió el 17 de octubre de 2026 que la fábrica viviera en la aplicación, sin
- * levantar otro servidor. Quedaron fuera la demo, el teléfono y el sondeo
- * para las pestañas del orquestador: la Columna pregunta sola.
+ * Vive en la aplicación, sin levantar otro servidor.
  */
 
 const EVENTOS_EN_INSTANTANEA = 200;
@@ -41,7 +38,7 @@ export type Ajustes = {
    * así desde el próximo cambio.
    */
   lineas?: Linea[];
-  /** La línea que miran la Columna y la configuración, y donde corren las corridas. */
+  /** La línea que miran la portada y la configuración, y donde corren las corridas. */
   lineaActiva?: string;
   /** El modelo del orquestador de Claude en las corridas. Sin él, el de Claude Code. */
   modelo?: string;
@@ -733,8 +730,8 @@ export async function probarComandos(): Promise<PruebaDeComando[]> {
  * suya, ese agente queda apagado: no se busca en el PATH. Es lógica pura.
  */
 export const agentesDeEsteEquipo = (entorno: Record<string, string | undefined> = process.env) => ({
-  codex: entorno.COMPANIA_CODEX_BIN?.trim() || null,
-  antigravity: entorno.COMPANIA_ANTIGRAVITY_BIN?.trim() || null,
+  codex: entorno.FACTORIA_CODEX_BIN?.trim() || null,
+  antigravity: entorno.FACTORIA_ANTIGRAVITY_BIN?.trim() || null,
 });
 
 export async function fijarAgenteExterno(cual: string, valor: string) {
@@ -742,8 +739,8 @@ export async function fijarAgenteExterno(cual: string, valor: string) {
   if (!def) throw new Error(`No se conoce «${cual}».`);
   if (!(def.valores as readonly string[]).includes(valor)) throw new Error(`«${valor}» no vale para ${def.clave}: ${def.valores.join(", ")}.`);
   const enEsteEquipo = agentesDeEsteEquipo();
-  if ((valor === "codex" || valor === "ambos") && !enEsteEquipo.codex) throw new Error("Falta COMPANIA_CODEX_BIN en .env.local: la ruta exacta de Codex en este equipo.");
-  if (valor === "antigravity" && !enEsteEquipo.antigravity) throw new Error("Falta COMPANIA_ANTIGRAVITY_BIN en .env.local: la ruta exacta de Antigravity en este equipo.");
+  if ((valor === "codex" || valor === "ambos") && !enEsteEquipo.codex) throw new Error("Falta FACTORIA_CODEX_BIN en .env.local: la ruta exacta de Codex en este equipo.");
+  if (valor === "antigravity" && !enEsteEquipo.antigravity) throw new Error("Falta FACTORIA_ANTIGRAVITY_BIN en .env.local: la ruta exacta de Antigravity en este equipo.");
   await fijarEnConfig(def.clave, valor);
 }
 
@@ -1012,8 +1009,7 @@ export async function escribirVeredicto(id: string, veredicto: Veredicto, motivo
 const SECCION_MAX = 30_000;
 
 /**
- * Lo que dice una tarea. `paraElPR` y `probarAMano` los escribe el agente de las notas (fabrica/docs/Plan-Integracion.md,
- * etapa 4): se muestran en su pantalla, nunca en voz alta.
+ * Lo que dice una tarea. `paraElPR` y `probarAMano` los escribe el agente de las notas: se muestran en su pantalla, nunca en voz alta.
  */
 export type SeccionesDeTarea = { pedido: string; spec: string; hallazgos: string; respuesta: string; paraElPR: string; probarAMano: string };
 
@@ -1116,7 +1112,7 @@ async function fijarModeloDeTarea(rol: keyof typeof MODELO_DE_TAREA, id: string,
 }
 
 /**
- * «Debió esperarme» (fabrica/docs/Plan-Integracion.md, etapa 2): una tarea que Jev dejó entrar sola
+ * «Debió esperarme»: una tarea que Jev dejó entrar sola
  * y tenía que esperarlo. Queda en factory/jev.jsonl como un error de Jev, y su umbral se aprieta; si
  * él la quita, queda una línea que lo retira. Vale solo para una tarea que Jev clasificó sencilla:
  * una regla no aprende, y una grande ya lo esperó. Marcar lo que ya está marcado no anota nada.

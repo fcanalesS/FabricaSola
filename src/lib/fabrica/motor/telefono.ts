@@ -7,7 +7,7 @@ import { claseEnNota } from "./formato.ts";
  * Llamar por teléfono con Telnyx cuando la fábrica necesita a una persona: una tarea que pregunta
  * algo, o una que espera tu veredicto. Solo para el servidor.
  *
- * Al contestar suena el audio fijo de `COMPANIA_TELNYX_AUDIO_URL`, si lo hay, o nada: la llamada
+ * Al contestar suena el audio fijo de `FACTORIA_TELNYX_AUDIO_URL`, si lo hay, o nada: la llamada
  * es el aviso, y qué tarea te espera lo dice la planta. Contestar por voz o por SMS no: eso
  * necesita un webhook público.
  *
@@ -44,11 +44,11 @@ export type EstadoTelefono = {
 
 function entorno() {
   return {
-    clave: process.env.COMPANIA_TELNYX_API_KEY?.trim() ?? "",
-    conexion: process.env.COMPANIA_TELNYX_CONNECTION_ID?.trim() ?? "",
-    origen: process.env.COMPANIA_TELNYX_NUMERO_ORIGEN?.trim() ?? "",
-    destino: process.env.COMPANIA_TELEFONO?.trim() ?? "",
-    audio: process.env.COMPANIA_TELNYX_AUDIO_URL?.trim() ?? "",
+    clave: process.env.FACTORIA_TELNYX_API_KEY?.trim() ?? "",
+    conexion: process.env.FACTORIA_TELNYX_CONNECTION_ID?.trim() ?? "",
+    origen: process.env.FACTORIA_TELNYX_NUMERO_ORIGEN?.trim() ?? "",
+    destino: process.env.FACTORIA_TELEFONO?.trim() ?? "",
+    audio: process.env.FACTORIA_TELNYX_AUDIO_URL?.trim() ?? "",
   };
 }
 
@@ -79,10 +79,10 @@ const deHoy = (ts: string) => new Date(ts).toLocaleDateString("sv") === new Date
 export async function estadoTelefono(): Promise<EstadoTelefono> {
   const e = entorno();
   const faltan = [
-    !e.clave && "COMPANIA_TELNYX_API_KEY",
-    !e.conexion && "COMPANIA_TELNYX_CONNECTION_ID",
-    !esE164(e.origen) && "COMPANIA_TELNYX_NUMERO_ORIGEN",
-    !esE164(e.destino) && "COMPANIA_TELEFONO",
+    !e.clave && "FACTORIA_TELNYX_API_KEY",
+    !e.conexion && "FACTORIA_TELNYX_CONNECTION_ID",
+    !esE164(e.origen) && "FACTORIA_TELNYX_NUMERO_ORIGEN",
+    !esE164(e.destino) && "FACTORIA_TELEFONO",
   ].filter((x): x is string => !!x);
   const registro = await leerRegistro();
   return {

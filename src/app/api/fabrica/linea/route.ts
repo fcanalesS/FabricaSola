@@ -5,7 +5,7 @@ import { accionDeLinea, ajustarLinea, ajusteDeLinea, cambiosEnLaLinea, detalleDe
  * Una tarea de una línea cualquiera, para la pantalla de esa línea. `GET` la lee (con `cambios=1`,
  * también su diff); `POST` hace lo que él pidió con un clic: contestarle, aprobarla, rechazarla o
  * descartarla; `PUT` cambia un ajuste de la línea. Toda acción lleva su línea, y una que no existe
- * es un error. En casa no existe.
+ * es un error.
  */
 
 

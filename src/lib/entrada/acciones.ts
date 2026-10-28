@@ -23,7 +23,7 @@ export type EntradaALaVista = {
   lineas: LineaALaVista[];
   bandeja: { cuentas: Record<EstadoEnBandeja, number>; elementos: ElementoALaVista[] };
   fuentes: FuenteALaVista[];
-  /** Las variables `COMPANIA_FUENTE_*_TOKEN` que existen, y qué conexión usa cada una: solo nombres. */
+  /** Las variables `FACTORIA_FUENTE_*_TOKEN` que existen, y qué conexión usa cada una: solo nombres. */
   variables: { nombre: string; usadaPor: string | null }[];
 };
 

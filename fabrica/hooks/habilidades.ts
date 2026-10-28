@@ -82,8 +82,7 @@ export function habilidadesParaLosAgentes(texto: string | null): string {
 }
 
 /**
- * El agente de retrabajo que arma la aplicación (Arreglo de raíz y Pruebas, fabrica/docs/Plan-Integracion.md,
- * etapa 6). Es de la etapa de construcción: recibe sus habilidades y lo frenan las mismas guardias.
+ * El agente de retrabajo que arma la aplicación (Arreglo de raíz y Pruebas). Es de la etapa de construcción: recibe sus habilidades y lo frenan las mismas guardias.
  * No es un candidato del rol: el orquestador lo lanza solo en una vuelta de retrabajo.
  */
 export const AGENTE_DE_RETRABAJO = 'fabrica-retrabajo'

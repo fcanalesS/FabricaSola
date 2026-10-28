@@ -145,7 +145,6 @@ test("las del constructor se proponen para la construcción, y se aprueban en su
   }
   // Lo que dice de qué implica es de la construcción, no de la spec.
   const texto = r.nuevas[0]!.texto;
-  assert.match(texto, /Plan-Builder\.md/);
   assert.match(texto, /otra\s+vez\s+en\s+cada\s+vuelta\s+de\s+retrabajo/);
   assert.match(texto, /su\s+texto\s+al\s+constructor/);
   assert.match(texto, /Darle a la construcción de esta línea/);

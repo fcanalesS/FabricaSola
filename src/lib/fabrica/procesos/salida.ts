@@ -2,7 +2,7 @@ import { leerFicha } from "../memoria/formato.ts";
 
 /**
  * Lo que siempre pide su clic para producción, aunque él lo haya quitado en un proceso: un cambio
- * en la base de datos o en el núcleo del negocio (fabrica/docs/Plan-Aprobador.md, etapa 3). Lo
+ * en la base de datos o en el núcleo del negocio. Lo
  * decide el código, sin preguntarle a ningún modelo, mirando los archivos que cambiaron desde la
  * última salida de ese proceso. Lo de la base lo trae el código; el núcleo lo marca él en la ficha
  * de la línea, con reglas del tema `nucleo`:
@@ -26,8 +26,7 @@ export const LO_DE_LA_BASE: readonly ReglaCritica[] = [
 ];
 
 /**
- * Lo delicado en cualquier proyecto, para saber si una tarea aprobada es grande
- * (fabrica/docs/Plan-Integracion.md): la base, el pipeline y las dependencias. La misma lista vive
+ * Lo delicado en cualquier proyecto, para saber si una tarea aprobada es grande: la base, el pipeline y las dependencias. La misma lista vive
  * en el mod (fabrica/hooks/integracion.ts), que es quien clasifica.
  */
 export const LO_DELICADO: readonly ReglaCritica[] = [

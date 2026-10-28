@@ -67,7 +67,7 @@ export type Paso = {
   salud: Salud | null;
   /**
    * En `comando` y `evaluacion`: las claves que recibe (`clave: TOKEN`). Le llegan como variable de
-   * entorno con ese nombre, y su valor sale de `COMPANIA_PROCESO_<LINEA>_<NOMBRE>` en `.env.local`.
+   * entorno con ese nombre, y su valor sale de `FACTORIA_PROCESO_<LINEA>_<NOMBRE>` en `.env.local`.
    * Solo a ese paso.
    */
   claves: string[];
@@ -316,7 +316,7 @@ export function plantillaDeEvaluacion(o: { nombreDeLinea: string }): string {
     "",
     "De ese archivo se toman solo esos tres números; lo demás no se lee. El paso falla si el puntaje",
     "queda bajo el umbral o baja más que la tolerancia respecto de la vez anterior (0.02 si no la dice).",
-    "Un modelo en la nube necesita su clave: «clave: NOMBRE», que sale de COMPANIA_PROCESO_<LINEA>_NOMBRE",
+    "Un modelo en la nube necesita su clave: «clave: NOMBRE», que sale de FACTORIA_PROCESO_<LINEA>_NOMBRE",
     "en el .env.local de la aplicación. Un modelo local, como Ollama, no necesita ninguna.",
     "",
     "- [evaluacion] node evals/correr.mjs {resultado} · umbral 0.8 · tolerancia 0.02 · tope 30m · si falla: tarea",

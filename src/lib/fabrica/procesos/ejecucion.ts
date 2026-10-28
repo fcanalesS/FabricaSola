@@ -206,7 +206,7 @@ export const REMOTO = "origin";
 /** Qué programa abre el PR: GitLab (`glab`) si el remoto es de un GitLab; si no, GitHub (`gh`). */
 export const herramientaDePR = (urlDelRemoto: string): "gh" | "glab" => (/gitlab/i.test(urlDelRemoto) ? "glab" : "gh");
 /** La variable de `.env.local` con la ruta exacta de esa herramienta. Sin ella, el PR no se abre. */
-export const variableDeHerramienta = (h: "gh" | "glab") => (h === "gh" ? "COMPANIA_GH_BIN" : "COMPANIA_GLAB_BIN");
+export const variableDeHerramienta = (h: "gh" | "glab") => (h === "gh" ? "FACTORIA_GH_BIN" : "FACTORIA_GLAB_BIN");
 
 /**
  * Lo que no va a poder correr en este equipo, antes de correrlo: una clave que falta, un remoto
@@ -349,13 +349,13 @@ export function conMarcas(args: readonly string[], m: Marcas): string[] {
   });
 }
 
-/** La variable de `.env.local` de donde sale una clave de un paso: `COMPANIA_PROCESO_<LINEA>_<NOMBRE>`. */
-export const variableDeClave = (linea: string, nombre: string) => `COMPANIA_PROCESO_${linea.toUpperCase().replace(/[^A-Z0-9]+/g, "_")}_${nombre}`;
+/** La variable de `.env.local` de donde sale una clave de un paso: `FACTORIA_PROCESO_<LINEA>_<NOMBRE>`. */
+export const variableDeClave = (linea: string, nombre: string) => `FACTORIA_PROCESO_${linea.toUpperCase().replace(/[^A-Z0-9]+/g, "_")}_${nombre}`;
 
 /** Los valores de las claves de los procesos: lo que nunca se guarda ni se muestra. */
 export const secretosDelEntorno = (env: Record<string, string | undefined>) =>
   Object.entries(env)
-    .filter(([k, v]) => k.startsWith("COMPANIA_PROCESO_") && typeof v === "string" && v.length >= 4)
+    .filter(([k, v]) => k.startsWith("FACTORIA_PROCESO_") && typeof v === "string" && v.length >= 4)
     .map(([, v]) => v as string)
     .sort((a, b) => b.length - a.length);
 

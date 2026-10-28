@@ -38,7 +38,7 @@ export type Informe = {
   /** El comando de pruebas del proyecto, para correr las que faltan. */
   comandoDePruebas: string | null
   /**
-   * Cómo se clasificaron las tareas aprobadas en esta corrida (fabrica/docs/Plan-Integracion.md):
+   * Cómo se clasificaron las tareas aprobadas en esta corrida:
    * las sencillas pueden integrarse solas; las grandes esperan su prueba. De cada tarea, la última.
    */
   integracion: { sencillas: string[]; grandes: string[] }

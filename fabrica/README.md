@@ -247,7 +247,7 @@ borrador: si                 # mientras esté, no corre
   hay que traerlos. Un push hecho no se deshace si después algo falla.
 - **PR.** `- [push] y PR contra main` abre además el PR (GitHub, con `gh`) o el merge request
   (GitLab, con `glab`, si el remoto es de un GitLab), lanzados por su ruta exacta
-  (`COMPANIA_GH_BIN`, `COMPANIA_GLAB_BIN` en el `.env.local` de la aplicación) y con su propio
+  (`FACTORIA_GH_BIN`, `FACTORIA_GLAB_BIN` en el `.env.local` de la aplicación) y con su propio
   inicio de sesión. El título y el texto los arma el código: en el texto va lo que escribió el
   agente de notas («Para el PR») de cada tarea que entra, con su id. Sin la ruta, empuja igual y dice que el PR no
   se abrió; si ya había uno abierto para esa rama, lo dice, pone al día su texto y sigue.
@@ -302,8 +302,7 @@ borrador: si                 # mientras esté, no corre
   al crear la memoria de la línea. Sin una salida anterior con qué comparar, también. La nota dice qué archivos y por
   qué. Lo decide el código, sin ningún modelo.
 - **El agente de salida** (hoy no corre: desde el 27 de octubre de 2026 la aplicación no lo pasa a
-  la corrida, y vuelve cuando cada línea tenga su CI/CD; ver el final de
-  `docs/Plan-Habilidades-y-Procesos.md`). Cuando corría, si una línea tenía un proceso con su clic
+  la corrida, y vuelve cuando cada línea tenga su CI/CD). Cuando corría, si una línea tenía un proceso con su clic
   quitado, la aplicación le pasaba a la corrida `fabrica-salida` (Sonnet, con los oficios Plan de reversión y Compatibilidad hacia atrás). Después de cada aprobación
   mira lo que las reglas no ven (lo que no se puede deshacer, lo que se rompe para quien ya
   depende del código) y lo registra con `mcp__fabrica__salida`: `tu-clic`, con motivo y plan de
@@ -330,7 +329,7 @@ borrador: si                 # mientras esté, no corre
   últimos. Lo que dijo el comando queda solo en el log. Una por proceso; la configuración crea
   `evaluacion.md` desde una plantilla, como borrador y a mano.
 - **Claves.** Un comando que necesita una la nombra: `· clave: DEPLOY_TOKEN`. Le llega como
-  `DEPLOY_TOKEN`, con el valor de `COMPANIA_PROCESO_<LINEA>_DEPLOY_TOKEN` en el `.env.local` de la
+  `DEPLOY_TOKEN`, con el valor de `FACTORIA_PROCESO_<LINEA>_DEPLOY_TOKEN` en el `.env.local` de la
   aplicación, y solo a ese paso. Todo lo que se guarda va con las claves tapadas.
 - **Registro.** Una línea por vez que corrió en `factory/procesos/registro/AAAA-MM.md`, en el
   repositorio: fecha, proceso, commit entero, cómo terminó y dónde falló. Nada de lo que dijeron
@@ -370,7 +369,7 @@ rama_base: main                   # respaldo para las tareas que no tienen rama 
   tablero dicen «SQL sin verificar: N archivos».
 - **`integracion`.** Ver «Ramas e integración».
 - **`grande_lineas` y `grande_archivos`.** Una tarea aprobada es **sencilla** o **grande**
-  (`mcp__fabrica__decidir(T, "integracion")`, fabrica/docs/Plan-Integracion.md). Es grande, sin
+  (`mcp__fabrica__decidir(T, "integracion")`). Es grande, sin
   preguntarle a nadie, si toca lo delicado de cualquier proyecto (migraciones, `.sql`, el
   pipeline, las dependencias) o lo que la ficha marca con `[nucleo]`, si pasa de estos topes, si
   necesitó dos vueltas de retrabajo o si propone algo para la memoria. Si solo cambia
@@ -513,8 +512,8 @@ desligado del mod, que deja su salida en `.git/fabrica/trabajos/`: si la corrida
 agente termina igual y la siguiente recoge lo que dejó. Hace falta `node` en el PATH.
 
 Cada uno se lanza por **su ruta exacta**, nunca buscándolo en el PATH: `FABRICA_CODEX_BIN` y
-`FABRICA_ANTIGRAVITY_BIN`, que la aplicación pasa a la corrida desde `COMPANIA_CODEX_BIN` y
-`COMPANIA_ANTIGRAVITY_BIN`. El `.cmd` de Codex en Windows se lanza con `cmd /c`; Antigravity tiene
+`FABRICA_ANTIGRAVITY_BIN`, que la aplicación pasa a la corrida desde `FACTORIA_CODEX_BIN` y
+`FACTORIA_ANTIGRAVITY_BIN`. El `.cmd` de Codex en Windows se lanza con `cmd /c`; Antigravity tiene
 que ser su ejecutable, porque el pedido le llega como argumento y no puede pasar por `cmd`. Sin su
 ruta, o si fallan, entra el agente de Claude, y queda anotado.
 

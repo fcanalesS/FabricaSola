@@ -3,9 +3,9 @@
  *
  * Jev no genera texto: responde preguntas tipadas sobre un estado, eligiendo
  * una opción (`choice`) o dando un sí o no con probabilidad (`noul`). Aquí
- * toma las decisiones rápidas que no le tocan a quien escribe lo que ella dice.
+ * toma las decisiones rápidas que no le tocan a un agente.
  *
- * Viene del cliente del HUD de Atalaya, con su misma guarda. Todo lo que usa
+ * Todo lo que usa
  * a Jev tiene un plan si no contesta: que Jev falle no puede romper nada.
  */
 

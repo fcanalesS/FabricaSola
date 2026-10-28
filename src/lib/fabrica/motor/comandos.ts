@@ -171,11 +171,11 @@ export const enShell = (comando: string, windows: boolean): string[] =>
 
 /**
  * El entorno con que corren los comandos del proyecto: sin nada de la aplicación (sus claves
- * COMPANIA_, ANTHROPIC_, las de la fábrica ni la de Jev). Las pruebas del proyecto no las ven.
+ * FACTORIA_, ANTHROPIC_, las de la fábrica ni la de Jev). Las pruebas del proyecto no las ven.
  */
 export function entornoDelProyecto(base: Record<string, string | undefined>): Record<string, string> {
   const env: Record<string, string> = {};
-  for (const [k, v] of Object.entries(base)) if (v !== undefined && !/^(COMPANIA_|ANTHROPIC_|FABRICA_)/.test(k) && k !== "TYPESAFE_AI_KEY") env[k] = v;
+  for (const [k, v] of Object.entries(base)) if (v !== undefined && !/^(FACTORIA_|ANTHROPIC_|FABRICA_)/.test(k) && k !== "TYPESAFE_AI_KEY") env[k] = v;
   return env;
 }
 

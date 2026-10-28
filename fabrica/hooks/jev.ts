@@ -120,7 +120,7 @@ export const PREGUNTA_DE_TAMANO: PreguntaJev = {
 }
 
 /**
- * Para que una tarea aprobada se integre sola (fabrica/docs/Plan-Integracion.md): si el cambio es
+ * Para que una tarea aprobada se integre sola: si el cambio es
  * superficial. Le llegan el título y los archivos con sus líneas, nunca el código. Antes, el piso del
  * código ya marcó grande lo delicado (hooks/integracion.ts): Jev no lo puede bajar.
  */

@@ -155,7 +155,7 @@ plugin): al terminarla, el mod la deja en `factory/memoria/propuestas/` y anota 
 El estado (`estado`, `vueltas`, `verificacion`, `aprobacion_agente`, `en_aprobacion_desde`,
 `rama_origen`, `sincronizada`, `conflicto`, `integrada`, `tomada_por`, `tomada_hasta`,
 `sql_sin_verificar`) de una tarea existente. Esos campos los cambia solo el mod, para que el
-registro sea fiable. Hay dos excepciones, las dos de la aplicación de compañía:
+registro sea fiable. Hay dos excepciones, las dos de la aplicación de la fábrica:
 
 - Al terminar una corrida suya que se detuvo o se cayó, suelta `tomada_por` y `tomada_hasta` de
   las tareas que tenía esa sesión, que no alcanzó a soltarlas.

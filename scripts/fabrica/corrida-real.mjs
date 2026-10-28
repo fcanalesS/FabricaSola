@@ -13,7 +13,7 @@
 //
 // No toca la aplicación: ni sus líneas, ni sus ajustes, ni datos/. Arma los agentes con las mismas
 // funciones que usa la aplicación al lanzar una corrida, y lanza Claude Code por
-// COMPANIA_CLAUDE_CODE_BIN o, sin ella, el del PATH, con solo el plugin de la fábrica, sin otros mods. El repo vive en la
+// FACTORIA_CLAUDE_CODE_BIN o, sin ella, el del PATH, con solo el plugin de la fábrica, sin otros mods. El repo vive en la
 // carpeta temporal del sistema.
 
 import { execFileSync, spawnSync } from "node:child_process";
@@ -163,7 +163,7 @@ async function armarLaCorrida() {
 
 function entorno(conHuella) {
   // Como la aplicación: sin las claves de la aplicación ni nada de ella, y sin otros mods.
-  const env = Object.fromEntries(Object.entries(process.env).filter(([k]) => !/^(COMPANIA_|ANTHROPIC_|FABRICA_)/.test(k) && k !== "TYPESAFE_AI_KEY"));
+  const env = Object.fromEntries(Object.entries(process.env).filter(([k]) => !/^(FACTORIA_|ANTHROPIC_|FABRICA_)/.test(k) && k !== "TYPESAFE_AI_KEY"));
   return {
     ...env,
     CLAUDE_CODE_PLUGIN_DIRS: "",
@@ -176,7 +176,7 @@ function entorno(conHuella) {
 
 function argumentos(archivoAgentes) {
   const args = ["-p", "/fabrica:correr F-001 F-002", "--output-format", "stream-json", "--verbose", "--plugin-dir", PLUGIN, "--model", "sonnet", "--agents", archivoAgentes];
-  const modo = process.env.COMPANIA_FABRICA_MODO_PERMISOS?.trim();
+  const modo = process.env.FACTORIA_FABRICA_MODO_PERMISOS?.trim();
   if (modo) args.push("--permission-mode", modo);
   // Sin otra copia del plugin: ni la de CLAUDE_CODE_PLUGIN_DIRS ni la instalada desde el marketplace.
   args.push("--settings", JSON.stringify({ env: { CLAUDE_CODE_PLUGIN_DIRS: "", CLAUDE_CODE_ENABLE_FUNCTION_HOOKS: "1" }, enabledPlugins: { "fabrica@factoria": false } }));
@@ -231,7 +231,7 @@ function revisar(minutos) {
   }
 
   console.log("\nLo que se comprueba:");
-  // Una aprobada termina hecha si es sencilla; si es grande, espera tu prueba en aprobación (Plan-Integracion.md).
+  // Una aprobada termina hecha si es sencilla; si es grande, espera tu prueba en aprobación.
   const termino = (x) => x.estado === "hecho" || (x.estado === "aprobacion" && x.integracion_clase === "grande");
   comprobar("las dos se aprobaron y se clasificaron: hechas, o esperando tu prueba si son grandes", termino(t1) && termino(t2) && !!t1.integracion_clase && !!t2.integracion_clase, `${t1.estado}/${t1.integracion_clase} ${t2.estado}/${t2.integracion_clase}`);
   comprobar("F-002, que toca precios.js, es grande por el núcleo y no se integró sin tu prueba", t2.integracion_clase === "grande" && /núcleo/.test(t2.integracion_motivo ?? "") && t2.estado !== "hecho", `${t2.estado} ${t2.integracion_motivo}`);

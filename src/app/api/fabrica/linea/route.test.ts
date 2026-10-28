@@ -105,7 +105,7 @@ test("leer una tarea de cualquier línea: su pedido y su camino", async () => {
   assert.deepEqual(r.detalle?.historial.pasos.map((p) => p.a), ["necesita-humano"]);
 });
 
-test("en la línea activa, el veredicto va por el camino de la columna: al motor, que después intenta seguir con la tarea", async () => {
+test("en la línea activa, el veredicto va por el camino de la portada: al motor, que después intenta seguir con la tarea", async () => {
   const a = await linea("activa");
   red.fabrica = ({ ruta }) =>
     ruta === "/api/veredicto"
@@ -113,7 +113,7 @@ test("en la línea activa, el veredicto va por el camino de la columna: al motor
       : ruta === "/api/ajustes"
         ? { estado: 200, datos: {} }
         : ruta === "/api/corridas"
-          ? { estado: 409, datos: { error: "Falta COMPANIA_CLAUDE_CODE_BIN en .env.local." } }
+          ? { estado: 409, datos: { error: "Falta FACTORIA_CLAUDE_CODE_BIN en .env.local." } }
           : null;
   const r = await hacer({ accion: "aprobar", linea: a.id, tarea: "F-002" });
   assert.equal(r.estado, 200);

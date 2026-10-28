@@ -10,7 +10,7 @@ import { agentesDeEsteEquipo } from "@/lib/fabrica/motor/proyecto";
  * agentes de cada rol, y convertir un documento de requerimientos en tareas.
  * Cada cambio sale de un clic suyo.
  *
- * `claudeCode` dice si este equipo tiene Claude Code (`COMPANIA_CLAUDE_CODE_BIN` o el
+ * `claudeCode` dice si este equipo tiene Claude Code (`FACTORIA_CLAUDE_CODE_BIN` o el
  * `claude` del PATH): sin él se configura, pero no se corre.
  * `enEsteEquipo`, si tiene las de Codex y Antigravity: sin la suya, ese
  * agente no se puede encender. Las rutas no se muestran.

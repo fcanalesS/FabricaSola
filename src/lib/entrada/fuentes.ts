@@ -9,7 +9,7 @@ import type { DatabaseSync } from "node:sqlite";
  * lector al leer.
  *
  * Las guardias van aquí, pegadas a quien lee `process.env`:
- *  - El nombre tiene que ser `COMPANIA_FUENTE_<NOMBRE>_TOKEN`. Sin eso, una
+ *  - El nombre tiene que ser `FACTORIA_FUENTE_<NOMBRE>_TOKEN`. Sin eso, una
  *    conexión podría apuntar a una clave de IA y mandarla a un servidor
  *    cualquiera: la dirección de un servidor propio la escribe él.
  *  - Dos conexiones no usan la misma variable.
@@ -59,7 +59,7 @@ export type Fuente = {
 /** Lo que ven las pantallas y las rutas: nunca el token. */
 export type FuenteALaVista = Omit<Fuente, "estado" | "avisada"> & { estado: EstadoDeFuente; tieneToken: boolean };
 
-const VARIABLE = /^COMPANIA_FUENTE_[A-Z0-9][A-Z0-9_]{0,60}_TOKEN$/;
+const VARIABLE = /^FACTORIA_FUENTE_[A-Z0-9][A-Z0-9_]{0,60}_TOKEN$/;
 export const esVariableDeFuente = (nombre: string): boolean => VARIABLE.test(nombre);
 
 /** Los nombres de las variables de fuente que existen en el entorno: solo nombres, nunca valores. */
@@ -186,7 +186,7 @@ export function datosDeFuente(dato: unknown, lineas: readonly string[]): DatosDe
   const nombre = typeof d.nombre === "string" ? d.nombre.replace(/\s+/g, " ").trim() : "";
   if (!nombre || nombre.length > 60) throw new Error("La conexión necesita un nombre, de hasta 60 caracteres.");
   const variable = typeof d.variable === "string" ? d.variable.trim() : "";
-  if (!esVariableDeFuente(variable)) throw new Error("La variable tiene que llamarse COMPANIA_FUENTE_<NOMBRE>_TOKEN: así ninguna conexión usa una clave de IA.");
+  if (!esVariableDeFuente(variable)) throw new Error("La variable tiene que llamarse FACTORIA_FUENTE_<NOMBRE>_TOKEN: así ninguna conexión usa una clave de IA.");
   const regla = d.regla ?? "suyos";
   if (!(REGLAS as readonly unknown[]).includes(regla)) throw new Error("Elige qué issues entran.");
   const etiqueta = typeof d.etiqueta === "string" ? d.etiqueta.trim() : "";

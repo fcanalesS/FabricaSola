@@ -1,8 +1,8 @@
 import { MarcoDeLaFabrica } from "@/components/fabrica/marco";
 
 /**
- * Lo común de la pantalla Memoria, en el servidor: el menú de la fábrica, con
- * los colores del personaje, y su cabecera. Lo que se mueve va en el cliente.
+ * Lo común de la pantalla Memoria, en el servidor: el menú de la fábrica y su
+ * cabecera. Lo que se mueve va en el cliente.
  */
 export function PaginaDeLaMemoria({ children }: { children: React.ReactNode }) {
   return (

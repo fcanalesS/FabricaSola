@@ -1,5 +1,5 @@
 /**
- * Si una tarea aprobada es sencilla o grande (fabrica/docs/Plan-Integracion.md). La sencilla se
+ * Si una tarea aprobada es sencilla o grande. La sencilla se
  * integra sola; la grande espera a la persona, que la prueba a mano. Aquí está el piso: lo que es
  * grande sin preguntarle a nadie. Jev clasifica lo demás; sin Jev, ante la duda, grande. Es lógica
  * pura.

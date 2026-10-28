@@ -42,9 +42,9 @@ test("las marcas van dentro de cada argumento: lo que valen no parte ni agrega a
   assert.throws(() => conMarcas(["./d.sh", "{anterior}"], { ...m, anterior: null }), /todavía no terminó ninguna vez/);
 });
 
-test("las claves salen de COMPANIA_PROCESO_<LINEA>_<NOMBRE> y se tapan en todo lo que se guarda", () => {
-  assert.equal(variableDeClave("pos-tiendas", "DEPLOY_TOKEN"), "COMPANIA_PROCESO_POS_TIENDAS_DEPLOY_TOKEN");
-  const secretos = secretosDelEntorno({ COMPANIA_PROCESO_POS_TOKEN: "abc123secreto", COMPANIA_PROCESO_POS_CORTA: "xy", COMPANIA_CLAUDE_KEY: "no-es-de-procesos", PATH: "/bin" });
+test("las claves salen de FACTORIA_PROCESO_<LINEA>_<NOMBRE> y se tapan en todo lo que se guarda", () => {
+  assert.equal(variableDeClave("pos-tiendas", "DEPLOY_TOKEN"), "FACTORIA_PROCESO_POS_TIENDAS_DEPLOY_TOKEN");
+  const secretos = secretosDelEntorno({ FACTORIA_PROCESO_POS_TOKEN: "abc123secreto", FACTORIA_PROCESO_POS_CORTA: "xy", FACTORIA_CLAUDE_KEY: "no-es-de-procesos", PATH: "/bin" });
   assert.deepEqual(secretos, ["abc123secreto"]);
   assert.equal(tapar("token=abc123secreto y otra vez abc123secreto.", secretos), "token=«clave tapada» y otra vez «clave tapada».");
 });
@@ -105,7 +105,7 @@ test("el PR lo abre gh o glab según el remoto, con lo que arma el código", () 
   assert.equal(herramientaDePR("git@github.com:alguien/pos.git"), "gh");
   assert.equal(herramientaDePR("https://gitlab.empresa.cl/equipo/pos.git"), "glab");
   assert.equal(herramientaDePR("C:/repos/remoto.git"), "gh");
-  assert.deepEqual([variableDeHerramienta("gh"), variableDeHerramienta("glab")], ["COMPANIA_GH_BIN", "COMPANIA_GLAB_BIN"]);
+  assert.deepEqual([variableDeHerramienta("gh"), variableDeHerramienta("glab")], ["FACTORIA_GH_BIN", "FACTORIA_GLAB_BIN"]);
   const o = { rama: "desarrollo", base: "main", titulo: "T", cuerpo: "C" };
   assert.deepEqual(argumentosDelPR("gh", o), ["pr", "create", "--base", "main", "--head", "desarrollo", "--title", "T", "--body", "C"]);
   assert.deepEqual(argumentosDelPR("glab", o), ["mr", "create", "--source-branch", "desarrollo", "--target-branch", "main", "--title", "T", "--description", "C", "--remove-source-branch=false", "--yes"]);
@@ -197,15 +197,15 @@ test("lo que no va a poder correr en este equipo: claves, remoto y la herramient
     { linea: 8, tipo: "salud", claves: [], prContra: null },
     { linea: 9, tipo: "evaluacion", claves: ["CLAVE"], prContra: null },
   ];
-  const entorno = { COMPANIA_PROCESO_MI_POS_TOKEN: "secreto", COMPANIA_PROCESO_MI_POS_CLAVE: "otro-secreto" };
+  const entorno = { FACTORIA_PROCESO_MI_POS_TOKEN: "secreto", FACTORIA_PROCESO_MI_POS_CLAVE: "otro-secreto" };
   assert.deepEqual(loQueNoVaAPoder(pasos, { linea: "mi-pos", remoto: "git@gitlab.empresa.cl:equipo/pos.git", entorno }), [
-    "Línea 3 (comando): falta COMPANIA_PROCESO_MI_POS_OTRA en .env.local.",
-    "Línea 5 (push): empuja, pero el PR no se abre: falta COMPANIA_GLAB_BIN en .env.local, con la ruta de glab.",
-    "Línea 6 (ci): no puede leer la integración continua: falta COMPANIA_GLAB_BIN en .env.local, con la ruta de glab.",
-    "Línea 7 (fusion): no puede fusionar: falta COMPANIA_GLAB_BIN en .env.local, con la ruta de glab.",
+    "Línea 3 (comando): falta FACTORIA_PROCESO_MI_POS_OTRA en .env.local.",
+    "Línea 5 (push): empuja, pero el PR no se abre: falta FACTORIA_GLAB_BIN en .env.local, con la ruta de glab.",
+    "Línea 6 (ci): no puede leer la integración continua: falta FACTORIA_GLAB_BIN en .env.local, con la ruta de glab.",
+    "Línea 7 (fusion): no puede fusionar: falta FACTORIA_GLAB_BIN en .env.local, con la ruta de glab.",
   ]);
   // Sin remoto, ningún paso que lo necesita; con la herramienta, nada más que la clave.
   assert.deepEqual(loQueNoVaAPoder(pasos.slice(1, 4), { linea: "x", remoto: null, entorno: {} }).length, 3);
-  assert.deepEqual(loQueNoVaAPoder(pasos, { linea: "mi-pos", remoto: "https://github.com/a/b.git", entorno: { ...entorno, COMPANIA_PROCESO_MI_POS_OTRA: "x", COMPANIA_GH_BIN: "/bin/gh" } }), []);
+  assert.deepEqual(loQueNoVaAPoder(pasos, { linea: "mi-pos", remoto: "https://github.com/a/b.git", entorno: { ...entorno, FACTORIA_PROCESO_MI_POS_OTRA: "x", FACTORIA_GH_BIN: "/bin/gh" } }), []);
   assert.doesNotMatch(JSON.stringify(loQueNoVaAPoder(pasos, { linea: "mi-pos", remoto: null, entorno })), /secreto/);
 });

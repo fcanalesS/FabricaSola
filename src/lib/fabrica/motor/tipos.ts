@@ -72,7 +72,7 @@ export type Tarea = {
   pideSuClic?: string
   /**
    * Si la tarea aprobada es sencilla (se integra sola) o grande (espera su prueba), y por qué
-   * (`integracion_clase`, `integracion_motivo`). La escribe el mod (fabrica/docs/Plan-Integracion.md).
+   * (`integracion_clase`, `integracion_motivo`). La escribe el mod.
    */
   integracion?: { clase: "sencilla" | "grande"; motivo: string; por: "regla" | "jev" | "sin_jev" }
   archivo: string

@@ -62,8 +62,8 @@ test("las sesiones del proyecto se leen de la carpeta de Claude Code, la más re
     assert.equal(sesionEnganchada(raiz), null);
 
     // Sin la ruta de Claude Code no se retoma, y se dice cuál falta.
-    delete process.env.COMPANIA_CLAUDE_CODE_BIN;
-    await assert.rejects(retomarSesion(raiz, ID, "Sigue."), /COMPANIA_CLAUDE_CODE_BIN/);
+    delete process.env.FACTORIA_CLAUDE_CODE_BIN;
+    await assert.rejects(retomarSesion(raiz, ID, "Sigue."), /FACTORIA_CLAUDE_CODE_BIN/);
   } finally {
     delete process.env.CLAUDE_CONFIG_DIR;
   }

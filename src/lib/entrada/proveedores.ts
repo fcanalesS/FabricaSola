@@ -90,7 +90,7 @@ type Lector = {
 const PROVEEDOR: Record<Proveedor, Lector> = {
   github: {
     api: (s) => (s ? `${s}/api/v3` : "https://api.github.com"),
-    cabeceras: (token) => ({ authorization: `Bearer ${token}`, accept: "application/vnd.github+json", "x-github-api-version": "2022-11-28", "user-agent": "zero-app" }),
+    cabeceras: (token) => ({ authorization: `Bearer ${token}`, accept: "application/vnd.github+json", "x-github-api-version": "2022-11-28", "user-agent": "factoria" }),
     usuario: async (api, cab) => texto(((await pedirGet(`${api}/user`, cab, "tu usuario")) as { login?: unknown })?.login),
     issues: async (api, cab, f, repo, usuario) => {
       const q = new URLSearchParams({ state: "open", per_page: String(POR_PAGINA) });
@@ -101,7 +101,7 @@ const PROVEEDOR: Record<Proveedor, Lector> = {
   },
   gitlab: {
     api: (s) => `${s ?? "https://gitlab.com"}/api/v4`,
-    cabeceras: (token) => ({ "private-token": token, accept: "application/json", "user-agent": "zero-app" }),
+    cabeceras: (token) => ({ "private-token": token, accept: "application/json", "user-agent": "factoria" }),
     usuario: async (api, cab) => texto(((await pedirGet(`${api}/user`, cab, "tu usuario")) as { username?: unknown })?.username),
     issues: async (api, cab, f, repo, usuario) => {
       const q = new URLSearchParams({ state: "opened", per_page: String(POR_PAGINA) });

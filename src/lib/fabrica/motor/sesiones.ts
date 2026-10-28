@@ -267,9 +267,9 @@ export function detenerRetoma(): Retoma | null {
   return mem.retoma;
 }
 
-// ---- Con qué sesión está enganchada ella ----------------------------------------------------------------
+// ---- Con qué sesión está enganchada la fábrica------------------------------------------------------------
 
-/** La sesión a la que él enganchó a la compañera, para que sepa en qué anda. En `globalThis`, como la retoma. */
+/** La sesión que él enganchó, para seguir en qué anda. En `globalThis`, como la retoma. */
 const vinculo = ((globalThis as { __sesionEnganchada?: { actual: { raiz: string; id: string } | null } }).__sesionEnganchada ??= { actual: null });
 
 /** La engancha a una sesión del proyecto, o la suelta con `null`. */

@@ -1,7 +1,6 @@
 # Los saltos de línea van como LF en todos los equipos, también en Windows.
 # Sin esto, Git en Windows los convierte a CRLF al sacar los archivos, y se
-# rompen el frontmatter de los personajes, los JSON que se comparan tal cual
-# y el script de Python de la cámara.
+# rompen el frontmatter de los agentes y de las tareas, y los JSON que se comparan tal cual.
 * text=auto eol=lf
 
 *.ico binary

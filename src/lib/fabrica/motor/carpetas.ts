@@ -6,7 +6,7 @@ import path from "node:path";
  * Para elegir la carpeta del proyecto sin escribir la ruta: lo que hay dentro
  * de una carpeta de este equipo, solo carpetas, y de cada una si es un
  * repositorio git y si ya tiene factory/. Lo pidió él el 17 de octubre de
- * 2026. Solo para el servidor, y solo en el modo trabajo (lo cuida la ruta).
+ * 2026. Solo para el servidor.
  *
  * No se muestran las carpetas ocultas ni node_modules: un proyecto no vive
  * ahí. Nada se abre ni se lee por dentro, salvo mirar si existen `.git` y

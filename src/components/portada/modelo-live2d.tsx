@@ -7,7 +7,7 @@ import { useEffect, useRef, useState } from "react";
  * lo dibuja de cuerpo entero dentro de su caja, deja sonar la animación de reposo que traiga y, sin
  * el movimiento reducido del sistema, mira hacia el puntero. No habla ni tiene gestos.
  *
- * Lo que no se deduce leyendo la librería (lo aprendió la aplicación de origen):
+ * Lo que no se deduce leyendo la librería:
  *  - El Core de Cubism es un script aparte que se carga antes que la librería.
  *  - El lienzo se crea nuevo en cada montaje: sobre uno cuyo WebGL ya se soltó, el siguiente no
  *    arranca (pasa en cada recarga en caliente).

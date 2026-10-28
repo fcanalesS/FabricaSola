@@ -15,8 +15,8 @@ import { BOTON, CAMPO, Fila, Partes, Seccion, useParteDeLaDireccion } from "./pi
 import { SusProcesos } from "./procesos";
 
 /**
- * La configuración de la fábrica de software, en el modo trabajo. La fábrica
- * vive en la aplicación: qué proyecto mira, crearle una factory/ básica, los
+ * La configuración de la fábrica de software. La fábrica vive en la
+ * aplicación: qué proyecto mira, crearle una factory/ básica, los
  * modelos de cada rol y convertir un documento de requerimientos en tareas.
  * Todo pasa por `/api/fabrica/ajustes`, y nada cambia sin un clic suyo.
  */
@@ -93,14 +93,14 @@ export function SeccionDeLaFabrica() {
     <Seccion titulo="La fábrica de software" bajada={bajada}>
       <Partes partes={PARTES_DE_LA_FABRICA} actual={actual} prefijo="fabrica-" etiqueta="Partes de la fábrica" />
       <div hidden={actual !== "proyecto"} className="flex flex-col gap-4">
-      {/* Sin Claude Code (ni en COMPANIA_CLAUDE_CODE_BIN ni en el PATH) se configura y se mira, pero no se corre. */}
+      {/* Sin Claude Code (ni en FACTORIA_CLAUDE_CODE_BIN ni en el PATH) se configura y se mira, pero no se corre. */}
       {estado.claudeCode === false && (
         <Fila
           nombre="Claude Code"
           que="para las corridas"
           estado="No lo encontré"
           alerta
-          detalle="No está en el PATH ni en COMPANIA_CLAUDE_CODE_BIN. Instálalo y reinicia la aplicación desde una terminal donde claude funcione, o pon su ruta en esa variable, en .env.local. Corre con tu sesión de Claude Code, no con una clave de la API. Lo que tiene este equipo, en Este equipo."
+          detalle="No está en el PATH ni en FACTORIA_CLAUDE_CODE_BIN. Instálalo y reinicia la aplicación desde una terminal donde claude funcione, o pon su ruta en esa variable, en .env.local. Corre con tu sesión de Claude Code, no con una clave de la API. Lo que tiene este equipo, en Este equipo."
         />
       )}
       {/* Con otro proyecto (o ninguno), la ruta escrita empieza de nuevo: no se queda la de una línea quitada. */}
@@ -1313,7 +1313,7 @@ function Modelos({ ajustes, ocupada, ajustar, enEsteEquipo }: { ajustes: Ajustes
           ))}
           {(!enEsteEquipo.codex || !enEsteEquipo.antigravity) && (
             <p className="text-sm text-tenue">
-              Se lanzan por su ruta exacta: {[!enEsteEquipo.codex && "COMPANIA_CODEX_BIN", !enEsteEquipo.antigravity && "COMPANIA_ANTIGRAVITY_BIN"].filter(Boolean).join(" y ")} en .env.local (en Windows la da where.exe), y reinicia la aplicación.
+              Se lanzan por su ruta exacta: {[!enEsteEquipo.codex && "FACTORIA_CODEX_BIN", !enEsteEquipo.antigravity && "FACTORIA_ANTIGRAVITY_BIN"].filter(Boolean).join(" y ")} en .env.local (en Windows la da where.exe), y reinicia la aplicación.
             </p>
           )}
         </>
@@ -1475,15 +1475,15 @@ function Requerimientos({ habilitada, ocupada, ajustar }: { habilitada: boolean;
 
 /** Las variables del teléfono y para qué es cada una: se nombran, nunca se muestra su valor. */
 const VARIABLES: { nombre: string; para: string }[] = [
-  { nombre: "COMPANIA_TELNYX_API_KEY", para: "la clave de la API de Telnyx" },
-  { nombre: "COMPANIA_TELNYX_CONNECTION_ID", para: "el id de la aplicación de voz (Voice API Application)" },
-  { nombre: "COMPANIA_TELNYX_NUMERO_ORIGEN", para: "tu número de Telnyx, como +1…" },
-  { nombre: "COMPANIA_TELEFONO", para: "el teléfono que suena, como +569…" },
+  { nombre: "FACTORIA_TELNYX_API_KEY", para: "la clave de la API de Telnyx" },
+  { nombre: "FACTORIA_TELNYX_CONNECTION_ID", para: "el id de la aplicación de voz (Voice API Application)" },
+  { nombre: "FACTORIA_TELNYX_NUMERO_ORIGEN", para: "tu número de Telnyx, como +1…" },
+  { nombre: "FACTORIA_TELEFONO", para: "el teléfono que suena, como +569…" },
 ];
 
 /** Qué se oye al contestar: el audio fijo o nada. */
 function alContestar(telefono: TelefonoDeLaFabrica): string {
-  return telefono.conAudio ? "Al contestar suena tu audio (COMPANIA_TELNYX_AUDIO_URL)." : "Al contestar, silencio: con COMPANIA_TELNYX_AUDIO_URL suena ese audio.";
+  return telefono.conAudio ? "Al contestar suena tu audio (FACTORIA_TELNYX_AUDIO_URL)." : "Al contestar, silencio: con FACTORIA_TELNYX_AUDIO_URL suena ese audio.";
 }
 
 /**

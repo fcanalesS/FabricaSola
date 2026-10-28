@@ -56,7 +56,7 @@ process.on("exit", () => {
 process.env.CLAUDE_CONFIG_DIR = path.join(carpeta, "claude");
 
 // Ninguna clave de verdad llega a una prueba, aunque quien la corre las tenga puestas.
-for (const nombre of Object.keys(process.env)) if (/^(COMPANIA_|TYPESAFE_)/.test(nombre)) delete process.env[nombre];
+for (const nombre of Object.keys(process.env)) if (/^(FACTORIA_|TYPESAFE_)/.test(nombre)) delete process.env[nombre];
 // Con `npm run test:vacio`, ni la de Jev: como en un equipo que recién instaló la fábrica.
 export const conElEntornoVacio = process.env.FABRICA_PRUEBAS === "vacio";
 if (!conElEntornoVacio) {
@@ -65,7 +65,7 @@ if (!conElEntornoVacio) {
   });
 }
 instalarRed();
-// Tampoco el Claude Code de quien las corre: sin COMPANIA_CLAUDE_CODE_BIN, la prueba no lo
+// Tampoco el Claude Code de quien las corre: sin FACTORIA_CLAUDE_CODE_BIN, la prueba no lo
 // encuentra en el PATH, aunque esté. Así ninguna corrida de verdad sale de una prueba.
 fijarClaudeEnElPath(null);
 

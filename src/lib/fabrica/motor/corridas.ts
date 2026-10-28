@@ -6,13 +6,13 @@
 // en datos/corridas/<id>.jsonl, y el servidor solo lee ese archivo. Si el servidor se
 // reinicia o se cae, la corrida sigue, y al volver se retoma desde el archivo.
 //
-// Claude Code se lanza por la ruta de COMPANIA_CLAUDE_CODE_BIN o, sin ella, el `claude` del PATH
+// Claude Code se lanza por la ruta de FACTORIA_CLAUDE_CODE_BIN o, sin ella, el `claude` del PATH
 // (`claude-code.ts`): sin ninguno no hay corridas. Usa la sesión de Claude Code de este equipo, es decir la suscripción, y
-// no la clave de la API de la aplicación: a la corrida no le llega ninguna variable COMPANIA_ ni
+// no la clave de la API de la aplicación: a la corrida no le llega ninguna variable FACTORIA_ ni
 // ANTHROPIC_.
 //
 // Nadie aprueba permisos en una corrida así: vale el modo de permisos de ~/.claude/settings.json
-// (o COMPANIA_FABRICA_MODO_PERMISOS). Lo que ese modo no deje pasar termina la corrida, y la tarea
+// (o FACTORIA_FABRICA_MODO_PERMISOS). Lo que ese modo no deje pasar termina la corrida, y la tarea
 // queda donde el plugin la dejó, normalmente en "necesita-humano".
 import { spawn } from "node:child_process";
 import { promises as fs } from "node:fs";
@@ -532,7 +532,7 @@ export async function corridasDelDia(ahora = Date.now()): Promise<CorridaDelDia[
     const esLaActual = actual?.id === m.id && esSeguimiento(mem.actual);
     const estado = esLaActual ? actual.estado : (m.estado ?? null);
     const costoUsd = esLaActual && estado === "corriendo" ? await costoEnVivo(mem.actual!) : (m.costoUsd ?? (esLaActual ? (actual.costoUsd ?? null) : null));
-    // Como en la columna: el último encargo de cada tarea, si no terminó.
+    // El último encargo de cada tarea, si no terminó.
     const ultimo = new Map<string, Actividad>();
     if (esLaActual && estado === "corriendo") for (const a of actual.actividad ?? []) if (a.tarea) ultimo.set(a.tarea, a);
     const trabajando = [...ultimo.values()].filter((a) => !a.hasta).map(({ tarea, agente, que, desde }) => ({ tarea, agente, que, desde }));
@@ -594,7 +594,7 @@ export function lanzadorDeClaude(bin: string, args: string[], plataforma: NodeJS
 }
 
 /**
- * El entorno de la corrida, sin lo que es de la aplicación: ninguna variable COMPANIA_ (sus claves
+ * El entorno de la corrida, sin lo que es de la aplicación: ninguna variable FACTORIA_ (sus claves
  * de Claude, de la voz, de YouTube…), ni ANTHROPIC_ (Claude Code usaría la API en vez de la
  * suscripción). La clave de Jev pasa con otro nombre, FABRICA_JEV_KEY, para que solo el plugin la
  * lea y las pruebas del proyecto no la vean. Las rutas de Codex y de Antigravity pasan como
@@ -602,7 +602,7 @@ export function lanzadorDeClaude(bin: string, args: string[], plataforma: NodeJS
  */
 export function entornoDeLaCorrida(base: Record<string, string | undefined>): NodeJS.ProcessEnv {
   const env: Record<string, string | undefined> = {};
-  for (const [k, v] of Object.entries(base)) if (!/^(COMPANIA_|ANTHROPIC_|FABRICA_)/.test(k) && k !== "TYPESAFE_AI_KEY") env[k] = v;
+  for (const [k, v] of Object.entries(base)) if (!/^(FACTORIA_|ANTHROPIC_|FABRICA_)/.test(k) && k !== "TYPESAFE_AI_KEY") env[k] = v;
   if (base.TYPESAFE_AI_KEY?.trim()) env.FABRICA_JEV_KEY = base.TYPESAFE_AI_KEY;
   const { codex, antigravity } = agentesDeEsteEquipo(base);
   if (codex) env.FABRICA_CODEX_BIN = codex;
@@ -643,7 +643,7 @@ export async function iniciarCorrida(opciones: { tareas?: string[]; modelo?: str
   const prompt = `/fabrica:correr${tareas.length ? " " + tareas.join(" ") : ""}`;
   const args = ["-p", prompt, "--output-format", "stream-json", "--verbose", "--plugin-dir", carpetaDelPlugin()];
   if (modelo) args.push("--model", modelo);
-  const modoPermisos = process.env.COMPANIA_FABRICA_MODO_PERMISOS?.trim();
+  const modoPermisos = process.env.FACTORIA_FABRICA_MODO_PERMISOS?.trim();
   if (modoPermisos) args.push("--permission-mode", modoPermisos);
 
   const plugins = await pluginsDeCorrida();
@@ -658,8 +658,7 @@ export async function iniciarCorrida(opciones: { tareas?: string[]; modelo?: str
   const oficios = porEtapa ? await textosDeOficios(Object.values(porEtapa).flatMap((l) => l.flatMap((h) => h.oficios ?? []))) : new Map<string, string>();
   const inyectados = { ...agentesParaInyectar(porRol ?? {}, defs), ...(porRol && porEtapa ? agentesConHabilidades(porRol, defs, porEtapa, oficios) : {}) };
   // El agente de las notas viaja en cada corrida: escribe lo que se lee de cada tarea aprobada, el
-  // texto del PR de una sencilla o lo que él prueba en una grande (fabrica/docs/Plan-Integracion.md,
-  // etapa 4). El agente de salida ya no corre en cada tarea: vuelve cuando llegue producción con la
+  // texto del PR de una sencilla o lo que él prueba en una grande. El agente de salida ya no corre en cada tarea: vuelve cuando llegue producción con la
   // CI/CD de cada línea.
   const archivoDeNotas = archivoDelAgenteDeAnuncio(carpetaDelPlugin());
   const defDeNotas = agenteDesde(await fs.readFile(archivoDeNotas, "utf8").catch(() => ""), archivoDeNotas);
@@ -726,7 +725,7 @@ export async function iniciarCorrida(opciones: { tareas?: string[]; modelo?: str
     const hijo = spawn(programa, argumentos, { cwd: proyecto, env, detached: true, windowsHide: true, stdio: ["ignore", salida.fd, salida.fd] });
     meta.pid = hijo.pid;
     hijo.on("error", (err) => {
-      meta.error = `No pude lanzar Claude Code (${bin}): ${err.message}. Revisa COMPANIA_CLAUDE_CODE_BIN, o el «claude» de tu PATH.`;
+      meta.error = `No pude lanzar Claude Code (${bin}): ${err.message}. Revisa FACTORIA_CLAUDE_CODE_BIN, o el «claude» de tu PATH.`;
       if (mem.actual?.meta.id === meta.id) agregar(mem.actual.c, "error", meta.error);
       void guardarMeta(meta).catch(() => undefined);
     });

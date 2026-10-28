@@ -9,7 +9,7 @@
 // Gasta: cada paso es una sesión de Claude Code en Haiku, con la suscripción de este equipo (no
 // con la clave de la API de la aplicación). Son unas diez. Pregunta antes de correrla.
 //
-// Claude Code se lanza por COMPANIA_CLAUDE_CODE_BIN de .env.local o, sin ella, el del PATH, con solo el mod
+// Claude Code se lanza por FACTORIA_CLAUDE_CODE_BIN de .env.local o, sin ella, el del PATH, con solo el mod
 // de la aplicación (sin otros mods ni otra copia). Al final dice qué pasó y qué no, y sale con 1 si
 // algo falló. El repo vive en la carpeta temporal del sistema: nunca en un proyecto real.
 
@@ -130,7 +130,7 @@ function sesion(nombre, llamadas) {
     "",
     'Al final, por cada llamada escribe una línea que empiece con ">> " y su número, seguida del texto completo de la respuesta o del rechazo, tal cual.',
   ].join("\n");
-  const env = Object.fromEntries(Object.entries(process.env).filter(([k]) => !/^(ANTHROPIC_|COMPANIA_|FABRICA_)/.test(k)));
+  const env = Object.fromEntries(Object.entries(process.env).filter(([k]) => !/^(ANTHROPIC_|FACTORIA_|FABRICA_)/.test(k)));
   Object.assign(env, { CLAUDE_CODE_PLUGIN_DIRS: "", E2E_REGISTRO: REGISTRO, FABRICA_MEMORIA_PLANTA: barras(PLANTA) });
   // Sin otra copia del plugin: ni la de CLAUDE_CODE_PLUGIN_DIRS ni la instalada desde el marketplace.
   const settings = JSON.stringify({ env: { CLAUDE_CODE_PLUGIN_DIRS: "", CLAUDE_CODE_ENABLE_FUNCTION_HOOKS: "1" }, enabledPlugins: { "fabrica@factoria": false } });

@@ -7,9 +7,9 @@ import { habilidadDesde, IA, LEY, leerCatalogo, type Especialidad, type Habilida
 export { CEREBRO, ESPECIALIDADES, IA, LEY, type Especialidad } from "./formato.ts";
 
 /**
- * Las especialidades: habilidades de una etapa que una línea enciende. Cuatro de la spec
- * (fabrica/docs/Plan-Spec.md, etapa 3), para las tareas que tocan IA o datos personales, y tres del
- * constructor (fabrica/docs/Plan-Builder.md, etapa 3): código, seguridad e interfaz. Viven como
+ * Las especialidades: habilidades de una etapa que una línea enciende. Cuatro de la spec, para
+ * las tareas que tocan IA o datos personales, y tres del
+ * constructor: código, seguridad e interfaz. Viven como
  * plantillas en `fabrica/plantillas/especialidades/<nombre>/SKILL.md`, y la aplicación las deja como
  * propuestas en el vault de una línea cuando él lo pide: él las aprueba de a una, viendo su texto
  * entero, y aprobarla escribe la habilidad y su línea del catálogo, sin commit. Cada una nombra a
@@ -21,21 +21,18 @@ export { CEREBRO, ESPECIALIDADES, IA, LEY, type Especialidad } from "./formato.t
 const DICHO_DE_LA_ETAPA = {
   spec: {
     la: "la spec",
-    plan: "fabrica/docs/Plan-Spec.md",
     agente: "al agente de spec",
     temas: ["especificacion", "habilidades"],
     implica: "Con ella, la spec de esta línea no se salta, y cada spec lleva unos miles de tokens más por cada oficio.",
   },
   construccion: {
     la: "la construcción",
-    plan: "fabrica/docs/Plan-Builder.md",
     agente: "al constructor",
     temas: ["construccion", "habilidades"],
     implica: "Cada construcción de esta línea lleva unos miles de tokens más por cada oficio, y otra vez en cada vuelta de retrabajo.",
   },
   aprobacion: {
     la: "la aprobación",
-    plan: "fabrica/docs/Plan-Aprobador.md",
     agente: "al aprobador",
     temas: ["aprobacion", "habilidades"],
     implica: "Cada aprobación de esta línea lleva unos miles de tokens más por cada oficio. El veredicto se registra con mcp__fabrica__aprobar.",
@@ -111,7 +108,7 @@ export function propuestasDeEspecialidades(
       secciones: {
         "Decisión": `Darle a ${d.la} de esta línea la habilidad «${p.nombre}». ${p.cuando}`,
         "Por qué":
-          `Es una de las especialidades de ${d.la} (${d.plan}). ` +
+          `Es una de las especialidades de ${d.la}. ` +
           (oficios.length ? `Trabaja con los oficios ${oficios.join(", ")}: la corrida le pasa su texto ${d.agente}, de fabrica/oficios/.` : ""),
         "Qué se descartó": "Copiar los oficios dentro de la habilidad: quedarían dos copias, y la habilidad se quedaría con la vieja.",
         "Qué implica": `Aprobarla escribe .claude/skills/${p.nombre}/SKILL.md y su línea en factory/habilidades.md, sin commit. ${d.implica}`,

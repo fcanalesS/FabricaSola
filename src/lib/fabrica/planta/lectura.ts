@@ -5,7 +5,7 @@ import type { ModeloDeRol } from "../modelos.ts";
 /**
  * Lo que las pantallas de la planta (La planta, Una línea, Tareas de todas) sacan de lo que cada
  * línea ya guarda: en qué columna va cada tarea, qué lo espera a él y los números de cada línea.
- * Es lógica pura: el disco lo lee `disco.ts`. El plan está en `fabrica/docs/Plan-Planta.md`.
+ * Es lógica pura: el disco lo lee `disco.ts`.
  */
 
 /** Las columnas del lienzo, en orden. */
@@ -91,7 +91,7 @@ export const esperaSuPrueba = (t: Pick<Tarea, "integracion" | "aprobacionAgente"
 export function teEspera(t: Tarea, config: Pick<Config, "aprobacion"> | null): "pregunta" | "veredicto" | null {
   if (t.estado === "necesita-humano" && !t.respuesta) return "pregunta";
   if (t.estado === "aprobacion" && pideSuVeredicto(config) && !t.veredictoExterno) return "veredicto";
-  // Una grande, ya aprobada por el agente, espera que él la pruebe a mano (fabrica/docs/Plan-Integracion.md).
+  // Una grande, ya aprobada por el agente, espera que él la pruebe a mano.
   if (t.estado === "aprobacion" && esperaSuPrueba(t)) return "veredicto";
   return null;
 }

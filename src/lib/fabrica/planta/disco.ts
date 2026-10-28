@@ -21,7 +21,7 @@ export type LineaDeLaPlanta = {
   id: string
   nombre: string
   raiz: string
-  /** La que miran la columna de ella y la Configuración. Las pantallas de la planta no la usan para actuar. */
+  /** La que miran la portada y la Configuración. Las pantallas de la planta no la usan para actuar. */
   activa: boolean
   estado: EstadoDeLinea
   /** Por qué no se pudo leer, o por qué no tiene fábrica. */

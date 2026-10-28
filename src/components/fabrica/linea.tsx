@@ -431,7 +431,7 @@ function PanelDeTarea({ linea, t, pideVeredicto, ahora, modelosDeLaLinea, alCerr
 
   const s = detalle?.secciones;
   const pasos = detalle?.historial.pasos.slice(-8).reverse() ?? [];
-  // Una grande espera su prueba aunque la línea no pida su veredicto (fabrica/docs/Plan-Integracion.md).
+  // Una grande espera su prueba aunque la línea no pida su veredicto.
   const grande = t.integracion?.clase === "grande";
   const aprobable = t.estado === "aprobacion" && (pideVeredicto || t.espera === "veredicto");
 

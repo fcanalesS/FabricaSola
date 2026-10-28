@@ -803,7 +803,7 @@ export type TelefonoDeLaFabrica = {
 };
 
 /** Las únicas variables del teléfono que se nombran: lo demás que venga no se muestra. */
-export const VARIABLES_DEL_TELEFONO = ["COMPANIA_TELNYX_API_KEY", "COMPANIA_TELNYX_CONNECTION_ID", "COMPANIA_TELNYX_NUMERO_ORIGEN", "COMPANIA_TELEFONO"] as const;
+export const VARIABLES_DEL_TELEFONO = ["FACTORIA_TELNYX_API_KEY", "FACTORIA_TELNYX_CONNECTION_ID", "FACTORIA_TELNYX_NUMERO_ORIGEN", "FACTORIA_TELEFONO"] as const;
 const numero = (v: unknown) => (typeof v === "number" && Number.isFinite(v) ? v : 0);
 
 /** Lo que se muestra del teléfono. Los números ya vienen enmascarados, y aquí no se vuelven a armar. Es lógica pura. */

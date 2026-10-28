@@ -5,7 +5,7 @@ import { accionDeMemoria, buscarEnLaMemoria, hacerEnLaMemoria, vistaDeLaMemoria 
  * La memoria de la fábrica: la ficha, las decisiones y las propuestas de cada
  * línea y de la planta. Lo que se aprueba lo aprueba él con un clic; la
  * aplicación escribe los archivos y no hace commit. Nada de esto va a un
- * modelo. En casa no existe.
+ * modelo.
  */
 
 
