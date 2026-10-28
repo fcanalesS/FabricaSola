@@ -14,19 +14,19 @@ El paso a producción queda fuera: se verá cuando la línea tenga su CI/CD.
 - **Jev decide si una tarea es sencilla**, para irlo ajustando con lo que salga, y el código pone
   un piso que Jev no puede bajar.
 - **La grande lo espera:** le avisa, él la prueba a mano y aprueba que se integre con la rama.
-- **El retrabajo lo hacen Snow White y Rapunzel**, del escuadrón Goddess, sin Lilith.
-- **Label**, de Best Seller, escribe lo que se lee sin haber mirado el código: el texto del PR
-  que se fusiona solo y el aviso de la grande. Ingrid no entra.
-- **Anis sigue donde está**, como revisora de código preferida.
+- **El retrabajo lo hace un agente propio**, con los oficios Arreglo de raíz y Pruebas.
+- **El agente de notas**, con el oficio Notas de versión y avisos, escribe lo que se lee sin
+  haber mirado el código: el texto del PR que se fusiona solo y el aviso de la grande.
+- **El revisor de código sigue donde está**, con el oficio Revisión de código.
 - **Siguen tres revisores**, con la UX dentro del revisor de interfaz.
 
 **De dónde sale.** Él pasó una definición del video de la AI Factory. Así queda cada punto:
 
 | Su punto | Hoy | Con este plan |
 |---|---|---|
-| Cuatro revisores (seguridad, UX, UI y código) dan su visto bueno | Tres: código (Anis, si está), seguridad (Crow, si está) e interfaz, que ya revisa la UI y la UX. | Tres. El revisor de interfaz nombra la UX en sus reglas. |
-| El aprobador (Opus) mira si cumple los estándares del proyecto | **Ya existe.** Opus, con Privaty y las fichas del vault. | Igual. |
-| Otro agente dice si la tarea es sencilla o crítica | El agente de salida (Viper y Marian) decide si producción pide su clic. | **Jev**, con un piso del código. El agente de salida deja de correr en cada tarea. |
+| Cuatro revisores (seguridad, UX, UI y código) dan su visto bueno | Tres: código (con el oficio Revisión de código), seguridad (con el oficio Casos de abuso) e interfaz, que ya revisa la UI y la UX. | Tres. El revisor de interfaz nombra la UX en sus reglas. |
+| El aprobador (Opus) mira si cumple los estándares del proyecto | **Ya existe.** Opus, con Comprobación de entrega y las fichas del vault. | Igual. |
+| Otro agente dice si la tarea es sencilla o crítica | El agente de salida (con Plan de reversión y Compatibilidad hacia atrás) decide si producción pide su clic. | **Jev**, con un piso del código. El agente de salida deja de correr en cada tarea. |
 | La sencilla va directo con un PR automático | La fábrica abre el PR y fusionarlo es su clic. | El paso `fusion` de un proceso lo fusiona solo, si todo lo que entra lo puede hacer. |
 | La crítica se bloquea con hooks y pide revisión humana antes de `main` | Lo de la base y el `[nucleo]` piden su clic, pero para producción. | La grande no se integra sin su veredicto: el guardia está en `mover(T, "hecho")`. |
 
@@ -72,10 +72,10 @@ Las siete primeras son suyas. Las demás son mis recomendaciones.
 3. **La grande espera su prueba a mano y su veredicto**, sin frenar a las demás (decisión suya).
 4. **Producción, para después**, con el CI/CD de cada línea (decisión suya). Lo que falta para
    eso está anotado al final de `Plan-Habilidades-y-Procesos.md`, con Hermes y lo de cargar
-   menos de las Nikkes.
-5. **Retrabajo con Snow White y Rapunzel** (decisión suya).
-6. **Label para el PR y para el aviso** (decisión suya).
-7. **Anis donde está, y tres revisores** (decisión suya).
+   menos de los oficios.
+5. **Retrabajo con Arreglo de raíz y Pruebas** (decisión suya).
+6. **El agente de notas para el PR y para el aviso** (decisión suya).
+7. **El revisor de código donde está, y tres revisores** (decisión suya).
 8. **El piso no nombra ningún lenguaje.** El código trae solo lo que es delicado en cualquier
    proyecto:
    - migraciones (`**/migrations/**`) y `.sql`;
@@ -118,25 +118,25 @@ Las siete primeras son suyas. Las demás son mis recomendaciones.
 15. **Una grande no frena el proceso.** Como espera antes de integrarse en su rama, nunca está en
     el rango que se empuja. Lo que haya en el rango que no venga de una tarea lo integró él, y
     es suyo.
-16. **Label escribe en la tarea, no en el repositorio.** Le quedan solo herramientas de lectura,
+16. **El agente de notas escribe en la tarea, no en el repositorio.** Le quedan solo herramientas de lectura,
     y su texto lo registra el mod (`mcp__fabrica__anuncio`) en `## Para el PR` o en
     `## Para probar a mano`. El PR junta, con el código, lo de cada tarea del rango, con su id.
     Lo que habla en voz alta (el teléfono, ella) sigue diciendo solo el id y el título, nunca lo
-    que escribió Label.
+    que escribió el agente de notas.
 17. **El agente de salida deja de correr en cada tarea.** Su plantilla y sus reglas quedan para
     cuando llegue producción. Lo que `salida.ts` pide para producción sigue igual.
-18. **El retrabajo es un agente aparte (`fabrica-retrabajo`), con las dos dentro.** Es una sesión
+18. **El retrabajo es un agente aparte (`fabrica-retrabajo`), con los dos oficios dentro.** Es una sesión
     por vuelta, no dos, con el modelo de construcción de la tarea o de la línea, y Jev no lo
     abarata, como hoy. Lleva también las habilidades de construcción de la línea.
     - **Entra** cuando un revisor marcó un BLOQUEANTE o falló la verificación. Un conflicto al
       sincronizar lo sigue resolviendo el constructor: ahí no hay nada roto.
-    - **Snow White** busca la causa y la arregla de raíz, pero solo dentro de lo que la spec dice
+    - **Arreglo de raíz:** busca la causa y la arregla de raíz, pero solo dentro de lo que la spec dice
       que toca. Si la causa está fuera, no la arregla: lo escribe, y la tarea lo espera a él.
-    - **Rapunzel** deja una prueba por cada BLOQUEANTE que se pueda probar. Corre solo lo que
+    - **Pruebas:** deja una prueba por cada BLOQUEANTE que se pueda probar. Corre solo lo que
       escribió: la suite entera la corre la verificación, y la última verificación cuenta como
       la de antes.
-    - Dorothy, Scarlet y Red Hood no entran: el plan ya es la spec, simplificar agranda el diff, y
-      documentar no es retrabajo.
+    - Planificar, simplificar y documentar no entran: el plan ya es la spec, simplificar agranda
+      el diff, y documentar no es retrabajo.
 
 ## Orden y por qué
 
@@ -144,9 +144,9 @@ Las siete primeras son suyas. Las demás son mis recomendaciones.
    sencillo queda grande. Sirve aunque Jev nunca conteste.
 2. **Jev clasifica, y aprende.** Usa lo de la etapa 1 como piso.
 3. **La grande lo espera.** Con la clasificación hecha, el guardia de `mover` y su clic.
-4. **Label.** Necesita saber si la tarea es sencilla o grande.
-5. **El paso `fusion`.** Necesita la clasificación y el texto de Label.
-6. **El retrabajo con Snow White y Rapunzel.** No depende de las anteriores; va al final para no
+4. **El agente de notas.** Necesita saber si la tarea es sencilla o grande.
+5. **El paso `fusion`.** Necesita la clasificación y el texto del agente de notas.
+6. **El retrabajo con Arreglo de raíz y Pruebas.** No depende de las anteriores; va al final para no
    cambiar dos cosas de la corrida a la vez.
 7. **La UX en el revisor de interfaz.** Un cambio chico de texto.
 
@@ -264,17 +264,17 @@ Las siete primeras son suyas. Las demás son mis recomendaciones.
   aprobación). No lleva el motivo de la clasificación.
 - **En Una línea:** «Espera que la pruebes a mano», con su motivo y su rama, y «Probada, intégrala»
   y «Devuélvela», que escriben el veredicto de siempre. El texto de «Para probar a mano» llega con
-  Label, en la etapa 4.
+  el agente de notas, en la etapa 4.
 - **Un arreglo de la etapa 2:** la expresión que leía «integración: sencilla|grande» en el informe
   tenía un carácter de control en vez de `\b`, y nunca coincidía. Ahora la lectura es una sola
   (`claseEnNota`, en `motor/formato.ts`) para el informe y el teléfono, con su prueba.
 - **Verificado:** las pruebas del mod y de la aplicación, `tsc` y `lint`.
 
-## 4. Label
+## 4. El agente de notas
 
 ### Criterios de aceptación
 1. La plantilla `fabrica/plantillas/agentes/anuncio.md` (`fabrica-anuncio`), con
-   `nikkes: label-anuncio`, herramientas de solo lectura y `mcp__fabrica__anuncio`, en Sonnet.
+   `oficios: notas-de-version`, herramientas de solo lectura y `mcp__fabrica__anuncio`, en Sonnet.
 2. La corrida lo lanza después de clasificar. Con una sencilla escribe `## Para el PR`: qué
    cambió, lo que rompe arriba y `ruta:línea`. Con una grande, `## Para probar a mano`: qué
    probar, en qué orden y qué sería un fallo.
@@ -283,28 +283,28 @@ Las siete primeras son suyas. Las demás son mis recomendaciones.
 
 ### Pruebas
 - `mcp__fabrica__anuncio` no escribe en otra sección ni pasa el tope.
-- La plantilla nombra a Label, y su archivo llega entero.
+- La plantilla nombra el oficio Notas de versión y avisos, y su texto llega entero.
 - `FABRICA_SALIDA` ya no lanza al agente de salida en la corrida.
 
 ### Cómo quedó (27 de octubre de 2026)
 - **La plantilla** `fabrica/plantillas/agentes/anuncio.md`: Sonnet, `Read, Grep, Glob, Bash` y
-  `mcp__fabrica__anuncio`, con el archivo entero de Label. Su archivo nombra herramientas para
-  escribir, pero el agente no las tiene. El texto va sin su voz, lo que rompe primero, con
+  `mcp__fabrica__anuncio`, con el texto entero del oficio Notas de versión y avisos. El agente
+  no tiene herramientas para escribir archivos. El texto va con lo que rompe primero, con
   `ruta:línea`, nunca copiado de un issue, y 30 líneas como mucho.
 - **La herramienta** (`hAnuncio` y `anuncioEnLaTarea`, en el mod): solo la acepta de
   `fabrica-anuncio`, con la tarea aprobada y clasificada. La sección la decide la clase; quita los
   títulos que abrirían otra sección y recorta a 4000 caracteres.
-- **La corrida** (`corridas.ts`) pasa a Label siempre, con `FABRICA_ANUNCIO`, y `estado` trae
+- **La corrida** (`corridas.ts`) pasa al agente de notas siempre, con `FABRICA_ANUNCIO`, y `estado` trae
   `anuncio`. El agente de salida ya no viaja: su plantilla, su herramienta y sus reglas quedan
   para cuando llegue la CI/CD.
-- **Al volver a construcción**, `mover` borra la clase y `hMover` las dos secciones de Label: se
+- **Al volver a construcción**, `mover` borra la clase y `hMover` las dos secciones del agente de notas: se
   escriben otra vez con lo de la nueva vuelta. Esto no estaba en el plan.
 - **En Una línea**, «Para probar a mano» va primero, abierta mientras la grande espera, y «Para el
-  PR» después del pedido. Las dos dicen que las escribió Label.
-- **`corrida-real.mjs`** lleva a Label en vez del agente de salida, y comprueba que escribió en la
+  PR» después del pedido. Las dos dicen que las escribió el agente de notas.
+- **`corrida-real.mjs`** lleva al agente de notas en vez del agente de salida, y comprueba que escribió en la
   sección de la clase de cada tarea.
 - **Verificado:** las pruebas del mod y de la aplicación, `tsc`, `lint` y la corrida real sin
-  `--correr` (solo prepara; Label viaja con 11 KB de prompt).
+  `--correr` (solo prepara).
 
 ## 5. El paso `fusion`
 
@@ -337,7 +337,7 @@ Las siete primeras son suyas. Las demás son mis recomendaciones.
 - **Las tareas que entran** (`tareasDelRango`, en `correr.ts`): integradas en el commit y no en la
   salida anterior, lo mismo que ya usaba la salida a producción. Una sin clase cuenta solo si él la
   aprobó: así una tarea vieja no entra sola.
-- **El cuerpo del PR** dice si se fusiona solo y trae lo de Label de cada tarea, con su id (sin el
+- **El cuerpo del PR** dice si se fusiona solo y trae lo del agente de notas de cada tarea, con su id (sin el
   título si es ajeno), con las claves de este equipo tapadas y recortado a 60 000 caracteres. Si el
   PR ya estaba abierto, se pone al día. Con varias líneas, a `gh` le llega en un archivo, junto al
   log y fuera del repositorio: lanzado como `.cmd`, un argumento se corta en el primer salto de
@@ -356,34 +356,34 @@ Las siete primeras son suyas. Las demás son mis recomendaciones.
   `--remove-source-branch=false`, porque si el proyecto borra la rama al fusionar se llevaría la de
   trabajo de la línea. Y el cuerpo de varias líneas va con `--description-file`, como en `gh`.
 
-## 6. El retrabajo con Snow White y Rapunzel
+## 6. El retrabajo con Arreglo de raíz y Pruebas
 
 ### Criterios de aceptación
 1. La plantilla `fabrica/plantillas/agentes/retrabajo.md` (`fabrica-retrabajo`), con
-   `nikkes: snow-white-arreglo, rapunzel-pruebas`, las habilidades de construcción de la línea y
+   `oficios: arreglo-de-raiz, pruebas`, las habilidades de construcción de la línea y
    el modelo de construcción de la tarea o de la línea.
 2. `correr.md`: en una vuelta por BLOQUEANTE o por verificación fallida, se lanza
    `fabrica-retrabajo`; en un conflicto, el constructor.
 3. El mod lo cuenta como de la etapa de construcción: la bitácora anota sus habilidades, y
    `frenaHabilidad` y `frenaMemoria` lo frenan igual.
-4. Sus reglas: solo los BLOQUEANTES, la causa fuera de la spec va a él, y Rapunzel corre solo lo
-   que escribió.
+4. Sus reglas: solo los BLOQUEANTES, la causa fuera de la spec va a él, y de las pruebas corre solo
+   las que escribió.
 
 ### Pruebas
-- La corrida lleva el agente con los dos archivos enteros y con las habilidades de construcción.
+- La corrida lleva el agente con los dos oficios enteros y con las habilidades de construcción.
 - `rolDeAgente("fabrica-retrabajo")` es construcción.
 - Jev no le cambia el modelo.
 
 ### Cómo quedó (27 de octubre de 2026)
 - **La plantilla** `fabrica/plantillas/agentes/retrabajo.md`: las herramientas del constructor, los
-  archivos enteros de Snow White y Rapunzel, y sin `model`: lo pone el orquestador con lo que diga
+  textos enteros de Arreglo de raíz y Pruebas, y sin `model`: lo pone el orquestador con lo que diga
   `decidir(T, "construccion")`, que en el retrabajo no abarata y respeta el modelo elegido en la
   tarea. Su entrega dice `CAUSA FUERA DE LA TAREA:` o `SIN CAUSA:` cuando no arregla, y entonces
   la tarea va a él.
 - **La corrida** (`corridas.ts`, `agenteDeRetrabajo`) lo pasa siempre, con `FABRICA_RETRABAJO`, y
   `estado` trae `retrabajo`. Lleva las habilidades de construcción de la línea (`skills:`), pero
-  no las Nikkes de sus especialidades: pesa unos 15 KB, contra unos 46 KB del constructor con
-  todo. Es lo 3 de «Cargar menos de las Nikkes», en el retrabajo.
+  no los oficios de sus especialidades: pesa menos que el constructor con todo. Es lo 2 de
+  «Cargar menos de los oficios», en el retrabajo.
 - **El mod** (`fabrica/hooks/habilidades.ts`) lo cuenta como de construcción: `rolDeAgente` y
   `rolConHabilidades`, así que su bitácora anota sus habilidades y `frenaHabilidad` lo frena igual.
   `frenaMemoria` y `frenaHabilidades` valen para cualquier subagente. No es un candidato del rol:
@@ -419,7 +419,7 @@ Las siete primeras son suyas. Las demás son mis recomendaciones.
 
 **Con esto termina el plan de integración.** Queda para después lo anotado al final de
 `Plan-Habilidades-y-Procesos.md`: la configuración de CI/CD (con el agente de salida de vuelta),
-Hermes y cargar menos de las Nikkes.
+Hermes y cargar menos de los oficios.
 
 ## Lo que encontró la corrida real (27 de octubre de 2026)
 
@@ -428,17 +428,17 @@ comprobaciones.
 
 - **Bien:** F-002, que toca `precios.js` (núcleo en la ficha), quedó grande por regla; F-001, grande
   «sin Jev» (el repositorio de prueba tiene `jev: no`). Las dos quedaron en aprobación esperando su
-  prueba, ninguna se integró, y el orquestador siguió con F-002 mientras F-001 esperaba. Label
-  escribió «Para probar a mano» en las dos: lo que rompe primero, pasos numerados, qué sería un
+  prueba, ninguna se integró, y el orquestador siguió con F-002 mientras F-001 esperaba. El agente de
+  notas escribió «Para probar a mano» en las dos: lo que rompe primero, pasos numerados, qué sería un
   fallo y `ruta:línea`. El agente de salida no corrió.
 - **Mal: el orquestador lanzó los agentes de siempre** (`fabrica:spec-escritor`,
   `fabrica:constructor`, `fabrica:aprobador`) aunque la corrida traía `fabrica-hab-*` y `estado`
-  los ponía primero: las especialidades y Privaty no llegaron. **Arreglado:** el mod frena ese
+  los ponía primero: las especialidades y Comprobación de entrega no llegaron. **Arreglado:** el mod frena ese
   lanzamiento y dice cuál usar (`frenaSinHabilidades`, en `fabrica/hooks/habilidades.ts`), salvo
   el de retrabajo, que trae las suyas.
-- **Arreglado también:** la sección de Label quedaba debajo de `## Bitácora`; ahora va antes
+- **Arreglado también:** la sección del agente de notas quedaba debajo de `## Bitácora`; ahora va antes
   (`ponerSeccionAntesDeLaBitacora`).
-- **Para tener en cuenta:** Label no corre nada, así que los valores que da como esperados son
+- **Para tener en cuenta:** el agente de notas no corre nada, así que los valores que da como esperados son
   cálculos suyos. En F-002 dijo que `precioFinal(19.99)` da `18.99`, y en JavaScript da
   `18.990499999999997`. En F-001 lo dijo («No verificado»).
 - **No se vio:** el retrabajo (ninguna tarea volvió a construcción) ni la fusión (el repositorio de

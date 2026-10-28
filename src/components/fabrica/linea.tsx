@@ -560,10 +560,10 @@ function PanelDeTarea({ linea, t, pideVeredicto, ahora, modelosDeLaLinea, alCerr
         <p className="text-sm text-tenue">Leyendo la tarea…</p>
       ) : (
         <>
-          {/* Lo de Label va primero en una grande que espera: es lo que se lee para probarla. */}
-          {s?.probarAMano && <Seccion titulo="Para probar a mano (lo escribió Label)" texto={s.probarAMano} abierta={grande && aprobable} />}
+          {/* Lo del agente de las notas va primero en una grande que espera: es lo que se lee para probarla. */}
+          {s?.probarAMano && <Seccion titulo="Para probar a mano (lo escribió el agente de las notas)" texto={s.probarAMano} abierta={grande && aprobable} />}
           {s?.pedido && <Seccion titulo="Pedido" texto={s.pedido} abierta />}
-          {s?.paraElPR && <Seccion titulo="Para el PR (lo escribió Label)" texto={s.paraElPR} />}
+          {s?.paraElPR && <Seccion titulo="Para el PR (lo escribió el agente de las notas)" texto={s.paraElPR} />}
           {s?.spec && <Seccion titulo="Spec" texto={s.spec} />}
           {s?.hallazgos && <Seccion titulo="Hallazgos de revisión" texto={s.hallazgos} />}
           {s?.respuesta && <Seccion titulo="Tus respuestas" texto={s.respuesta} />}

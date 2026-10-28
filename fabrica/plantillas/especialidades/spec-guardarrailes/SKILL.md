@@ -1,7 +1,7 @@
 ---
 name: spec-guardarrailes
 description: Para la etapa spec, cuando la tarea llama a un modelo de IA, cambia un prompt o le da herramientas a un agente. Agrega a la spec la sección «Comportamiento de la IA» (límites, herramientas, mala fe, fallas y falta de contexto) y vuelve criterios lo que se puede comprobar.
-nikkes: crow-abuso, noah-robustez
+oficios: casos-de-abuso, robustez
 ---
 
 # Guardarraíles de la IA, en la spec
@@ -10,17 +10,17 @@ Esta habilidad es de la etapa spec. Úsala solo si la tarea llama a un modelo de
 prompt, o le da herramientas (servidores MCP, FastMCP, APIs) a un agente. Si no es así, no
 escribas nada de esto: ni la sección vacía ni «no aplica».
 
-## Con quiénes trabajas
+## Con qué oficios trabajas
 
-Llegan contigo, con sus archivos enteros, **Crow** (`crow-abuso`) y **Noah** (`noah-robustez`).
-Ellas revisan código ya escrito; tú escribes antes de que exista. Lo que ellas buscarían en el
-código, tú lo pides como requisito.
+Trabajas con los oficios **Casos de abuso** (`casos-de-abuso`) y **Robustez ante fallos**
+(`robustez`); su texto va al final de tu prompt. Esos oficios revisan código ya escrito; tú
+escribes antes de que exista. Lo que ellos buscarían en el código, tú lo pides como requisito.
 
-- **De Crow:** antes que nada, quién interactúa con la IA (alguien sin cuenta, alguien con
+- **De Casos de abuso:** antes que nada, quién interactúa con la IA (alguien sin cuenta, alguien con
   cuenta, el autor de un issue, el texto de una página o de un documento). Dónde deja de
   controlarse lo que entra: aquí, lo que entra al contexto del modelo. Sus seis categorías,
   aplicadas a la IA, y a quién perjudica cada caso.
-- **De Noah:** las categorías de falla, y para cada una, una de sus cuatro estrategias con su
+- **De Robustez ante fallos:** las categorías de falla, y para cada una, una de sus cuatro estrategias con su
   porqué. Nunca silenciar un error. Y su «rompe lo que arreglaste», que aquí es un criterio: cada
   defensa tiene una prueba que provoca la falla que evita.
 
@@ -36,7 +36,7 @@ sección **Comportamiento de la IA**, con estas partes. Escribe solo las que la 
    El permiso es el justo para la tarea, no el que había a mano.
 3. **Lo que sabe y lo que no.** Los bordes de su conocimiento, y qué hace cuando le preguntan
    fuera de ellos.
-4. **Mala fe**, con las categorías de Crow:
+4. **Mala fe**, con las categorías de Casos de abuso:
    - autorización: si una llamada del modelo puede pedir el recurso de otra persona. La
      comprobación va en el servidor, no en el prompt;
    - escalada: si el modelo puede darse un permiso o una herramienta que no tiene;
@@ -45,7 +45,7 @@ sección **Comportamiento de la IA**, con estas partes. Escribe solo las que la 
    - flujo: si se puede saltar una confirmación;
    - datos ajenos: qué podría ver o repetir de otras personas;
    - inyección: texto ajeno que trae instrucciones para el modelo.
-5. **Fallas**, con las categorías de Noah: entrada ausente o malformada, el servicio del modelo
+5. **Fallas**, con las categorías de Robustez ante fallos: entrada ausente o malformada, el servicio del modelo
    caído o lento, una respuesta a medias o fuera del formato pedido, una operación cortada a la
    mitad, dos ejecuciones a la vez. Para cada una, la estrategia (fallar ruidoso, reintentar con
    tope y espera creciente solo si se puede repetir sin efectos, degradar a un valor por defecto,
@@ -63,6 +63,6 @@ se guarda nada». Lo que no se puede comprobar queda en la sección, sin criteri
 ## Lo que no haces
 
 - No diseñas la implementación: dices qué tiene que pasar, no cómo escribirlo.
-- No escribes ataques ni pruebas contra nada: Crow tampoco lo haría.
+- No escribes ataques ni pruebas contra nada: Casos de abuso tampoco lo haría.
 - Si la tarea toca datos personales, eso es de `spec-datos-y-contexto` y de `ley-21719`, si la
   línea las tiene.

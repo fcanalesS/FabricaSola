@@ -252,7 +252,7 @@ Un subagente tiene en su frontmatter el campo `skills:`, que **inyecta el conten
 cada habilidad al empezar. Es lo repetible: el agente no elige si la lee. La herramienta `Skill` en
 sus `tools` es otra cosa: deja que el agente invoque habilidades por su cuenta. Los agentes de la
 fábrica son de un plugin y no cambian por proyecto, pero la aplicación ya le pasa a cada corrida
-agentes armados aparte (`--agents`, hoy para los de nikke): ahí puede ir, por etapa, el `skills:`
+agentes armados aparte (`--agents`, hoy para los de otros mods): ahí puede ir, por etapa, el `skills:`
 que dice el catálogo de esa línea.
 
 ### Criterios de aceptación
@@ -570,52 +570,41 @@ sería un segundo orquestador. Hasta entonces, los procesos los corre el motor d
 fábrica la sigue con `[ci]`, también después de la fusión. Hermes queda, si acaso, para
 reportería automatizada.
 
-## Cargar menos de las Nikkes, más adelante
+## Cargar menos de los oficios, más adelante
 
 Lo anotó él el 27 de octubre de 2026, antes de empezar el plan del constructor. Hoy una
-especialidad pasa al agente el archivo entero de cada una de sus Nikkes, siempre que la línea la
-nombra (Plan-Spec, decisión 8). Con todo encendido son unos 16 mil tokens en la spec y unos 23
-mil en la construcción. **Un agente relee ese prompt en cada vuelta de su trabajo**, y la
+especialidad pasa al agente el texto entero de cada uno de sus oficios, siempre que la línea la
+nombra (Plan-Spec, decisión 8). **Un agente relee ese prompt en cada vuelta de su trabajo**, y la
 construcción además en cada retrabajo. La caché lo abarata, pero cuenta para el límite de su
 suscripción.
-
-Medido el 27 de octubre en las 11 Nikkes del constructor: **de 81 KB, 41 KB son su oficio**
-(reglas, método, entrega y límites) y **40 KB son lore** (quién es, su voz, su escuadrón). El
-lore se usa en dos líneas: la de apertura y la de cierre.
 
 Las formas de cargar menos, de la más simple a la que más ahorra. Cada una se mide antes y
 después en el informe de corridas, con la misma tarea:
 
-1. **El lore de una sola voz.** El oficio de cada Nikke va siempre; el lore, solo de la Nikke
-   que abre y cierra el resumen: la primera de la habilidad, o el agente mismo si es una Nikke.
-   El archivo no se toca: la aplicación lo parte al leerlo, en `## Reglas que no puedes
-   romper`; si un archivo no tiene ese título, va entero. **Ahorra cerca de la mitad.** Cambia
-   su decisión de pasar el lore entero de cada una, así que es una decisión suya.
-2. **Solo las especialidades que aplican a la tarea.** Hoy una especialidad encendida carga sus
-   Nikkes aunque su «cuándo» no aplique, y entonces el agente no las usa. Jev ya lee el pedido
+1. **Solo las especialidades que aplican a la tarea.** Hoy una especialidad encendida carga sus
+   oficios aunque su «cuándo» no aplique, y entonces el agente no los usa. Jev ya lee el pedido
    para decidir la spec y el modelo. En esa misma pregunta diría qué especialidades aplican
-   (IA, datos personales, interfaz, seguridad), y la corrida pasaría solo las Nikkes de esas.
-   Si Jev no contesta o duda, van todas, como hoy. **Ahorra según la tarea:** en una que no
+   (IA, datos personales, interfaz, seguridad), y la corrida pasaría solo los oficios de esas.
+   Si Jev no contesta o duda, van todos, como hoy. **Ahorra según la tarea:** en una que no
    toca IA ni interfaz, casi todo.
-3. **Menos en el retrabajo.** Una vuelta de retrabajo corrige solo los hallazgos bloqueantes.
-   Lleva el oficio de las Nikkes del tipo de hallazgo (uno de seguridad, las de seguridad), no
-   todas. **Ahorra en cada vuelta** después de la primera.
-4. **A pedido, con una herramienta del mod.** En vez del texto, el agente recibe la lista de
-   sus Nikkes con una línea cada una, y pide el oficio de la que necesita con una herramienta
-   del mod (`mcp__fabrica__nikke`, solo lectura, que lee de la carpeta de nikke). Es lo que más
-   ahorra, pero tiene un riesgo: si el agente no la pide, trabaja sin el método. La lista tiene
-   que decir cuándo pedir cada una. Leer directo de esa carpeta se descartó en Plan-Spec,
-   porque una corrida sin nadie mirando podría tener ese permiso negado; con la herramienta, lo
-   lee el mod.
+2. **Menos en el retrabajo.** Una vuelta de retrabajo corrige solo los hallazgos bloqueantes.
+   Lleva los oficios del tipo de hallazgo (uno de seguridad, los de seguridad), no todos.
+   **Ahorra en cada vuelta** después de la primera.
+3. **A pedido, con una herramienta del mod.** En vez del texto, el agente recibe la lista de
+   sus oficios con una línea cada uno, y pide el que necesita con una herramienta del mod, de
+   solo lectura, que lee de `fabrica/oficios/`. Es lo que más ahorra, pero tiene un riesgo: si
+   el agente no la pide, trabaja sin el método. La lista tiene que decir cuándo pedir cada uno.
+   Leer directo de la carpeta se descartó en Plan-Spec, porque una corrida sin nadie mirando
+   podría tener ese permiso negado; con la herramienta, lo lee el mod.
 
 **Lo que no cambia en ninguna:**
-- las Nikkes no se copian ni se editan;
+- los oficios no se copian ni se editan en una corrida;
 - el orden de los textos es fijo dentro de una corrida, para que el principio del prompt sea
   el mismo de tarea en tarea y entre en la caché;
 - se mide antes de decidir.
 
 **Recomendación:** medir primero una corrida con solo `construir-codigo`. Si pesa, empezar por
-la 1 y la 2, que no cambian cómo trabaja el agente.
+la 1, que no cambia cómo trabaja el agente.
 
 ## La configuración de CI/CD, más adelante
 
@@ -627,7 +616,7 @@ en un proceso que cumple las condiciones.
 **Lo que ya hay** y la CI/CD usaría: el paso `push` con su PR, el paso `ci` que espera la
 integración continua con `gh` o `glab`, la `salud` después de desplegar, el clic para producción
 (`aprobacion`) con lo que siempre lo pide (`salida.ts`: la base y el `[nucleo]`), y el agente de
-salida con Viper y Marian, que hoy no corre en cada tarea y vuelve con esto.
+salida con los oficios Plan de reversión y Compatibilidad hacia atrás, que hoy no corre en cada tarea y vuelve con esto.
 
 **Donde `main` ya despliega.** Él lo probó el 27 de octubre de 2026 en un proyecto aparte, en
 GitLab: un MR fusionado en `main`, hecho afuera, pasa a producción por la CI/CD del proyecto. En

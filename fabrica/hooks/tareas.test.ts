@@ -5,7 +5,7 @@ import {
   unir, veredictoDesde, vigente, type Datos, seccion, ponerSeccion, masBarato, notaDelModeloDeSpec, specElegidaPorEl, construccionElegidaPorEl, yaAnotado, PARA_LA_MEMORIA_VACIA,
   aCrlf, archivosQueGitProtege, archivosQueToca, archivosSql, baseDeComparacion, choquesDe, cicloDeDependencias, comandoDeLint,
   conArchivos, conHallazgoDeConflicto, decidirIntegracion, enComun, enlaceDeNodeModules, esLockfile, esRamaProtegida, extensiones, protegidaSinWorktree, ramaDeOrigen, ramaParaLaTarea,
-  archivarHallazgos, bloqueantesEn, CONFIG_SOLO_EL_USUARIO, esConfigDeLaFabrica, frenaConfig, esDeLaMemoria, frenaHabilidades, frenaMemoria, frenaNikke, frenaProcesos, NIKKE_SIN_HERRAMIENTAS, PLAN_DE_VUELTA, salidaEnLaTarea, HABILIDADES_SOLO_EL_USUARIO, PROCESOS_SOLO_EL_USUARIO, MEMORIA_SOLO_EL_USUARIO, rutaNormal, liberadaPor, reintentoDeIntegracion, revisarDependencias, rutasDePorcelain, tieneMarcadores, tieneWorktreePropio, tomadaPorOtra, usaCrlf, TOMA_MS,
+  archivarHallazgos, bloqueantesEn, CONFIG_SOLO_EL_USUARIO, esConfigDeLaFabrica, frenaConfig, esDeLaMemoria, frenaHabilidades, frenaMemoria, frenaProcesos, PLAN_DE_VUELTA, salidaEnLaTarea, HABILIDADES_SOLO_EL_USUARIO, PROCESOS_SOLO_EL_USUARIO, MEMORIA_SOLO_EL_USUARIO, rutaNormal, liberadaPor, reintentoDeIntegracion, revisarDependencias, rutasDePorcelain, tieneMarcadores, tieneWorktreePropio, tomadaPorOtra, usaCrlf, TOMA_MS,
 } from './tareas'
 import { cambiosDeNumstat, decidirCodigo, decidirModelo, decidirSpec, delProyecto, decidirPruebas, decidirSeguridad, decidirUi, estadoParaJev, PREGUNTA_DE_INTEGRACION, reutilizaCodigo, soloSinLogica, UMBRALES } from './jev'
 import {
@@ -141,13 +141,13 @@ describe('Transiciones', () => {
 })
 
 describe('Roles y agentes', () => {
-  test('auto prefiere nikke y deja al de fábrica como red', () => {
+  test('auto usa el de la fábrica, que ya trae su oficio', () => {
     const c = cfg()
     expect(c.agentes.construccion).toBe('auto')
-    expect(candidatos('construccion', 'auto')).toEqual(['nikke:centi-implementacion', 'fabrica:constructor'])
+    expect(candidatos('construccion', 'auto')).toEqual(['fabrica:constructor'])
     expect(candidatos('spec', 'auto')).toEqual(['fabrica:spec-escritor'])
-    // Un agente de nikke elegido a mano también se busca sin el nombre del plugin: así llega a las corridas de la aplicación.
-    expect(candidatos('construccion', 'nikke:centi-implementacion')).toEqual(['nikke:centi-implementacion', 'centi-implementacion', 'fabrica:constructor'])
+    // Un agente de un mod elegido a mano también se busca sin el nombre del mod: así llega a las corridas de la aplicación.
+    expect(candidatos('construccion', 'otro-mod:implementacion')).toEqual(['otro-mod:implementacion', 'implementacion', 'fabrica:constructor'])
   })
 
   test('un agente configurado va primero, con el de fábrica detrás', () => {
@@ -170,7 +170,7 @@ describe('Roles y agentes', () => {
   })
 
   test('nombres de agente', () => {
-    expect(esNombreDeAgente('nikke:centi-implementacion')).toBe(true)
+    expect(esNombreDeAgente('otro-mod:implementacion')).toBe(true)
     expect(esNombreDeAgente('fabrica-constructor')).toBe(true)
     expect(esNombreDeAgente('../../etc')).toBe(false)
     expect(esNombreDeAgente('Mayus')).toBe(false)
@@ -1068,9 +1068,9 @@ describe('Habilidades de la línea', () => {
 
   test('en una corrida, cada rol prueba primero su agente con habilidades, y el aprobador con habilidades vale', () => {
     expect(nombreConHabilidades('revision_seguridad')).toBe('fabrica-hab-revision-seguridad')
-    expect(candidatosDeLaCorrida('construccion', 'auto')).toEqual(['fabrica-hab-construccion', 'nikke:centi-implementacion', 'fabrica:constructor'])
+    expect(candidatosDeLaCorrida('construccion', 'auto')).toEqual(['fabrica-hab-construccion', 'fabrica:constructor'])
     expect(rolDeAgente('fabrica-hab-ui', agentes)).toBe('ui')
-    expect(rolDeAgente('nikke:centi-implementacion', agentes)).toBe('construccion')
+    expect(rolDeAgente('fabrica:constructor', agentes)).toBe('construccion')
     expect(rolDeAgente('fabrica:aprobador', agentes)).toBe('aprobacion')
     expect(rolDeAgente('Explore', agentes)).toBeNull()
     expect(ETAPA_DE_ROL.revision_codigo).toBe('revision')
@@ -1090,7 +1090,7 @@ describe('Habilidades de la línea', () => {
     expect(frena('fabrica:constructor', 'ditab-view', null)).toBeNull()
   })
 
-  test('el agente de retrabajo (Snow White y Rapunzel) es de construcción: sus habilidades, su bitácora y su guardia', () => {
+  test('el agente de retrabajo (Arreglo de raíz y Pruebas) es de construcción: sus habilidades, su bitácora y su guardia', () => {
     expect(AGENTE_DE_RETRABAJO).toBe('fabrica-retrabajo')
     expect(rolDeAgente('fabrica-retrabajo', agentes)).toBe('construccion')
     expect(rolConHabilidades('fabrica-retrabajo')).toBe('construccion')
@@ -1106,7 +1106,7 @@ describe('Habilidades de la línea', () => {
     const habilidades = { construccion: [h('construir-codigo'), h('construir-con-ia')], revision: [h('ditab-view')] }
     const frena = (tipo: string | undefined, hab: typeof habilidades | Record<string, never> = habilidades) => frenaSinHabilidades({ tipo, agentes, habilidades: hab })
     expect(frena('fabrica:constructor')).toBe('Esta corrida trae fabrica-hab-construccion, el agente de construccion con las habilidades de su etapa (construir-codigo, construir-con-ia). Lánzalo a él en vez de fabrica:constructor, con el mismo encargo y el mismo model.')
-    expect(frena('nikke:centi-implementacion')).toContain('fabrica-hab-construccion')
+    expect(frena('implementacion')).toBeNull()
     expect(frena('fabrica:revisor-codigo')).toContain('fabrica-hab-revision-codigo')
     // El suyo, el de retrabajo, los que no son de una etapa y una etapa sin habilidades pasan.
     expect(frena('fabrica-hab-construccion')).toBeNull()
@@ -1445,21 +1445,6 @@ describe('Con especialidades de spec en la línea', () => {
   })
 })
 
-describe('Las herramientas del mod nikke en una corrida', () => {
-  test('un subagente no las usa: se frena al instante, con qué hacer en su lugar', () => {
-    expect(frenaNikke('mcp__nikke__entrega_veredicto', 'agente-1')).toBe(NIKKE_SIN_HERRAMIENTAS)
-    expect(frenaNikke('mcp__nikke__salida_plan', 'agente-1')).toContain('Escribe tu entrega en texto')
-    expect(frenaNikke('mcp__nikke__arsenal_veredicto', 'agente-1')).not.toBeNull()
-  })
-
-  test('el hilo principal sí, y las demás herramientas pasan', () => {
-    expect(frenaNikke('mcp__nikke__entrega_veredicto', undefined)).toBeNull()
-    expect(frenaNikke('mcp__fabrica__aprobar', 'agente-1')).toBeNull()
-    expect(frenaNikke('mcp__nikkei__algo', 'agente-1')).toBeNull()
-    expect(frenaNikke('Read', 'agente-1')).toBeNull()
-  })
-})
-
 describe('La decisión del agente de salida', () => {
   const T = '2026-10-27T12:00:00.000Z'
   const aprobada = { id: 'F-014', estado: 'aprobacion', aprobacion_agente: 'aprobada' }
@@ -1648,7 +1633,7 @@ describe('La grande lo espera', () => {
   })
 })
 
-describe('Lo que escribe Label', () => {
+describe('Lo que escribe el agente de las notas', () => {
   const clasificada = (clase: string, extra: Datos = {}) => base('aprobacion', { verificacion: 'ok', aprobacion_agente: 'aprobada', integracion_clase: clase, ...extra })
   const cuerpo = '\n## Pedido\n\nAlgo.\n\n## Bitácora\n\n- 2026-10-27T10:00:00.000Z · creada\n'
 
@@ -1656,7 +1641,7 @@ describe('Lo que escribe Label', () => {
     const s = anuncioEnLaTarea(clasificada('sencilla'), cuerpo, 'Cambia el color del botón.\n\n- `src/boton.tsx:12`', T)
     expect('cuerpo' in s && s.seccion).toBe(PARA_EL_PR)
     expect('cuerpo' in s && seccion(s.cuerpo, PARA_EL_PR)).toContain('src/boton.tsx:12')
-    expect('cuerpo' in s && s.cuerpo).toContain('Label escribió «Para el PR»')
+    expect('cuerpo' in s && s.cuerpo).toContain('El agente de las notas escribió «Para el PR»')
     const g = anuncioEnLaTarea(clasificada('grande'), cuerpo, '1. Entra a ventas.\n2. Cobra 1000.', T)
     expect('cuerpo' in g && g.seccion).toBe(PARA_PROBAR_A_MANO)
     expect('cuerpo' in g && seccion(g.cuerpo, PARA_PROBAR_A_MANO)).toContain('Cobra 1000')
@@ -1665,7 +1650,7 @@ describe('Lo que escribe Label', () => {
     // Va antes de la bitácora, que queda al final con su línea nueva.
     const texto = 'cuerpo' in g ? g.cuerpo : ''
     expect(texto.indexOf('## Para probar a mano')).toBeLessThan(texto.indexOf('## Bitácora'))
-    expect(texto.trimEnd().split('\n').at(-1)).toContain('Label escribió «Para probar a mano»')
+    expect(texto.trimEnd().split('\n').at(-1)).toContain('El agente de las notas escribió «Para probar a mano»')
     expect(ponerSeccionAntesDeLaBitacora('\n## Pedido\n\nAlgo.\n', 'Nueva', 'x')).toBe('\n## Pedido\n\nAlgo.\n\n## Nueva\n\nx\n')
   })
 
@@ -1712,7 +1697,7 @@ describe('Veredicto y hallazgos anteriores', () => {
 })
 
 describe('Al volver a construcción', () => {
-  test('la clase y lo que escribió Label son de la vuelta anterior: se borran', () => {
+  test('la clase y lo que escribió el agente de las notas son de la vuelta anterior: se borran', () => {
     const d = base('aprobacion', { verificacion: 'ok', aprobacion_agente: 'aprobada', integracion_clase: 'grande', integracion_por: 'regla', integracion_motivo: 'x' })
     const r = mover(d, { a: 'construccion', ahora: T, nota: 'al probarla falló' }, cfg())
     expect(r.ok && [r.datos.integracion_clase, r.datos.integracion_por, r.datos.integracion_motivo]).toEqual([undefined, undefined, undefined])

@@ -13,15 +13,15 @@ Claude**:
 3. **El modelo de Claude que construye**, elegido por línea y con la opción de cambiarlo en una
    tarea: Haiku, Sonnet, Opus o Fable.
 
-Cada especialidad trabaja con **sus Nikkes enteras**, lore incluido, como las de la spec: la
-corrida le pasa al constructor el archivo de cada una, sin copiarlo ni tocarlo
-(Plan-Spec, decisión 8).
+Cada especialidad trabaja con **sus oficios enteros**, como las de la spec: la corrida le pasa
+al constructor el texto de cada uno, tal como está en `fabrica/oficios/`, sin copiarlo ni
+tocarlo (Plan-Spec, decisión 8).
 
 **Lo decidió él el 27 de octubre de 2026:**
 - código, seguridad e interfaz son especialidades por línea;
 - lo de IA va en el cerebro de la fábrica, como habilidad;
 - el modelo se elige por línea, y se puede cambiar en una tarea;
-- **por ahora, solo Claude.** Codex y otras IA quedan para cuando los agentes nikke sirvan a
+- **por ahora, solo Claude.** Codex y otras IA quedan para cuando los oficios sirvan a
   cualquier programa (el «Después» de Plan-Spec).
 
 **De dónde sale.** Él pasó una descripción del builder en cuatro áreas: herramientas y agentes,
@@ -47,7 +47,7 @@ defensas en profundidad, porque una respuesta puede ser **parcialmente correcta*
 - **App:** `npm test`, `npx tsc --noEmit` y `npm run lint`, desde `compania/`.
 - **Mod:** `claude plugin test fabrica`, cuando se toca `fabrica/hooks/`.
 - **Nada llama a un modelo en las pruebas.** Se prueba qué le llega al constructor: su modelo,
-  sus habilidades y sus Nikkes.
+  sus habilidades y sus oficios.
 - **`npm run fabrica:e2e` gasta:** se pregunta antes.
 - **En el navegador, solo mirando:** nada se aprueba ni se corre en una revisión.
 - **Cada pantalla nueva actualiza el lienzo:** la nota de estado, y un tablero si el diseño
@@ -67,13 +67,13 @@ defensas en profundidad, porque una respuesta puede ser **parcialmente correcta*
 
 | Lo que se pide | Hoy | Dónde |
 |---|---|---|
-| Construir con Claude, en un worktree | Sí | `fabrica/agents/constructor.md`; en `auto`, Centi si la corrida carga nikke |
+| Construir con Claude, en un worktree | Sí | `fabrica/agents/constructor.md`, con el oficio Implementación |
 | El modelo de la construcción por línea | Sí, pero solo en Configuración › Fábrica | `modelo_construccion` en `factory/config.md` (`inherit` por defecto) |
 | Elegirlo desde **Una línea** | **No** | — |
 | Cambiarlo en una tarea | **No** | — |
 | Que Jev abarate el modelo en las tareas simples | Sí | `decidir(T, "construccion")`: baja a Sonnet si Jev ve la tarea simple |
 | Habilidades en la etapa de construcción | Sí | El agente `fabrica-hab-construccion`, con `skills:` |
-| Las Nikkes de una habilidad, enteras, en su agente | Sí, para cualquier etapa | `conSusNikkes` y `agentesConHabilidades` (`motor/agentes.ts`) |
+| Los oficios de una habilidad, enteros, en su agente | Sí, para cualquier etapa | `conSusOficios` y `agentesConHabilidades` (`motor/agentes.ts`) |
 | Las tres especialidades del constructor | **No** | — |
 | Una habilidad del cerebro para lo de IA | **No** | Existe el camino, estrenado con `ley-21719` |
 | La memoria de la planta y de la línea en el constructor | Sí | Las dos fichas entran enteras a cada agente |
@@ -95,34 +95,35 @@ nada.
    qué ve la persona con una respuesta a medias y cómo cancela, lo dice la spec. Si la spec no
    lo dice, el constructor sigue lo que ya hacen las pantallas del proyecto y lo anota en su
    entrega. No es una ambigüedad que lo detenga.
-6. **Ninguna Nikke hace interfaz.** La especialidad de interfaz trabaja con las que miran
+6. **Ningún oficio hace interfaz.** La especialidad de interfaz trabaja con los que miran
    mensajes y consistencia, y recomienda nombrar sus habilidades de diseño en el catálogo
    (`ui-ux-pro-max`, `emil-design-eng`, `design-system`). No las carga sola: el catálogo manda.
-7. **Las Nikkes que solo leen revisan antes de entregar.** Crow, Modernia y Velvet no editan.
+7. **Los oficios que solo leen revisan antes de entregar.** Casos de abuso, Amenaza interna y
+   Auditoría de secretos no editan.
    En el constructor son una revisión de lo que él mismo escribió, antes de la entrega. No
    reemplazan al revisor de seguridad, que mira después.
 8. **El modelo que él elige en una tarea manda sobre Jev.** Si él eligió un modelo para la
    construcción de esa tarea, Jev no lo abarata, y vale también en cada vuelta de retrabajo.
    Sin elección en la tarea, todo sigue como hoy: el de la línea, y Jev abarata las tareas
    simples.
-9. **Una Nikke no se carga dos veces.** Si el constructor es Centi (en `auto`, con nikke
-   cargado) y una habilidad nombra a Centi, su archivo no se repite en el prompt.
-10. **El constructor sigue sin decidir el enfoque.** Maxwell, Laplace, Jackal, Viper y Neon no
-    entran: diseñar es de la spec, un prototipo no pasa al proyecto, la carga y el despliegue
-    van en procesos, y elegir una librería es de la spec.
+9. **Un oficio no se carga dos veces.** El constructor de la fábrica ya trae el oficio
+   Implementación: si una habilidad lo nombra, su texto no se repite en el prompt.
+10. **El constructor sigue sin decidir el enfoque.** Pruebas de carga y Plan de reversión no
+    entran, ni nada de diseñar, prototipar o elegir librerías: diseñar es de la spec, un
+    prototipo no pasa al proyecto, la carga y el despliegue van en procesos, y elegir una
+    librería es de la spec.
 
-## Las Nikkes de cada especialidad
+## Los oficios de cada especialidad
 
-| Especialidad | Nikkes | Qué toma de cada una |
+| Especialidad | Oficios | Qué toma de cada uno |
 |---|---|---|
-| `construir-codigo` | centi-implementacion, ade-convenciones, drake-contrato, noah-robustez, rapunzel-pruebas | **Centi:** construir lo pedido al pie de la letra y parar ante dos lecturas; es su voz. **Ade:** el código nuevo, igual al de la casa, con el precedente citado. **Drake:** la forma de lo que viaja, cada campo con tipo, si falta y qué pasa si llega mal, y los errores como parte del contrato. **Noah:** los bordes, las cuatro respuestas a un fallo, nunca tragarse un error, y probar cada defensa rompiéndola. **Rapunzel:** las pruebas del cambio, la suite antes y después, sin borrar una que falle. |
-| `construir-seguridad` | crow-abuso, modernia-interna, velvet-auditoria | **Crow:** antes de entregar, quién es el atacante de lo que construyó, autorización en el servidor, límites y gasto. **Modernia:** los permisos de más (un token, un conector MCP, una cuenta de servicio) y lo que se descarga al construir. **Velvet:** ninguna clave ni dato real en el código, en un ejemplo ni en un conjunto de prueba. |
-| `construir-interfaz` | ade-convenciones, modernia-recien-llegada, liberalio-ruido | **Ade:** la pantalla igual a las que ya hay. **Modernia recién llegada:** nombres, mensajes de error y trampas, vistos por quien llega nuevo. **Liberalio:** un mensaje dice qué pasó y qué hacer, y ningún fallo queda en silencio (un streaming cortado, un respaldo que no avisa). |
-| `construir-con-ia` (cerebro) | noah-robustez, drake-contrato, behemoth-drenaje | **Noah:** el validador de lo que devuelve el modelo, los reintentos con tope y el respaldo. **Drake:** el esquema de las herramientas MCP, el JSON que se le exige al modelo y los eventos del streaming. **Behemoth:** el gasto que no se ve, como un contexto que crece sin tope, una conexión de streaming que no se cierra o una llamada de pago dentro de un bucle. |
+| `construir-codigo` | implementacion, convenciones, contratos, robustez, pruebas | **Implementación:** construir lo pedido al pie de la letra y parar ante dos lecturas. **Convenciones del proyecto:** el código nuevo, igual al de la casa, con el precedente citado. **Contratos de datos y API:** la forma de lo que viaja, cada campo con tipo, si falta y qué pasa si llega mal, y los errores como parte del contrato. **Robustez ante fallos:** los bordes, las cuatro respuestas a un fallo, nunca tragarse un error, y probar cada defensa rompiéndola. **Pruebas:** las pruebas del cambio, la suite antes y después, sin borrar una que falle. |
+| `construir-seguridad` | casos-de-abuso, amenaza-interna, auditoria-de-secretos | **Casos de abuso:** antes de entregar, quién es el atacante de lo que construyó, autorización en el servidor, límites y gasto. **Amenaza interna y cadena de suministro:** los permisos de más (un token, un conector MCP, una cuenta de servicio) y lo que se descarga al construir. **Auditoría de secretos:** ninguna clave ni dato real en el código, en un ejemplo ni en un conjunto de prueba. |
+| `construir-interfaz` | convenciones, mirada-sin-contexto, ruido-y-registros | **Convenciones del proyecto:** la pantalla igual a las que ya hay. **Mirada sin contexto:** nombres, mensajes de error y trampas, vistos por quien llega nuevo. **Ruido y registros:** un mensaje dice qué pasó y qué hacer, y ningún fallo queda en silencio (un streaming cortado, un respaldo que no avisa). |
+| `construir-con-ia` (cerebro) | robustez, contratos, consumo-de-recursos | **Robustez ante fallos:** el validador de lo que devuelve el modelo, los reintentos con tope y el respaldo. **Contratos de datos y API:** el esquema de las herramientas MCP, el JSON que se le exige al modelo y los eventos del streaming. **Consumo de recursos:** el gasto que no se ve, como un contexto que crece sin tope, una conexión de streaming que no se cierra o una llamada de pago dentro de un bucle. |
 
-**Cuesta.** Con las cuatro encendidas son 11 archivos distintos, unos 81 KB: cerca de 23 mil
-tokens más por construcción, y otra vez en cada vuelta de retrabajo. Solo código son 5, unos
-34 KB. La pantalla lo dice al encender cada una.
+**Cuesta.** Cada oficio encendido suma tokens a cada construcción, y otra vez en cada vuelta de
+retrabajo. La pantalla lo dice al encender cada especialidad.
 
 **Cómo se controla.**
 - Esos tokens van al principio del prompt del agente, que no cambia durante la corrida, y por
@@ -130,15 +131,13 @@ tokens más por construcción, y otra vez en cada vuelta de retrabajo. Solo cód
   real se multiplica por las vueltas, no por las tareas.
 - Las corridas usan su suscripción de Claude Code, así que lo que se gasta es el límite de uso,
   no dinero de la API.
-- Con la spec (sus cuatro especialidades, unos 16 mil tokens) y el constructor con todo
-  encendido, una tarea suma cerca de 40 mil tokens de prompt antes de hacer nada.
+- Con la spec y el constructor con todo encendido, una tarea suma muchos tokens de prompt
+  antes de hacer nada.
 - Por eso se encienden por línea, y solo las que la línea necesita. **Antes de encender las
   cuatro en una línea, se mide una corrida con solo `construir-codigo`** en el informe de
   corridas, y se compara con una sin especialidades.
-- Si pesa demasiado, las formas de cargar menos están en «Cargar menos de las Nikkes», al final
-  de `Plan-Habilidades-y-Procesos.md`. La que más ahorra sin cambiar cómo trabaja el agente es
-  pasar solo el oficio de cada Nikke y el lore de una sola voz: la mitad de esos 81 KB es lore.
-  Cambia la decisión 8 de Plan-Spec, así que es una decisión suya.
+- Si pesa demasiado, las formas de cargar menos están en «Cargar menos de los oficios», al
+  final de `Plan-Habilidades-y-Procesos.md`.
 
 ## Orden y por qué
 
@@ -261,81 +260,77 @@ Que él pueda construir una tarea con otro modelo, sin cambiar el de la línea.
 ## 3. Las tres especialidades, por línea
 
 ### Objetivo
-Que una línea encienda código, seguridad o interfaz en su construcción, cada una con sus Nikkes.
+Que una línea encienda código, seguridad o interfaz en su construcción, cada una con sus oficios.
 
 ### Criterios de aceptación
-1. Tres plantillas en `fabrica/plantillas/especialidades/`, cada una con su `nikkes:`:
+1. Tres plantillas en `fabrica/plantillas/especialidades/`, cada una con su `oficios:`:
    - `construir-codigo`;
    - `construir-seguridad`;
    - `construir-interfaz`.
 
-   Su texto dice cómo aplica el constructor el oficio de cada Nikke a lo que él mismo escribe,
-   y lo nuevo que ninguna cubre.
+   Su texto dice cómo aplica el constructor cada oficio a lo que él mismo escribe, y lo nuevo
+   que ninguno cubre.
 2. Cada una tiene su «cuándo» para el catálogo, en la etapa `construccion`. No rellena: si la
    tarea no toca lo suyo, no agrega nada y lo dice en una línea de la entrega.
 3. En Memoria › Habilidades, «Proponer las tres del constructor» las deja como propuestas de
    la línea, como las de la spec. Él las aprueba de a una, viendo su texto entero.
-4. Al correr, el agente de construcción con habilidades lleva las Nikkes enteras de las
-   especialidades que la línea encendió. Si el constructor es una de ellas, no se repite.
+4. Al correr, el agente de construcción con habilidades lleva enteros los oficios de las
+   especialidades que la línea encendió. El que el constructor ya trae no se repite.
 5. `fabrica/agents/constructor.md` suma la regla de sus habilidades de etapa:
    - las aplica solo si su «cuándo» vale;
-   - las Nikkes que solo leen revisan antes de entregar;
-   - sus límites mandan sobre los de ellas;
+   - los oficios que solo leen revisan antes de entregar;
+   - sus límites mandan sobre los de ellos;
    - la entrega dice cuáles aplicó.
 6. `construir-interfaz` dice que las decisiones de UX vienen de la spec, y que sin ellas sigue
    lo que hacen las pantallas del proyecto y lo anota. Recomienda nombrar en el catálogo sus
    habilidades de diseño.
-7. La pantalla dice lo que cuesta cada especialidad (sus Nikkes y su tamaño) antes de proponerla.
+7. La pantalla dice lo que cuesta cada especialidad (sus oficios y su tamaño) antes de proponerla.
 
 ### Archivos o zonas que toca
 - `fabrica/plantillas/especialidades/` (tres carpetas nuevas).
 - `src/lib/fabrica/habilidades/` (la lista de especialidades, ahora con su etapa).
 - `src/lib/fabrica/memoria/pantalla.ts` y `src/components/memoria-fabrica/habilidades.tsx`.
-- `src/lib/fabrica/motor/agentes.ts` (no repetir la Nikke que ya es el agente).
+- `src/lib/fabrica/motor/agentes.ts` (no repetir el oficio que el agente ya trae).
 - `fabrica/agents/constructor.md`.
 
 ### Pruebas
-- Las tres plantillas pasan el lector de habilidades (huella) y nombran Nikkes que existen.
+- Las tres plantillas pasan el lector de habilidades (huella) y nombran oficios que existen.
 - Proponerlas no pisa una que exista ni una propuesta abierta.
-- Con `construir-codigo` en el catálogo, el agente de construcción lleva sus cinco Nikkes; con
-  el constructor siendo Centi, Centi va una vez.
+- Con `construir-codigo` en el catálogo, el agente de construcción lleva sus cinco oficios, e
+  Implementación, que el constructor ya trae, va una vez.
 - Una línea que no las nombra no las recibe.
 
 ### Cómo quedó (27 de octubre de 2026)
 - **Las plantillas** están en `fabrica/plantillas/especialidades/construir-codigo/`,
-  `construir-seguridad/` y `construir-interfaz/`. Cada una dice qué toma de cada Nikke y cómo se
+  `construir-seguridad/` y `construir-interfaz/`. Cada una dice qué toma de cada oficio y cómo se
   juntan cuando chocan con el puesto del constructor:
-  - Centi no agrega defensas que el encargo no pida, y Noah sí: van solo en el código que la
-    tarea escribe;
-  - un campo que el contrato de Drake obliga a decidir y la spec no dice es una ambigüedad;
-  - Rapunzel no borra pruebas que fallan, y lo que destapa fuera de la tarea se anota.
+  - Implementación no agrega defensas que el encargo no pida, y Robustez sí: van solo en el
+    código que la tarea escribe;
+  - un campo que Contratos obliga a decidir y la spec no dice es una ambigüedad;
+  - Pruebas no borra pruebas que fallan, y lo que destapa fuera de la tarea se anota.
 - **Las especialidades tienen su etapa** (`ESPECIALIDADES`, en `habilidades/formato.ts`, con
   `especialidadesDe`). La propuesta dice de qué etapa es, cita el plan que corresponde y dice lo
-  que cuesta en esa etapa. En el retrabajo, la construcción vuelve a cargar las Nikkes.
+  que cuesta en esa etapa. En el retrabajo, la construcción vuelve a cargar los oficios.
 - **Memoria › Habilidades** tiene dos secciones con el mismo componente: «Especialidades de la
   spec» (con la Ley 21.719) y «Especialidades del constructor».
-  - Cada especialidad dice con qué Nikkes trabaja y cuánto pesan: KB y tokens aproximados, por
+  - Cada especialidad dice con qué oficios trabaja y cuánto pesan: KB y tokens aproximados, por
     construcción y por cada retrabajo (`costoDeEspecialidades`). Se mira solo el tamaño de los
-    archivos, sin leerlos. Si la carpeta de nikke no está en el equipo, lo dice.
+    archivos, sin leerlos.
   - «Proponer las tres» manda `etapa: "construccion"`. Sin etapa, como antes, propone las de la
     spec.
-- **El motor:** si el constructor ya es una Nikke (Centi elegida), su archivo no se suma otra
-  vez a su prompt.
+- **El motor:** un oficio que el constructor ya trae (Implementación) no se suma otra vez a su
+  prompt.
 - **`fabrica/agents/constructor.md`** suma la regla 10:
   - las habilidades de su etapa valen solo si su «cuándo» aplica;
-  - sus reglas mandan sobre las de las Nikkes;
-  - las que solo leen revisan lo que él escribió antes de entregar;
-  - la voz va solo en el resumen;
+  - sus reglas mandan sobre las de los oficios;
+  - los que solo leen revisan lo que él escribió antes de entregar;
+  - lo que escribe va técnico y neutro;
   - la entrega dice cuáles aplicó.
-- **Medido con su carpeta de nikke** (en la pantalla):
-  - código, 33 KB (unos 10 mil tokens);
-  - seguridad, 24 KB (unos 7 mil);
-  - interfaz, 20 KB (unos 6 mil).
-
-  Como Ade está en código y en interfaz, las tres juntas cargan su archivo una sola vez.
+- Como Convenciones del proyecto está en código y en interfaz, las tres juntas cargan su texto
+  una sola vez.
 - **Verificado:**
   - las pruebas: las siete plantillas, proponer y aprobar las del constructor en su etapa con
-    el texto que corresponde, las Nikkes una vez cada una y sin repetir a Centi, el peso, y la
+    el texto que corresponde, los oficios una vez cada uno y sin repetir Implementación, el peso, y la
     ruta de Memoria con la etapa;
   - las 135 pruebas del mod;
   - en el navegador, la sección en DoveCentral.NET10, solo mirando: no se propuso nada.
@@ -372,13 +367,13 @@ que trabaja con IA lo use con un clic.
 
 ### Criterios de aceptación
 1. La plantilla vive en `fabrica/plantillas/cerebro/construir-con-ia/SKILL.md`, con
-   `nikkes: noah-robustez, drake-contrato, behemoth-drenaje`.
+   `oficios: robustez, contratos, consumo-de-recursos`.
 2. Se propone desde la pestaña Habilidades de cualquier línea, y la propuesta va al vault de La
    planta, como la de la ley.
 3. Aprobarla en La planta la escribe como habilidad suya, sin pisar una que exista.
 4. Con la habilidad ya suya, la fila ofrece «Usarla en esta línea (construcción)».
-5. Las Nikkes de una habilidad suya llegan igual que las de una del proyecto. Se comprueba al
-   construir, porque la ley no tenía Nikkes.
+5. Los oficios de una habilidad suya llegan igual que los de una del proyecto. Se comprueba al
+   construir, porque la ley no tenía oficios.
 6. Lo de la ley y lo de IA salen de una sola lista de habilidades del cerebro, no de dos casos
    aparte.
 7. Se revisa que `spec-contratos-y-recursos` pida las decisiones que esta habilidad da por
@@ -388,12 +383,12 @@ que trabaja con IA lo use con un clic.
 ### Pruebas
 - La plantilla pasa el lector de habilidades.
 - Proponerla, aprobarla en una carpeta de Claude Code de mentira y usarla en una línea.
-- Con la habilidad en el catálogo de construcción, el agente lleva las tres Nikkes, sin
-  repetir las que ya traía `construir-codigo`.
+- Con la habilidad en el catálogo de construcción, el agente lleva los tres oficios, sin
+  repetir los que ya traía `construir-codigo`.
 
 ### Cómo quedó (27 de octubre de 2026)
-- **La plantilla** está en `fabrica/plantillas/cerebro/construir-con-ia/SKILL.md`, con Noah,
-  Drake y Behemoth. Su regla principal es la de las respuestas parcialmente correctas. Cubre lo
+- **La plantilla** está en `fabrica/plantillas/cerebro/construir-con-ia/SKILL.md`, con Robustez,
+  Contratos y Consumo de recursos. Su regla principal es la de las respuestas parcialmente correctas. Cubre lo
   que devuelve el modelo, los conectores MCP, el estado y el contexto, el RAG, el streaming, el
   respaldo y el gasto. Las decisiones las trae la spec, y en las pruebas no llama a un modelo
   real ni a un servicio de pago.
@@ -405,8 +400,8 @@ que trabaja con IA lo use con un clic.
 - **En Memoria › Habilidades**, cada habilidad del cerebro se muestra en la sección de su etapa,
   con el mismo componente (`DelCerebro`): la ley en la de la spec, la de IA en la del
   constructor. Si existe, ofrece «Usarla en esta línea (construcción)». Muestra lo que pesan sus
-  Nikkes: 21 KB, unos 6 mil tokens, medido con su carpeta de nikke.
-- **Las Nikkes de una habilidad suya** llegan al constructor igual que las de una del proyecto.
+  oficios.
+- **Los oficios de una habilidad suya** llegan al constructor igual que los de una del proyecto.
   Lo comprueba una prueba.
 - **`spec-contratos-y-recursos`** suma «Las decisiones de IA»: qué modelo hace qué, la
   estrategia de contexto, la fragmentación y el respaldo. Antes cubría los tokens, la latencia,
@@ -417,7 +412,7 @@ que trabaja con IA lo use con un clic.
     tiene aprobada.
 - **Verificado:**
   - las pruebas: la plantilla, la propuesta, la aprobación como habilidad suya, las dos del
-    cerebro esperando a la vez, sus Nikkes en el constructor, el peso, y la ruta de Memoria de
+    cerebro esperando a la vez, sus oficios en el constructor, el peso, y la ruta de Memoria de
     punta a punta con un nombre que no es del cerebro rechazado;
   - en el navegador, la fila en DoveCentral.NET10, solo mirando: no se propuso nada.
 - **Verificado en la corrida real del 27 de octubre de 2026 (`npm run fabrica:corrida-real`):**
@@ -428,20 +423,21 @@ que trabaja con IA lo use con un clic.
 
 No es parte de este plan.
 
-- **Una Nikke de interfaz.** Hoy ninguna lo es. Si él escribe una, se suma a
+- **Un oficio de interfaz.** Hoy ninguno lo es. Si se escribe uno, se suma a
   `construir-interfaz`.
 - **Una especialidad de UX para la spec**, si las decisiones de experiencia no alcanzan con lo
   que ya pide la spec.
-- **La carga y el despliegue como procesos**: un paso de carga, con Jackal como método, y el
-  respaldo entre modelos probado en un entorno de prueba, con Viper.
-- **Los agentes nikke para cualquier IA, y Codex como constructor** (el «Después» de
+- **La carga y el despliegue como procesos**: un paso de carga, con el oficio Pruebas de carga
+  como método, y el respaldo entre modelos probado en un entorno de prueba, con el oficio Plan
+  de reversión.
+- **Los oficios para cualquier IA, y Codex como constructor** (el «Después» de
   Plan-Spec).
 - **Edge y microcontroladores.**
 
 ## Lo que este plan no hace
 
 - **Que la fábrica elija sola el modelo según la tarea**, más allá de lo que Jev ya abarata.
-- **Cambiar a las Nikkes.** Se leen de su carpeta tal como están.
+- **Cambiar los oficios.** Se leen de `fabrica/oficios/` tal como están.
 - **Al construirse**, `compania/CLAUDE.md` suma una regla con lo que él decidió aquí: con qué
   modelo construye la fábrica, cómo se cambia, qué especialidades hay y que lo de IA vive en el
   cerebro.

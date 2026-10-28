@@ -82,7 +82,7 @@ export function habilidadesParaLosAgentes(texto: string | null): string {
 }
 
 /**
- * El agente de retrabajo que arma la aplicación (Snow White y Rapunzel, fabrica/docs/Plan-Integracion.md,
+ * El agente de retrabajo que arma la aplicación (Arreglo de raíz y Pruebas, fabrica/docs/Plan-Integracion.md,
  * etapa 6). Es de la etapa de construcción: recibe sus habilidades y lo frenan las mismas guardias.
  * No es un candidato del rol: el orquestador lo lanza solo en una vuelta de retrabajo.
  */
@@ -193,7 +193,7 @@ export function habilidadesDeLaTarea(cuerpo: string): string[] {
 /**
  * Si el orquestador lanza el agente de siempre para una etapa que en esta corrida trae el suyo con
  * habilidades (`fabrica-hab-<rol>`), por qué no: ese agente tiene cargadas las habilidades de la
- * etapa y las Nikkes de sus especialidades, y el de siempre no. Lo encontró la corrida real del 27 de
+ * etapa y los oficios de sus especialidades, y el de siempre no. Lo encontró la corrida real del 27 de
  * octubre de 2026: el orquestador lanzó `fabrica:constructor` con `fabrica-hab-construccion` en la
  * lista. `habilidades` es lo que la aplicación pasó en `FABRICA_HABILIDADES`: sin habilidades para
  * esa etapa, no hay agente con habilidades, y pasa. El de retrabajo trae las suyas, y pasa.

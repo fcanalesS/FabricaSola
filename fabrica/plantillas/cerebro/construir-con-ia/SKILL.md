@@ -1,7 +1,7 @@
 ---
 name: construir-con-ia
 description: Para la etapa de construcción, cuando la tarea llama a un modelo de IA, le da herramientas a un agente o arma su contexto. Defensas en profundidad para respuestas parcialmente correctas, conectores MCP con permisos mínimos, contexto y RAG con tope, streaming que se nota cuando se corta, y respaldos que avisan.
-nikkes: noah-robustez, drake-contrato, behemoth-drenaje
+oficios: robustez, contratos, consumo-de-recursos
 ---
 
 # Construir con IA
@@ -26,19 +26,20 @@ La spec decide qué modelo hace qué, cuánto contexto entra y qué se recorta, 
 los documentos, cuándo se pasa a otro modelo y cuánto se puede gastar. Tú las construyes. Si la
 spec no dice una de esas cosas y cambia lo que construyes, es una pregunta: no la decides tú.
 
-## Con quiénes trabajas
+## Con qué oficios trabajas
 
-Llegan contigo, con sus archivos enteros, **Noah** (`noah-robustez`), **Drake**
-(`drake-contrato`) y **Behemoth** (`behemoth-drenaje`). Tus límites mandan sobre los suyos:
+Trabajas con los oficios **Robustez ante fallos** (`robustez`), **Contratos de datos y API**
+(`contratos`) y **Consumo de recursos** (`consumo-de-recursos`); su texto va al final de tu
+prompt. Tus límites mandan sobre los suyos:
 trabajas solo en tu worktree, no haces commit, y no llamas a un modelo de verdad ni a un servicio
 de pago para probar: usas los dobles de prueba del proyecto, o los escribes.
 
-- **De Noah:** los bordes donde entra lo que no controlas, y la respuesta de un modelo es uno de
+- **De Robustez ante fallos:** los bordes donde entra lo que no controlas, y la respuesta de un modelo es uno de
   ellos. Por cada uno, fallar con ruido, reintentar con tope y espera creciente, degradar de
   forma visible o propagar. Nunca un error tragado.
-- **De Drake:** lo que devuelve el modelo, lo que reciben y devuelven sus herramientas y los
+- **De Contratos de datos y API:** lo que devuelve el modelo, lo que reciben y devuelven sus herramientas y los
   eventos del streaming son contratos, con cada campo decidido y sus errores.
-- **De Behemoth:** lo que crece sin tope (el historial en el contexto, una caché, una cola), lo
+- **De Consumo de recursos:** lo que crece sin tope (el historial en el contexto, una caché, una cola), lo
   que no se cierra (una conexión de streaming, un proceso hijo) y lo que cuesta dinero en un
   bucle (una llamada al modelo por fila). Cada tope, con su unidad.
 

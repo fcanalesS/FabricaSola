@@ -471,7 +471,7 @@ async function empujar(m: EnMarcha, p: Paso, prep: Preparada, o: { env: Record<s
 
   const { h, variable, bin } = herramienta(remoto.stdout, o.rutas);
   if (!bin) return { ok: true, salida: push.salida, nota: `Empujó ${rama} a ${REMOTO}. El PR no se abrió: falta ${variable} en .env.local, con la ruta exacta de ${h}.` };
-  // El cuerpo lo arma el código: si se fusiona solo, y lo que escribió Label de cada tarea que entra.
+  // El cuerpo lo arma el código: si se fusiona solo, y lo que escribió el agente de las notas de cada tarea que entra.
   const seFusionaSolo = prep.proceso.pasos.some((x) => x.tipo === "fusion");
   const tareas = await tareasParaLaFusion(prep, o.secretos);
   const cuerpo = cuerpoDelPR({ proceso: prep.proceso.id, commit: prep.commit, seFusionaSolo, tareas });
@@ -873,7 +873,7 @@ async function tareasDelRango(prep: Preparada): Promise<{ datos: Record<string, 
 
 /**
  * Las tareas del rango como las ve la fusión: su clase, si él la probó (su veredicto «aprobada» en
- * `factory/veredictos/`) y lo que escribió Label para el PR, con las claves de este equipo tapadas.
+ * `factory/veredictos/`) y lo que escribió el agente de las notas para el PR, con las claves de este equipo tapadas.
  */
 async function tareasParaLaFusion(prep: Preparada, secretos: string[]): Promise<TareaDelRango[]> {
   const out: TareaDelRango[] = [];

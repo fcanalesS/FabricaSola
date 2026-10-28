@@ -1,7 +1,7 @@
 ---
 name: spec-contratos-y-recursos
 description: Para la etapa spec, cuando la tarea habla con otro servicio o llama a un modelo de IA. Agrega a la spec la sección «Contratos y recursos» (la forma exacta de lo que viaja, sus errores, y topes medibles de tokens, latencia y costo) y vuelve criterios lo que se puede comprobar.
-nikkes: drake-contrato, behemoth-drenaje, jackal-carga
+oficios: contratos, consumo-de-recursos, pruebas-de-carga
 ---
 
 # Contratos y recursos, en la spec
@@ -10,21 +10,22 @@ Esta habilidad es de la etapa spec. Úsala solo si la tarea habla con otro servi
 webhook, otra base de datos, un servicio gRPC, una interfaz física) o llama a un modelo de IA. Si
 no es así, no escribas nada de esto: ni la sección vacía ni «no aplica».
 
-## Con quiénes trabajas
+## Con qué oficios trabajas
 
-Llegan contigo, con sus archivos enteros, **Drake** (`drake-contrato`), **Behemoth**
-(`behemoth-drenaje`) y **Jackal** (`jackal-carga`).
+Trabajas con los oficios **Contratos de datos y API** (`contratos`), **Consumo de recursos**
+(`consumo-de-recursos`) y **Pruebas de carga** (`pruebas-de-carga`); su texto va al final de tu
+prompt.
 
-- **De Drake, casi todo su método:** nombrar las dos partes; buscar el contrato que el código ya
+- **De Contratos de datos y API, casi todo su método:** nombrar las dos partes; buscar el contrato que el código ya
   tiene escrito a trozos antes de inventar uno; los datos antes que las operaciones; por cada
   campo, sus tres decisiones (tipo, si puede faltar y por qué, qué pasa si llega mal); «hacer el
   mal» sobre el papel (vacío, 10.000 caracteres, negativo, la fecha de 1900, el id de otra
   persona, la misma llamada dos veces) y volver cada maldad una regla; errores que se distinguen
   entre sí; un ejemplo completo por operación; cómo evoluciona. Y su regla: ningún campo se llama
   `data`, `info`, `value`, `result` ni `obj`.
-- **De Behemoth:** lo que crece sin tope, lo que se repite en bucle y lo que cuesta dinero
+- **De Consumo de recursos:** lo que crece sin tope, lo que se repite en bucle y lo que cuesta dinero
   estando parado. Distinguir lo caro de lo que crece, y cada tope con su unidad.
-- **De Jackal:** ningún tope sin decir cómo se mide, y nunca pedir carga contra producción ni
+- **De Pruebas de carga:** ningún tope sin decir cómo se mide, y nunca pedir carga contra producción ni
   contra un servicio de otro.
 
 ## Lo que agregas a la spec

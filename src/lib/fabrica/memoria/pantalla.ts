@@ -52,7 +52,7 @@ export type HabilidadesALaVista = {
   /** Las que existen y el catálogo no usa. De un `SKILL.md` se ve solo su nombre y su descripción. */
   sinUsar: ({ nombre: string; descripcion: string; origen: OrigenDeHabilidad; soloAMano: boolean } & UsoEnLaBitacora)[];
   etapas: readonly string[];
-  /** Lo que pesa cada especialidad en el prompt de su agente: sus Nikkes y sus bytes. */
+  /** Lo que pesa cada especialidad en el prompt de su agente: sus oficios y sus bytes. */
   costos: CostoDeEspecialidad[];
 };
 

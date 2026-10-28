@@ -111,7 +111,7 @@ test("en la línea activa, el veredicto va por el camino de la columna: al motor
     ruta === "/api/veredicto"
       ? { estado: 200, datos: {} }
       : ruta === "/api/ajustes"
-        ? { estado: 200, datos: { corridaConNikke: false } }
+        ? { estado: 200, datos: {} }
         : ruta === "/api/corridas"
           ? { estado: 409, datos: { error: "Falta COMPANIA_CLAUDE_CODE_BIN en .env.local." } }
           : null;
@@ -355,7 +355,7 @@ test("«Debió esperarme» anota un error de Jev en su línea, se puede quitar, 
   writeFileSync(archivo, original);
 });
 
-test("leer una tarea trae lo que escribió Label: el texto del PR y lo que se prueba a mano", async () => {
+test("leer una tarea trae lo que escribió el agente de las notas: el texto del PR y lo que se prueba a mano", async () => {
   const a = await linea("caja");
   const archivo = path.join(a.raiz, "factory", "tareas", "F-002-x.md");
   writeFileSync(archivo, readFileSync(archivo, "utf8") + "\n## Para probar a mano\n\n1. Cobra 1000 con descuento.\n2. El total tiene que ser 950.\n");
@@ -372,7 +372,7 @@ test("correr la cola de una línea la deja como la activa y le pide la corrida a
   const a = await linea("cola");
   const b = await linea("activa");
   assert.equal((await leerAjustes()).lineaActiva, b.id);
-  red.fabrica = ({ ruta }) => (ruta === "/api/ajustes" ? { estado: 200, datos: { corridaConNikke: false } } : ruta === "/api/corridas" ? { estado: 200, datos: {} } : null);
+  red.fabrica = ({ ruta }) => (ruta === "/api/ajustes" ? { estado: 200, datos: {} } : ruta === "/api/corridas" ? { estado: 200, datos: {} } : null);
 
   const r = await hacer({ accion: "correr", linea: a.id });
   assert.equal(r.estado, 200);
@@ -387,7 +387,7 @@ test("correr la cola de una línea la deja como la activa y le pide la corrida a
   assert.equal((await leerAjustes()).lineaActiva, b.id);
 
   // Lo que el motor no lanza vuelve con su motivo.
-  red.fabrica = ({ ruta }) => (ruta === "/api/ajustes" ? { estado: 200, datos: { corridaConNikke: false } } : ruta === "/api/corridas" ? { estado: 409, datos: { error: "No encontré Claude Code." } } : null);
+  red.fabrica = ({ ruta }) => (ruta === "/api/ajustes" ? { estado: 200, datos: {} } : ruta === "/api/corridas" ? { estado: 409, datos: { error: "No encontré Claude Code." } } : null);
   const no = await hacer({ accion: "correr", linea: a.id });
   assert.equal(no.estado, 409);
   assert.match(no.error ?? "", /No encontré Claude Code/);

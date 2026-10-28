@@ -8,9 +8,7 @@ import { agentesDeEsteEquipo } from "@/lib/fabrica/motor/proyecto";
  * La configuración de la fábrica, para la página de configuración del modo
  * trabajo: qué proyecto mira, crearle una factory/ básica, los modelos y los
  * agentes de cada rol, y convertir un documento de requerimientos en tareas.
- * El mod nikke solo se apaga: la fábrica es para que trabaje sola, y sus
- * guardas detendrían las corridas esperando una firma. Lo decidió él el 17 de
- * octubre de 2026. Cada cambio sale de un clic suyo. En casa no existe.
+ * Cada cambio sale de un clic suyo.
  *
  * `claudeCode` dice si este equipo tiene Claude Code (`COMPANIA_CLAUDE_CODE_BIN` o el
  * `claude` del PATH): sin él se configura, pero no se corre.

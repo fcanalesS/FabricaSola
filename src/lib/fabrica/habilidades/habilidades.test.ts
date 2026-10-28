@@ -59,7 +59,7 @@ test("la revisión dice qué no cumple, con su línea: etapa inventada, habilida
   assert.match(en(9).join(), /pasa de 200 caracteres/);
   assert.match(en(10).join(), /No dice en qué etapa/);
   // Una de un plugin no se puede comprobar desde aquí, y se dice.
-  assert.match(revisarCatalogo("- [spec] nikke:anis-revision: al revisar.\n", DISPONIBLES)[0]!.que, /las de un plugin no se pueden comprobar/);
+  assert.match(revisarCatalogo("- [spec] otro-mod:revision-de-codigo: al revisar.\n", DISPONIBLES)[0]!.que, /las de un plugin no se pueden comprobar/);
 });
 
 test("cada etapa recibe solo lo que el catálogo le da, y nunca una que no existe o es solo a mano", () => {

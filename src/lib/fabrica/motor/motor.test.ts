@@ -136,7 +136,7 @@ test("sin la ruta de Claude Code no se corre, y se dice cuál variable falta", a
   assert.match(String((r.datos as { error: string }).error), /COMPANIA_CLAUDE_CODE_BIN/);
 });
 
-test("una corrida lanza Claude Code con el plugin de la aplicación, sin nikke, y su resultado y su telemetría quedan en el informe", { skip: process.platform === "win32" }, async () => {
+test("una corrida lanza Claude Code con el plugin de la aplicación, sin otros mods, y su resultado y su telemetría quedan en el informe", { skip: process.platform === "win32" }, async () => {
   proyectoActual = proyectoNuevo();
   await pedir("/api/ajustes", { raiz: proyectoActual }, "PUT");
   await pedir("/api/ajustes", { accion: "inicializar" });
@@ -484,7 +484,7 @@ test("de la salida de la corrida sale quién trabaja cada tarea y qué está hac
   usa("s2", "Edit", { file_path: "WolffWeb/Controllers/UsuariosController.cs" }, "t1");
   usa("t2", "mcp__fabrica__verificar", { tarea: "F-010" });
   vuelve("t2", "F-010: verificación OK");
-  usa("t3", "Agent", { subagent_type: "nikke:anis-revision", description: "Revisión de código", prompt: "Revisa F-011 en su worktree" });
+  usa("t3", "Agent", { subagent_type: "otro-mod:revision-de-codigo", description: "Revisión de código", prompt: "Revisa F-011 en su worktree" });
   vuelve("t3", "Async agent launched successfully. agentId: x");
   usa("t4", "Agent", { subagent_type: "general-purpose", description: "Algo sin tarea", prompt: "nada" });
 
@@ -498,20 +498,20 @@ test("de la salida de la corrida sale quién trabaja cada tarea y qué está hac
       // La verificación de la fábrica ya terminó.
       "F-010": ["la fábrica", null, true, false],
       // Lanzado en segundo plano: que contestó que arrancó no quiere decir que terminó.
-      "F-011": ["nikke:anis-revision", null, false, true],
+      "F-011": ["otro-mod:revision-de-codigo", null, false, true],
       sin: ["general-purpose", null, false, false],
     },
   );
 });
 
-test("el agente de cada etapa se elige entre los de este equipo, y los de nikke viajan con la corrida sin sus guardas", async () => {
+test("el agente de cada etapa se elige entre los de este equipo, y los de un mod viajan con la corrida sin sus guardas", async () => {
   const { agentesParaInyectar, agenteDesde } = await import("./agentes.ts");
-  // Un plugin «nikke» de prueba, con un agente.
+  // Un mod de prueba en CLAUDE_CODE_PLUGIN_DIRS, con un agente.
   const plugin = mkdtempSync(path.join(os.tmpdir(), "fabrica-plugin-"));
   mkdirSync(path.join(plugin, ".claude-plugin"), { recursive: true });
   mkdirSync(path.join(plugin, "agents"));
-  writeFileSync(path.join(plugin, ".claude-plugin", "plugin.json"), JSON.stringify({ name: "nikke" }));
-  writeFileSync(path.join(plugin, "agents", "centi-prueba.md"), '---\nname: centi-prueba\ndescription: "Construye lo pedido."\ntools: Read, Edit, Bash\nmodel: inherit\n---\n\n# Centi\n\nConstruye.\n');
+  writeFileSync(path.join(plugin, ".claude-plugin", "plugin.json"), JSON.stringify({ name: "otro-mod" }));
+  writeFileSync(path.join(plugin, "agents", "constructor-prueba.md"), '---\nname: constructor-prueba\ndescription: "Construye lo pedido."\ntools: Read, Edit, Bash\nmodel: inherit\n---\n\n# Constructor de prueba\n\nConstruye.\n');
   const antes = process.env.CLAUDE_CODE_PLUGIN_DIRS;
   process.env.CLAUDE_CODE_PLUGIN_DIRS = plugin;
   try {
@@ -525,34 +525,34 @@ test("el agente de cada etapa se elige entre los de este equipo, y los de nikke 
     assert.equal(a.paraleloMax, 2);
     // Los de la fábrica salen del plugin de la aplicación (en las pruebas, la carpeta de trabajo es otra).
     const { definicionesDisponibles } = await import("./agentes.ts");
-    const conLaFabrica = await definicionesDisponibles(proyectoActual, path.resolve(import.meta.dirname, "..", "..", "..", "..", "fabrica"), false);
+    const conLaFabrica = await definicionesDisponibles(proyectoActual, path.resolve(import.meta.dirname, "..", "..", "..", "..", "fabrica"));
     assert.ok(conLaFabrica.some((x) => x.nombre === "fabrica:constructor" && x.enCorridas === "si"));
-    assert.ok(a.disponibles.some((x) => x.nombre === "nikke:centi-prueba" && x.enCorridas === "inyectado"));
+    assert.ok(a.disponibles.some((x) => x.nombre === "otro-mod:constructor-prueba" && x.enCorridas === "inyectado"));
     // Lo que se muestra no lleva el prompt ni la ruta del agente.
     assert.doesNotMatch(JSON.stringify(a.disponibles), /Construye\.\\n|agents[\\/]/);
 
-    assert.equal((await pedir("/api/ajustes", { agenteDeRol: { rol: "construccion", valor: "nikke:centi-prueba" } }, "PUT")).estado, 200);
-    assert.equal((await pedir("/api/ajustes", { agenteDeRol: { rol: "construccion", valor: "nikke:no-existe" } }, "PUT")).estado, 409);
+    assert.equal((await pedir("/api/ajustes", { agenteDeRol: { rol: "construccion", valor: "otro-mod:constructor-prueba" } }, "PUT")).estado, 200);
+    assert.equal((await pedir("/api/ajustes", { agenteDeRol: { rol: "construccion", valor: "otro-mod:no-existe" } }, "PUT")).estado, 409);
     assert.equal((await pedir("/api/ajustes", { agenteDeRol: { rol: "orquestador", valor: "auto" } }, "PUT")).estado, 409);
     assert.equal((await pedir("/api/ajustes", { paraleloMax: 4 }, "PUT")).estado, 200);
     assert.equal((await pedir("/api/ajustes", { paraleloMax: 9 }, "PUT")).estado, 409);
     const datos = partir(readFileSync(path.join(proyectoActual, "factory", "config.md"), "utf8")).datos;
-    assert.deepEqual([datos.agente_construccion, datos.paralelo_max], ["nikke:centi-prueba", "4"]);
-    assert.deepEqual([(await leer()).porRol.construccion, (await leer()).paraleloMax], ["nikke:centi-prueba", 4]);
+    assert.deepEqual([datos.agente_construccion, datos.paralelo_max], ["otro-mod:constructor-prueba", "4"]);
+    assert.deepEqual([(await leer()).porRol.construccion, (await leer()).paraleloMax], ["otro-mod:constructor-prueba", 4]);
 
     // Lo que viaja con la corrida: el agente elegido, con su nombre sin el del plugin.
-    const def = { ...agenteDesde(readFileSync(path.join(plugin, "agents", "centi-prueba.md"), "utf8"), "x.md")!, nombre: "nikke:centi-prueba", enCorridas: "inyectado" as const };
+    const def = { ...agenteDesde(readFileSync(path.join(plugin, "agents", "constructor-prueba.md"), "utf8"), "x.md")!, nombre: "otro-mod:constructor-prueba", enCorridas: "inyectado" as const };
     const fabrica = { ...def, nombre: "fabrica:constructor", enCorridas: "si" as const };
-    assert.deepEqual(agentesParaInyectar({ construccion: "nikke:centi-prueba", aprobacion: "nikke:centi-prueba", spec: "fabrica:constructor" }, [def, fabrica]), {
-      "centi-prueba": { description: "Construye lo pedido.", prompt: "# Centi\n\nConstruye.", tools: ["Read", "Edit", "Bash", "mcp__fabrica__aprobar"] },
+    assert.deepEqual(agentesParaInyectar({ construccion: "otro-mod:constructor-prueba", aprobacion: "otro-mod:constructor-prueba", spec: "fabrica:constructor" }, [def, fabrica]), {
+      "constructor-prueba": { description: "Construye lo pedido.", prompt: "# Constructor de prueba\n\nConstruye.", tools: ["Read", "Edit", "Bash", "mcp__fabrica__aprobar"] },
     });
-    assert.deepEqual(agentesParaInyectar({ construccion: "nikke:centi-prueba" }, [def]), { "centi-prueba": { description: "Construye lo pedido.", prompt: "# Centi\n\nConstruye.", tools: ["Read", "Edit", "Bash"] } });
+    assert.deepEqual(agentesParaInyectar({ construccion: "otro-mod:constructor-prueba" }, [def]), { "constructor-prueba": { description: "Construye lo pedido.", prompt: "# Constructor de prueba\n\nConstruye.", tools: ["Read", "Edit", "Bash"] } });
     assert.deepEqual(agentesParaInyectar({ construccion: "auto" }, [def]), {});
-    // Una Nikke elegida para seguridad viaja con las del validador, sin tocar su archivo.
-    assert.deepEqual(agentesParaInyectar({ revision_seguridad: "nikke:centi-prueba" }, [def])["centi-prueba"]?.tools, [
+    // Un agente de un mod elegido para seguridad viaja con las del validador, sin tocar su archivo.
+    assert.deepEqual(agentesParaInyectar({ revision_seguridad: "otro-mod:constructor-prueba" }, [def])["constructor-prueba"]?.tools, [
       "Read", "Edit", "Bash", "mcp__ley21719-validator__validate_csharp_backend", "mcp__ley21719-validator__validate_frontend", "mcp__ley21719-validator__validate_sql_ddl",
     ]);
-    assert.match(readFileSync(path.join(plugin, "agents", "centi-prueba.md"), "utf8"), /^tools: Read, Edit, Bash$/m);
+    assert.match(readFileSync(path.join(plugin, "agents", "constructor-prueba.md"), "utf8"), /^tools: Read, Edit, Bash$/m);
     // El revisor de seguridad de la fábrica las trae en su archivo, sin la que se conecta a una base.
     const seguridad = conLaFabrica.find((x) => x.nombre === "fabrica:revisor-seguridad")!;
     assert.ok(["validate_csharp_backend", "validate_frontend", "validate_sql_ddl"].every((t) => seguridad.tools.includes(`mcp__ley21719-validator__${t}`)));
@@ -573,13 +573,13 @@ test("cada etapa con habilidades lleva su agente con ellas cargadas, copia del q
     def("fabrica:revisor-seguridad", "si"),
     def("fabrica:revisor-ui", "si"),
     def("fabrica:aprobador", "si", ["Read", "Grep"]),
-    def("nikke:centi-implementacion", "inyectado"),
+    def("otro-mod:implementacion", "inyectado"),
     def("mi-constructor", "si"),
   ];
   const auto = { spec: "auto", construccion: "auto", revision_codigo: "auto", revision_seguridad: "auto", ui: "auto", aprobacion: "auto" };
   // En auto, un preferido que la corrida no carga no cuenta; uno elegido, sí (viaja con --agents).
   assert.equal(agenteDelRol("construccion", "auto", defs)?.nombre, "fabrica:constructor");
-  assert.equal(agenteDelRol("construccion", "nikke:centi-implementacion", defs)?.nombre, "nikke:centi-implementacion");
+  assert.equal(agenteDelRol("construccion", "otro-mod:implementacion", defs)?.nombre, "otro-mod:implementacion");
   assert.equal(agenteDelRol("construccion", "mi-constructor", defs)?.nombre, "mi-constructor");
   assert.equal(agenteDelRol("construccion", "no-existe", defs)?.nombre, "fabrica:constructor");
   assert.equal(nombreConHabilidades("revision_codigo"), "fabrica-hab-revision-codigo");
@@ -785,14 +785,14 @@ test("el rendimiento de cada agente: sus encargos, su tiempo, su costo, lo que d
   ];
   const actividad = [
     { id: "a", tarea: "F-001", agente: "fabrica:constructor", que: "Construir", desde: ts(1), hasta: ts(9) },
-    { id: "b", tarea: "F-001", agente: "nikke:anis-revision", que: "Revisar", desde: ts(11), hasta: ts(19) },
+    { id: "b", tarea: "F-001", agente: "otro-mod:revision-de-codigo", que: "Revisar", desde: ts(11), hasta: ts(19) },
     { id: "c", tarea: "F-001", agente: "fabrica:constructor", que: "Corregir", desde: ts(21), hasta: ts(29) },
   ];
   const ev = (min: number, cost_usd: number) => ({ t: "evento" as const, nombre: "api_request", ts: ts(min), cost_usd });
   const r = rendimientoDe(eventos, [{ actividad, fin: ts(40), registros: [ev(5, 1), ev(15, 2), ev(25, 0.5), ev(35, 9)] }]);
   assert.deepEqual(r, [
     { agente: "fabrica:constructor", encargos: 2, tareas: 1, minutos: 16, usd: 1.5, devolvio: 0, leDevolvieron: 1, etapas: { construccion: 2 } },
-    { agente: "nikke:anis-revision", encargos: 1, tareas: 1, minutos: 8, usd: 2, devolvio: 1, leDevolvieron: 0, etapas: { revision: 1 } },
+    { agente: "otro-mod:revision-de-codigo", encargos: 1, tareas: 1, minutos: 8, usd: 2, devolvio: 1, leDevolvieron: 0, etapas: { revision: 1 } },
   ]);
   // Sin telemetría, el costo no se sabe.
   assert.equal(rendimientoDe(eventos, [{ actividad, fin: ts(40), registros: null }])[0]!.usd, null);

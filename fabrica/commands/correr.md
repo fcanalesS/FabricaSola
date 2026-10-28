@@ -155,8 +155,8 @@ Si la trae, el humano contestó lo que preguntaba `motivo`. La respuesta tambié
 - **Vuelve a la etapa donde se bloqueó:** `mover(T, <etapaAnterior>, nota: "retomada con la respuesta del humano")`,
   o `spec` si no hay `etapaAnterior`. Desde ahí sigue como siempre, y **pásale al agente de esa
   etapa la respuesta tal cual**, junto con la pregunta (`motivo`).
-- Si lo que bloqueaba era **una guarda o un hook que pide la autorización del dueño** (por
-  ejemplo de nikke), una respuesta escrita no la reemplaza. Si la respuesta dice que ya autorizó,
+- Si lo que bloqueaba era **una guarda o un hook que pide la autorización del dueño** (de otro
+  plugin), una respuesta escrita no la reemplaza. Si la respuesta dice que ya autorizó,
   reintenta una vez. Si la guarda vuelve a frenar → `necesita-humano` otra vez, con la nota "la
   guarda sigue pidiendo autorización: hazlo en una sesión de Claude Code". No intentes saltarla
   por otro camino.
@@ -204,8 +204,8 @@ el constructor con el `model` que diga; si dice el modelo de la corrida, sin `mo
 la sección `## Hallazgos de revisión` entera con la instrucción de corregir **solo** lo bloqueante.
 Pídele que no haga commit.
 
-**El retrabajo.** Si `mcp__fabrica__estado` trae `retrabajo` (`fabrica-retrabajo`, Snow White y
-Rapunzel) y la tarea vuelve a construcción **por un BLOQUEANTE de los revisores o porque falló la
+**El retrabajo.** Si `mcp__fabrica__estado` trae `retrabajo` (`fabrica-retrabajo`, con los oficios
+Arreglo de raíz y Pruebas) y la tarea vuelve a construcción **por un BLOQUEANTE de los revisores o porque falló la
 verificación**, lánzalo a él en vez del agente del rol `construccion`, con el mismo `model` que diga
 `decidir(T, "construccion")`, `WT`, el texto de `## Spec`, las notas de config y lo que la devolvió:
 los BLOQUEANTES de `## Hallazgos de revisión`, o lo que dijo la verificación que falló. Pídele que
@@ -327,7 +327,7 @@ clasifica y lo anota en la tarea (`estado` la muestra con `integracion`):
 - **PRUEBAS FALLIDAS** → era sencilla, pero las pruebas que Jev había saltado fallaron al correrlas
   ahora: `mover(T, "construccion", nota: <lo que dice>)`.
 
-**Label**, con la tarea ya clasificada (SENCILLA o GRANDE) y una sola vez por vuelta: si
+**El agente de notas**, con la tarea ya clasificada (SENCILLA o GRANDE) y una sola vez por vuelta: si
 `mcp__fabrica__estado` trae `anuncio` (el nombre de un agente, `fabrica-anuncio`) y la tarea todavía
 no tiene su sección (`## Para el PR` en una sencilla, `## Para probar a mano` en una grande),
 lánzalo con `ARCHIVO`, `WT`, el diff contra la rama de origen y su clase. Escribe con

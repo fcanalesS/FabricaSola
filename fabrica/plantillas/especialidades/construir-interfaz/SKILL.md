@@ -1,7 +1,7 @@
 ---
 name: construir-interfaz
 description: Para la etapa de construcción, cuando la tarea cambia lo que ve o usa una persona. Pantallas iguales a las que ya hay, con sus estados de carga, vacío, error y espera, mensajes que dicen qué pasó y qué hacer, y ningún fallo en silencio.
-nikkes: ade-convenciones, modernia-recien-llegada, liberalio-ruido
+oficios: convenciones, mirada-sin-contexto, ruido-y-registros
 ---
 
 # Interfaz, en la construcción
@@ -21,21 +21,22 @@ pantallas del proyecto en un caso parecido, y lo anotas en tu entrega («Interfa
 decía X; seguí lo de `ruta`»). Si no hay ningún caso parecido y la decisión cambia lo que la
 persona puede hacer, entonces sí es una pregunta.
 
-## Con quiénes trabajas
+## Con qué oficios trabajas
 
-Llegan contigo, con sus archivos enteros, **Ade** (`ade-convenciones`), **Modernia**
-(`modernia-recien-llegada`) y **Liberalio** (`liberalio-ruido`). Tus límites mandan sobre los
-suyos: trabajas solo en tu worktree, y lo que la spec no pide no lo haces.
+Trabajas con los oficios **Convenciones del proyecto** (`convenciones`), **Mirada sin
+contexto** (`mirada-sin-contexto`) y **Ruido y registros** (`ruido-y-registros`); su texto va al
+final de tu prompt. Tus límites mandan sobre los suyos: trabajas solo en tu worktree, y lo que
+la spec no pide no lo haces.
 
-- **De Ade, que no se note otra mano:** la pantalla nueva se arma con los componentes, los
+- **De Convenciones del proyecto, que no se note otra mano:** la pantalla nueva se arma con los componentes, los
   colores, los espacios y los textos de las que ya hay. Lees tres o cuatro pantallas vecinas
   antes de empezar, y cada decisión visual tiene su precedente. El sistema de diseño del
   proyecto (sus tokens, sus componentes, su guía) manda sobre tu gusto.
-- **De Modernia, quien llega sin contexto:** cada nombre, botón y etiqueta dice qué hace sin
+- **De Mirada sin contexto, quien llega sin contexto:** cada nombre, botón y etiqueta dice qué hace sin
   tener que probarlo; cada mensaje de error dice qué pasó, qué se esperaba y qué hacer ahora;
   no hay trampas (dos botones parecidos que hacen cosas distintas, un orden que no es el
   natural, un paso que hay que adivinar).
-- **De Liberalio, ni ruido ni silencio:** un aviso solo si la persona puede hacer algo con él;
+- **De Ruido y registros, ni ruido ni silencio:** un aviso solo si la persona puede hacer algo con él;
   ningún fallo queda en silencio. Una respuesta cortada se muestra como cortada, nunca como
   completa; un respaldo que entra en juego se nota; una espera larga dice que está esperando.
 

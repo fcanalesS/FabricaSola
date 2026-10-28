@@ -13,7 +13,7 @@ export { CEREBRO, ESPECIALIDADES, IA, LEY, type Especialidad } from "./formato.t
  * plantillas en `fabrica/plantillas/especialidades/<nombre>/SKILL.md`, y la aplicación las deja como
  * propuestas en el vault de una línea cuando él lo pide: él las aprueba de a una, viendo su texto
  * entero, y aprobarla escribe la habilidad y su línea del catálogo, sin commit. Cada una nombra a
- * sus Nikkes (`nikkes:`), cuyos archivos enteros le pasa la corrida al agente de su etapa. Es
+ * sus oficios (`oficios:`), cuyo texto le pasa la corrida al agente de su etapa. Es
  * lógica pura.
  */
 
@@ -24,21 +24,21 @@ const DICHO_DE_LA_ETAPA = {
     plan: "fabrica/docs/Plan-Spec.md",
     agente: "al agente de spec",
     temas: ["especificacion", "habilidades"],
-    implica: "Con ella, la spec de esta línea no se salta, y cada spec lleva unos miles de tokens más por cada Nikke.",
+    implica: "Con ella, la spec de esta línea no se salta, y cada spec lleva unos miles de tokens más por cada oficio.",
   },
   construccion: {
     la: "la construcción",
     plan: "fabrica/docs/Plan-Builder.md",
     agente: "al constructor",
     temas: ["construccion", "habilidades"],
-    implica: "Cada construcción de esta línea lleva unos miles de tokens más por cada Nikke, y otra vez en cada vuelta de retrabajo.",
+    implica: "Cada construcción de esta línea lleva unos miles de tokens más por cada oficio, y otra vez en cada vuelta de retrabajo.",
   },
   aprobacion: {
     la: "la aprobación",
     plan: "fabrica/docs/Plan-Aprobador.md",
     agente: "al aprobador",
     temas: ["aprobacion", "habilidades"],
-    implica: "Cada aprobación de esta línea lleva unos miles de tokens más por cada Nikke. Sus herramientas propias no se usan: el veredicto se registra con mcp__fabrica__aprobar.",
+    implica: "Cada aprobación de esta línea lleva unos miles de tokens más por cada oficio. El veredicto se registra con mcp__fabrica__aprobar.",
   },
 } as const;
 
@@ -93,7 +93,7 @@ export function propuestasDeEspecialidades(
       omitidas.push({ nombre: p.nombre, por: `ya está ${previa.estado === "propuesta" ? "propuesta" : "aprobada"} (${previa.id})` });
       continue;
     }
-    const nikkes = habilidadDesde(p.nombre, p.skill, "proyecto")?.nikkes ?? [];
+    const oficios = habilidadDesde(p.nombre, p.skill, "proyecto")?.oficios ?? [];
     const d = DICHO_DE_LA_ETAPA[p.etapa];
     // Los ids cuentan también los que se acaban de proponer.
     const id = `P-${String(primero + nuevas.length).padStart(4, "0")}`;
@@ -112,8 +112,8 @@ export function propuestasDeEspecialidades(
         "Decisión": `Darle a ${d.la} de esta línea la habilidad «${p.nombre}». ${p.cuando}`,
         "Por qué":
           `Es una de las especialidades de ${d.la} (${d.plan}). ` +
-          (nikkes.length ? `Trabaja con ${nikkes.join(", ")}: la corrida le pasa sus archivos enteros ${d.agente}, y su voz sale solo al abrir y al cerrar su resumen.` : ""),
-        "Qué se descartó": "Copiar el lore de las Nikkes dentro de la habilidad: quedarían dos copias, y la habilidad se quedaría con la vieja.",
+          (oficios.length ? `Trabaja con los oficios ${oficios.join(", ")}: la corrida le pasa su texto ${d.agente}, de fabrica/oficios/.` : ""),
+        "Qué se descartó": "Copiar los oficios dentro de la habilidad: quedarían dos copias, y la habilidad se quedaría con la vieja.",
         "Qué implica": `Aprobarla escribe .claude/skills/${p.nombre}/SKILL.md y su línea en factory/habilidades.md, sin commit. ${d.implica}`,
       },
     });
@@ -180,7 +180,7 @@ const TEXTOS_DEL_CEREBRO: Record<string, { temas: readonly string[]; origen: str
     secciones: {
       "Decisión":
         "Tener una habilidad de construir con IA para toda la fábrica, que la construcción de cada línea usa si su catálogo la nombra. " +
-        "Trabaja con noah-robustez, drake-contrato y behemoth-drenaje: la corrida le pasa sus archivos enteros al constructor.",
+        "Trabaja con los oficios robustez, contratos y consumo-de-recursos: la corrida le pasa su texto al constructor.",
       "Por qué":
         "Lo decidió él el 27 de octubre de 2026: lo que la fábrica sabe de construir con IA vive en su cerebro, como la Ley 21.719. " +
         "Una línea que no trabaja con IA no la carga, y lo que se aprende se corrige en un solo lugar.",
@@ -188,7 +188,7 @@ const TEXTOS_DEL_CEREBRO: Record<string, { temas: readonly string[]; origen: str
       "Qué implica":
         "Aprobarla la escribe en tu carpeta de Claude Code (skills/construir-con-ia/SKILL.md), fuera de todo repositorio. " +
         "Como habilidad tuya, Claude Code también la ofrece en tus sesiones. En la fábrica, cada línea la usa solo si su catálogo la nombra, " +
-        "y cada construcción lleva unos miles de tokens más por cada Nikke, otra vez en cada retrabajo.",
+        "y cada construcción lleva unos miles de tokens más por cada oficio, otra vez en cada retrabajo.",
     },
   },
 };

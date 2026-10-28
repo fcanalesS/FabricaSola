@@ -10,8 +10,8 @@ pedido → spec → construcción → revisión (código · seguridad · UI/UX) 
                                                                                                            luego a un humano)
 ```
 
-Trae sus propios agentes para cada etapa, así que funciona sin nada más instalado. Si tienes
-`nikke`, usa los suyos donde los hay (construir y revisar). Cada etapa es un rol configurable.
+Trae sus propios agentes para cada etapa, así que funciona sin nada más instalado. Cada etapa es
+un rol configurable.
 
 ## Lo que no hace (léelo primero)
 
@@ -26,8 +26,9 @@ Trae sus propios agentes para cada etapa, así que funciona sin nada más instal
   desde el orquestador web (o escribiendo `factory/respuestas/<id>.json`), y `/fabrica:correr` la
   retoma en la etapa donde se bloqueó; si la respuesta no alcanza, vuelve a preguntar.
 - **Una guarda que pide la firma del dueño no se salta con una respuesta escrita.** Si otro plugin
-  (por ejemplo nikke) bloquea una acción hasta que tú autorices, la tarea espera hasta que lo
-  hagas en una sesión de Claude Code. Las corridas del orquestador web van sin nikke por eso.
+  bloquea una acción hasta que tú autorices, la tarea espera hasta que lo hagas en una sesión de
+  Claude Code. Por eso las corridas del orquestador web no cargan ningún mod de
+  `CLAUDE_CODE_PLUGIN_DIRS`.
 - **Cuesta tokens.** Una tarea pasa por 5–7 agentes; los revisores van en Sonnet para abaratar, y el
   modelo de cada rol se elige en config (ver «El modelo de cada rol»).
 - **Sin git, no hay paralelo:** las tareas corren de una en una en la carpeta del proyecto.
@@ -247,8 +248,8 @@ borrador: si                 # mientras esté, no corre
 - **PR.** `- [push] y PR contra main` abre además el PR (GitHub, con `gh`) o el merge request
   (GitLab, con `glab`, si el remoto es de un GitLab), lanzados por su ruta exacta
   (`COMPANIA_GH_BIN`, `COMPANIA_GLAB_BIN` en el `.env.local` de la aplicación) y con su propio
-  inicio de sesión. El título y el texto los arma el código: en el texto va lo que escribió Label
-  («Para el PR») de cada tarea que entra, con su id. Sin la ruta, empuja igual y dice que el PR no
+  inicio de sesión. El título y el texto los arma el código: en el texto va lo que escribió el
+  agente de notas («Para el PR») de cada tarea que entra, con su id. Sin la ruta, empuja igual y dice que el PR no
   se abrió; si ya había uno abierto para esa rama, lo dice, pone al día su texto y sigue.
   Integrarlo es de una persona, salvo con el paso `fusion`.
 - **Fusión.** `- [fusion] el PR en main · squash` (o `merge`, el de siempre, o `rebase`), después
@@ -303,7 +304,7 @@ borrador: si                 # mientras esté, no corre
 - **El agente de salida** (hoy no corre: desde el 27 de octubre de 2026 la aplicación no lo pasa a
   la corrida, y vuelve cuando cada línea tenga su CI/CD; ver el final de
   `docs/Plan-Habilidades-y-Procesos.md`). Cuando corría, si una línea tenía un proceso con su clic
-  quitado, la aplicación le pasaba a la corrida `fabrica-salida` (Sonnet, con Viper y Marian). Después de cada aprobación
+  quitado, la aplicación le pasaba a la corrida `fabrica-salida` (Sonnet, con los oficios Plan de reversión y Compatibilidad hacia atrás). Después de cada aprobación
   mira lo que las reglas no ven (lo que no se puede deshacer, lo que se rompe para quien ya
   depende del código) y lo registra con `mcp__fabrica__salida`: `tu-clic`, con motivo y plan de
   vuelta, o `sin-objecion`. Solo endurece: una tarea marcada que entra en el commit hace que el
@@ -384,20 +385,20 @@ rama_base: main                   # respaldo para las tareas que no tienen rama 
   con lo que falló. Una sencilla cuyas pruebas había saltado Jev las corre antes de integrarse; si
   fallan, vuelve a construcción.
 
-  **Label escribe lo que se lee.** Con cada tarea clasificada, la corrida lanza `fabrica-anuncio`
-  (Sonnet, con el archivo entero de Label): en una sencilla deja `## Para el PR`, el registro de un
+  **El agente de notas escribe lo que se lee.** Con cada tarea clasificada, la corrida lanza
+  `fabrica-anuncio` (Sonnet, con el oficio Notas de versión y avisos entero): en una sencilla deja `## Para el PR`, el registro de un
   cambio que nadie revisó; en una grande, `## Para probar a mano`, qué probar y qué sería un fallo.
   Solo lee: su texto lo registra el mod con `mcp__fabrica__anuncio`, que decide la sección por la
   clase y no toca nada más. Se ve en Una línea, nunca en voz alta. Si la tarea vuelve a
-  construcción, su clase y lo de Label se borran, y se escriben otra vez al aprobarse.
+  construcción, su clase y lo del agente de notas se borran, y se escriben otra vez al aprobarse.
 
-  **El retrabajo lo hacen Snow White y Rapunzel.** Cuando una tarea vuelve a construcción por un
+  **El retrabajo lo hace su propio agente.** Cuando una tarea vuelve a construcción por un
   BLOQUEANTE de los revisores o porque falló la verificación, la corrida lanza `fabrica-retrabajo`
-  en vez del constructor: con los archivos enteros de las dos, las habilidades de construcción de
-  la línea (sin las Nikkes de sus especialidades) y el modelo que diga `decidir(T, "construccion")`.
-  Snow White busca la causa y la arregla de raíz, pero solo dentro de lo que la spec dice que toca:
-  si está fuera, para con `CAUSA FUERA DE LA TAREA:` y la tarea te espera. Rapunzel deja una prueba
-  por cada BLOQUEANTE que se pueda probar y corre solo las suyas; la suite la corre la verificación.
+  en vez del constructor: con los oficios Arreglo de raíz y Pruebas enteros, las habilidades de
+  construcción de la línea (sin los oficios de sus especialidades) y el modelo que diga
+  `decidir(T, "construccion")`. Busca la causa y la arregla de raíz, pero solo dentro de lo que la
+  spec dice que toca: si está fuera, para con `CAUSA FUERA DE LA TAREA:` y la tarea te espera. Deja
+  una prueba por cada BLOQUEANTE que se pueda probar y corre solo las suyas; la suite la corre la verificación.
   Un conflicto al sincronizar lo sigue resolviendo el constructor: ahí no hay nada roto.
 
 ## Ramas e integración
@@ -454,9 +455,9 @@ se usa el primer agente de la lista que esté instalado:
 | Rol | Clave | `auto` prueba, en orden |
 |---|---|---|
 | Spec | `agente_spec` | `fabrica:spec-escritor` |
-| Construcción | `agente_construccion` | `nikke:centi-implementacion` → `fabrica:constructor` |
-| Revisión de código | `agente_revision_codigo` | `nikke:anis-revision` → `fabrica:revisor-codigo` |
-| Revisión de seguridad | `agente_revision_seguridad` | `nikke:crow-abuso` → `fabrica:revisor-seguridad` |
+| Construcción | `agente_construccion` | `fabrica:constructor` (con el oficio Implementación) |
+| Revisión de código | `agente_revision_codigo` | `fabrica:revisor-codigo` (con el oficio Revisión de código) |
+| Revisión de seguridad | `agente_revision_seguridad` | `fabrica:revisor-seguridad` (con el oficio Casos de abuso) |
 | Revisión UI/UX | `agente_ui` | `fabrica:revisor-ui` (solo si el diff toca vistas o estilos, con `ui: auto`) |
 | Aprobación | `agente_aprobacion` | `fabrica:aprobador` (y/o un orquestador externo: `aprobacion` en config) |
 
@@ -464,8 +465,8 @@ La verificación no es un agente: la hace el mod con `mcp__fabrica__verificar`, 
 comandos de config.
 
 **La UX va con la interfaz.** Son tres revisores, no cuatro (lo decidió él el 27 de octubre de
-2026): el de interfaz revisa también el recorrido de quien usa la tarea y sus mensajes. Ninguna
-Nikke cubre la experiencia de quien usa el producto. Si una línea quiere más, su catálogo puede
+2026): el de interfaz revisa también el recorrido de quien usa la tarea y sus mensajes. Ningún
+oficio estándar cubre la experiencia de quien usa el producto. Si una línea quiere más, su catálogo puede
 nombrar una habilidad para la etapa de revisión, como la suya `ui-ux-pro-max`
 (`- [revision] ui-ux-pro-max: al revisar una pantalla o un flujo.`). Es una habilidad personal: la
 usa solo la línea cuyo catálogo la nombra, y nombrarla es decisión suya. La reciben los tres
@@ -474,9 +475,9 @@ revisores, que comparten la etapa.
 **Usar otro agente:** pon su nombre en la clave (`agente_construccion: mi-constructor`), o
 elígelo en la configuración de la aplicación, que lista los agentes de este equipo y deja fijar
 cuántas tareas van a la vez (`paralelo_max`). El de fábrica queda detrás como red si ese no
-existe. Las corridas de la aplicación no cargan nikke (sus guardas piden una firma que nadie da
-sin interfaz): si eliges uno de sus agentes, la corrida lo recibe con `--agents`, con su nombre
-sin el del plugin (`centi-implementacion`), y el mod lo busca también así.
+existe. Las corridas de la aplicación no cargan ningún mod de `CLAUDE_CODE_PLUGIN_DIRS` (sus
+guardas podrían pedir una firma que nadie da sin interfaz): si eliges el agente de uno de esos
+mods, la corrida lo recibe con `--agents`, sin las guardas de su mod.
 
 **Personalizar uno de fábrica:** `/fabrica:agentes copiar <rol>` copia su `.md` a
 `.claude/agents/fabrica-<nombre>.md` del proyecto (o a `~/.claude/agents/` con `usuario`) y deja
@@ -629,7 +630,7 @@ aplicación, y sin ella no está:
 
 - el agente de cada etapa con sus habilidades ya cargadas (`fabrica-hab-<rol>`): sin él, la etapa
   usa su agente de siempre y el catálogo `factory/habilidades.md` no se aplica;
-- Label (`fabrica-anuncio`), el retrabajo (`fabrica-retrabajo`) y el agente de salida: sin ellos
+- el agente de notas (`fabrica-anuncio`), el retrabajo (`fabrica-retrabajo`) y el agente de salida: sin ellos
   no se escribe lo que se lee de cada tarea aprobada, y el retrabajo lo hace el constructor;
 - el vault de la planta (`FABRICA_MEMORIA_PLANTA`): la memoria de cada proyecto
   (`factory/memoria/`) sí se lee;

@@ -16,7 +16,7 @@ import {
   seccion, ponerSeccion, masBarato, notaDelModeloDeSpec, specElegidaPorEl, construccionElegidaPorEl, yaAnotado, AGENTE_DE_SALIDA, salidaEnLaTarea, AGENTE_DE_ANUNCIO, anuncioEnLaTarea, sinLoDeLabel, anotarVeredicto,
   aCrlf, archivarHallazgos, archivosQueGitProtege, archivosQueToca, archivosSql, baseDeComparacion, bloqueantesEn, choquesDe, cicloDeDependencias, comandoDeLint,
   conArchivos, conHallazgoDeConflicto, decidirIntegracion, dependenciasDe, enComun, enlaceDeNodeModules, esDeTexto, esLockfile,
-  esBloqueo, frenaConfig, frenaHabilidades, frenaMemoria, frenaNikke, frenaProcesos, idsEn, liberadaPor, reintentoDeIntegracion, type Bloqueo, ramaDeOrigen, revisarDependencias, rutasDePorcelain, protegidaSinWorktree, ramaParaLaTarea, tieneMarcadores, tieneWorktreePropio, usaCrlf,
+  esBloqueo, frenaConfig, frenaHabilidades, frenaMemoria, frenaProcesos, idsEn, liberadaPor, reintentoDeIntegracion, type Bloqueo, ramaDeOrigen, revisarDependencias, rutasDePorcelain, protegidaSinWorktree, ramaParaLaTarea, tieneMarcadores, tieneWorktreePropio, usaCrlf,
   type Datos, type EstadoDeDependencia, type Movimiento,
 } from './tareas'
 import {
@@ -404,7 +404,7 @@ const HERRAMIENTAS = [
   {
     name: 'anuncio',
     description:
-      'Fábrica: lo que escribe Label (fabrica-anuncio) en una tarea aprobada y clasificada. En una sencilla va a ' +
+      'Fábrica: lo que escribe el agente de las notas (fabrica-anuncio) en una tarea aprobada y clasificada. En una sencilla va a ' +
       '«## Para el PR», lo que lee quien revisa el PR que se fusiona solo; en una grande, a «## Para probar a mano», ' +
       'lo que la persona prueba antes de dejarla entrar. La sección la decide la clase de la tarea. Reemplaza la que ' +
       'hubiera y no toca nada más. Cualquier otro agente que la llame será rechazado.',
@@ -438,20 +438,20 @@ async function hEstado($: EngineInterface, _e: Record<string, unknown>): Promise
   const habilidades = { catalogo: catalogo === null ? null : CATALOGO_DE_HABILIDADES, paraLosAgentes: habilidadesParaLosAgentes(catalogo) }
   // Si la corrida trae el agente de salida: la aplicación lo arma solo cuando la línea tiene un proceso sin su clic.
   const salida = (await $.env.get('FABRICA_SALIDA').catch(() => undefined)) === '1' ? AGENTE_DE_SALIDA : null
-  // Si la corrida trae a Label: la aplicación lo arma en cada corrida que lanza.
+  // Si la corrida trae al agente de las notas: la aplicación lo arma en cada corrida que lanza.
   const anuncio = (await $.env.get('FABRICA_ANUNCIO').catch(() => undefined)) === '1' ? AGENTE_DE_ANUNCIO : null
-  // Si la corrida trae el agente de retrabajo (Snow White y Rapunzel): la aplicación lo arma en cada corrida.
+  // Si la corrida trae el agente de retrabajo (Arreglo de raíz y Pruebas): la aplicación lo arma en cada corrida.
   const retrabajo = (await $.env.get('FABRICA_RETRABAJO').catch(() => undefined)) === '1' ? AGENTE_DE_RETRABAJO : null
   return { result: JSON.stringify({ raiz, config: cfg, roles, memoria, habilidades, salida, anuncio, retrabajo, resumen: contar(tareas), tareas }, null, 2) }
 }
 
 /**
- * Lo que escribe Label en una tarea aprobada y clasificada (fabrica/docs/Plan-Integracion.md,
+ * Lo que escribe el agente de las notas en una tarea aprobada y clasificada (fabrica/docs/Plan-Integracion.md,
  * etapa 4). Solo él (`fabrica-anuncio`), y solo en su sección, que decide la clase de la tarea.
  */
 async function hAnuncio($: EngineInterface, e: Record<string, unknown>): Promise<Respuesta> {
   const tipo = await tipoDeAgente($, texto(e.agentId) || undefined)
-  if (tipo !== AGENTE_DE_ANUNCIO) return { deny: `Esto lo escribe Label (${AGENTE_DE_ANUNCIO}). Delega en él.` }
+  if (tipo !== AGENTE_DE_ANUNCIO) return { deny: `Esto lo escribe el agente de las notas (${AGENTE_DE_ANUNCIO}). Delega en él.` }
   const raiz = await $.session.root()
   const id = texto(e.tarea).trim()
   const archivo = await buscar($, raiz, id)
@@ -850,7 +850,7 @@ async function hMover($: EngineInterface, e: Record<string, unknown>): Promise<R
 
   const linea = `${ts} · ${res.evento.de} → ${res.evento.a} (${agente})${res.evento.nota ? ' — ' + res.evento.nota : ''}`
   // Al volver a revisión, lo de la vuelta anterior se guarda aparte: los revisores escriben de cero.
-  // Al volver a construcción, lo que escribió Label es de la vuelta anterior: se escribe otra vez al aprobarse.
+  // Al volver a construcción, lo que escribió el agente de las notas es de la vuelta anterior: se escribe otra vez al aprobarse.
   const cuerpoMovido = res.evento.de === 'construccion' && res.evento.a === 'revision' ? archivarHallazgos(cuerpo, ts) : res.evento.a === 'construccion' ? sinLoDeLabel(cuerpo) : cuerpo
   // Al salir de aprobación con el veredicto de la persona (o de un orquestador externo), queda en `## Veredicto`.
   const cuerpoNuevo = datos.estado === 'aprobacion' && ver && (res.evento.a === 'hecho' || res.evento.a === 'construccion')
@@ -1653,13 +1653,6 @@ export const register: Register = on => {
   on('tool.call', { tool: 'mcp__fabrica__agentes' }, async ($, e) => {
     try { return await hAgentes($, datosDe(e)) } catch (err) { return falla(err) }
   }).catch(() => SIN_RESPUESTA)
-
-  // Las herramientas del mod nikke no corren dentro de una corrida: esperan una firma y la frenarían.
-  // Se mira cada llamada, porque son varias y pueden ser más; lo demás pasa sin tocarse.
-  on('tool.call', async ($, e, next) => {
-    const no = frenaNikke(texto(e.tool), texto(e.agentId) || undefined)
-    return no ? { deny: no } : next(e)
-  })
 
   // Nadie cambia a mano lo que decide la cadena. Si la guarda falla, la edición pasa: es una
   // red, no la única defensa (mover sigue validando cada transición).

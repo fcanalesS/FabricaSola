@@ -84,8 +84,7 @@ Significado de cada clave, por si el usuario pregunta:
 - `aprobacion`: `agente` (el agente del rol de aprobación), `externa` (un orquestador de fuera
   deja el veredicto en `factory/veredictos/<id>.json`) o `ambas`.
 - `puente_url`: si se pone una URL http(s), el mod envía ahí (POST JSON) cada movimiento de tarea.
-- `agente_<rol>`: qué agente hace cada etapa. `auto` usa los de nikke si están instalados y si no
-  los que trae el plugin. `/fabrica:agentes` lo muestra y crea copias editables.
+- `agente_<rol>`: qué agente hace cada etapa. `auto` usa los que trae el plugin. `/fabrica:agentes` lo muestra y crea copias editables.
 
 Al final, corre `/fabrica:agentes` (sin argumentos) para mostrar qué agente quedó en cada rol.
 

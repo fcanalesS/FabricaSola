@@ -1,8 +1,8 @@
 // Una corrida de verdad de la fábrica, con sus agentes, sobre un repo de prueba desechable: para
 // probar lo que las pruebas y fabrica:e2e no alcanzan, que es cómo trabajan los agentes con lo
-// que les da la aplicación. Las especialidades de la spec y del constructor con sus Nikkes, lo de
-// IA del cerebro, Privaty en el aprobador, el modelo elegido en una tarea, sencilla o grande con
-// Label escribiendo lo que se lee, y la guardia de las herramientas de nikke.
+// que les da la aplicación. Las especialidades de la spec y del constructor con sus oficios, lo de
+// IA del cerebro, la comprobación de entrega en el aprobador, el modelo elegido en una tarea, sencilla o grande con
+// el agente de las notas escribiendo lo que se lee.
 //
 //   npm run fabrica:corrida-real                 (prepara todo y dice qué lanzaría: no gasta)
 //   npm run fabrica:corrida-real -- --correr     (la corre de verdad: gasta)
@@ -13,7 +13,7 @@
 //
 // No toca la aplicación: ni sus líneas, ni sus ajustes, ni datos/. Arma los agentes con las mismas
 // funciones que usa la aplicación al lanzar una corrida, y lanza Claude Code por
-// COMPANIA_CLAUDE_CODE_BIN o, sin ella, el del PATH, con solo el plugin de la fábrica, sin nikke. El repo vive en la
+// COMPANIA_CLAUDE_CODE_BIN o, sin ella, el del PATH, con solo el plugin de la fábrica, sin otros mods. El repo vive en la
 // carpeta temporal del sistema.
 
 import { execFileSync, spawnSync } from "node:child_process";
@@ -22,7 +22,7 @@ import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { claudeCodeDeEsteEquipo, SIN_CLAUDE_CODE } from "../../src/lib/fabrica/motor/claude-code.ts";
-import { agenteDeAnuncio, agenteDeRetrabajo, agenteDesde, agentesConHabilidades, archivoDelAgenteDeAnuncio, archivoDelAgenteDeRetrabajo, AGENTE_DE_ANUNCIO, definicionesDisponibles, textosDeNikkes } from "../../src/lib/fabrica/motor/agentes.ts";
+import { agenteDeAnuncio, agenteDeRetrabajo, agenteDesde, agentesConHabilidades, archivoDelAgenteDeAnuncio, archivoDelAgenteDeRetrabajo, AGENTE_DE_ANUNCIO, definicionesDisponibles, textosDeOficios } from "../../src/lib/fabrica/motor/agentes.ts";
 import { habilidadesDeLaCorrida } from "../../src/lib/fabrica/habilidades/disco.ts";
 import { habilidadesConHuella } from "../../src/lib/fabrica/habilidades/formato.ts";
 import { tareaNueva } from "../../src/lib/fabrica/motor/formato.ts";
@@ -141,28 +141,28 @@ function prepararRepo() {
 
 async function armarLaCorrida() {
   const auto = { spec: "auto", construccion: "auto", revision_codigo: "auto", revision_seguridad: "auto", ui: "auto", aprobacion: "auto" };
-  const defs = await definicionesDisponibles(REPO, PLUGIN, false);
+  const defs = await definicionesDisponibles(REPO, PLUGIN);
   const porEtapa = await habilidadesDeLaCorrida(REPO);
   if (!porEtapa) throw new Error("La corrida no ve el catálogo de habilidades.");
-  const nikkes = await textosDeNikkes(Object.values(porEtapa).flatMap((l) => l.flatMap((h) => h.nikkes ?? [])));
-  const archivoLabel = archivoDelAgenteDeAnuncio(PLUGIN);
-  const defLabel = agenteDesde(readFileSync(archivoLabel, "utf8"), archivoLabel);
+  const oficios = await textosDeOficios(Object.values(porEtapa).flatMap((l) => l.flatMap((h) => h.oficios ?? [])));
+  const archivoNotas = archivoDelAgenteDeAnuncio(PLUGIN);
+  const defNotas = agenteDesde(readFileSync(archivoNotas, "utf8"), archivoNotas);
   const archivoRetrabajo = archivoDelAgenteDeRetrabajo(PLUGIN);
   const defRetrabajo = agenteDesde(readFileSync(archivoRetrabajo, "utf8"), archivoRetrabajo);
   const inyectados = {
-    ...agentesConHabilidades(auto, defs, porEtapa, nikkes),
-    ...agenteDeAnuncio(defLabel, await textosDeNikkes(defLabel?.nikkes ?? [])),
-    ...agenteDeRetrabajo(defRetrabajo, porEtapa.construccion.map((h) => h.nombre), await textosDeNikkes(defRetrabajo?.nikkes ?? [])),
+    ...agentesConHabilidades(auto, defs, porEtapa, oficios),
+    ...agenteDeAnuncio(defNotas, await textosDeOficios(defNotas?.oficios ?? [])),
+    ...agenteDeRetrabajo(defRetrabajo, porEtapa.construccion.map((h) => h.nombre), await textosDeOficios(defRetrabajo?.oficios ?? [])),
   };
   const archivoAgentes = path.join(BASE, "agentes.json");
   writeFileSync(archivoAgentes, JSON.stringify(inyectados, null, 2) + "\n");
   const conHuella = habilidadesConHuella(porEtapa);
-  const faltan = [...new Set(Object.values(porEtapa).flatMap((l) => l.flatMap((h) => h.nikkes ?? [])))].filter((n) => !nikkes.has(n));
+  const faltan = [...new Set(Object.values(porEtapa).flatMap((l) => l.flatMap((h) => h.oficios ?? [])))].filter((n) => !oficios.has(n));
   return { inyectados, archivoAgentes, conHuella, faltan };
 }
 
 function entorno(conHuella) {
-  // Como la aplicación: sin las claves de la aplicación ni nada de ella, y sin nikke.
+  // Como la aplicación: sin las claves de la aplicación ni nada de ella, y sin otros mods.
   const env = Object.fromEntries(Object.entries(process.env).filter(([k]) => !/^(COMPANIA_|ANTHROPIC_|FABRICA_)/.test(k) && k !== "TYPESAFE_AI_KEY"));
   return {
     ...env,
@@ -238,12 +238,10 @@ function revisar(minutos) {
   comprobar("la spec de F-001 aplicó sus especialidades", /spec-guardarrailes|spec-contratos-y-recursos/.test(t1._texto ?? ""), (t1._texto ?? "").slice(0, 300));
   comprobar("la bitácora anota las habilidades que recibió cada etapa", /construir-codigo/.test(t1._texto ?? "") && /aprobar-entrega/.test(t1._texto ?? ""), (t1._texto ?? "").slice(-400));
   comprobar("F-001 se construyó con el modelo elegido en la tarea, sin que Jev lo cambie", /construcción con sonnet: lo eligió él para esta tarea/.test(eventos), eventos.slice(-400));
-  // Label escribe en la sección que corresponde a su clase: el PR de una sencilla, la prueba a mano de una grande.
-  const deLabel = (x) => (x.integracion_clase === "grande" ? /## Para probar a mano\n\n\S/ : /## Para el PR\n\n\S/).test(x._texto ?? "");
-  comprobar("Label escribió lo que se lee de las dos, en la sección de su clase", deLabel(t1) && deLabel(t2), `${t1.integracion_clase} ${t2.integracion_clase}`);
+  // El agente de las notas escribe en la sección que corresponde a su clase: el PR de una sencilla, la prueba a mano de una grande.
+  const deNotas = (x) => (x.integracion_clase === "grande" ? /## Para probar a mano\n\n\S/ : /## Para el PR\n\n\S/).test(x._texto ?? "");
+  comprobar("El agente de las notas escribió lo que se lee de las dos, en la sección de su clase", deNotas(t1) && deNotas(t2), `${t1.integracion_clase} ${t2.integracion_clase}`);
   comprobar("el agente de salida no corrió", !/fabrica-salida/.test(eventos));
-  const frenadas = (salida.match(/Las herramientas del mod nikke no se usan en la fábrica/g) ?? []).length;
-  console.log(`  · herramientas de nikke frenadas por la guardia: ${frenadas}`);
   const fallas = resultados.filter((r) => !r.ok);
   console.log(`\n${resultados.length - fallas.length} de ${resultados.length} comprobaciones pasaron.`);
   return fallas.length ? 1 : 0;
@@ -257,8 +255,8 @@ async function principal() {
   const { inyectados, archivoAgentes, conHuella, faltan } = await armarLaCorrida();
   console.log("\nLos agentes que viajan con la corrida:");
   for (const [nombre, a] of Object.entries(inyectados)) console.log(`  ${nombre} · ${a.model ?? "el de la corrida"} · ${Math.round(a.prompt.length / 1024)} KB de prompt${a.skills ? ` · ${a.skills.join(", ")}` : ""}`);
-  if (faltan.length) console.log(`  (no están en la carpeta de nikke de este equipo: ${faltan.join(", ")})`);
-  console.log(`  ${AGENTE_DE_ANUNCIO in inyectados ? "Con" : "Sin"} Label.`);
+  if (faltan.length) console.log(`  (no están en fabrica/oficios/: ${faltan.join(", ")})`);
+  console.log(`  ${AGENTE_DE_ANUNCIO in inyectados ? "Con" : "Sin"} el agente de las notas.`);
   const args = argumentos(archivoAgentes);
   console.log(`\nLo que se lanza: ${bin} ${args.map((a) => (a.startsWith("{") ? "'{…}'" : /\s/.test(a) ? `"${a}"` : a)).join(" ")}`);
   if (!correr) {

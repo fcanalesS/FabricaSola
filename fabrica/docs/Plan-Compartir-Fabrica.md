@@ -60,7 +60,7 @@ Las cuatro primeras son suyas. Las demás son mis recomendaciones.
 6. **Nada se cae.** Cada pieza opcional se mira antes de usarla; las páginas tienen su
    `error.tsx`; las pruebas corren también con el entorno vacío.
 7. **El plugin funciona solo.** Hoy la aplicación le arma a la corrida los agentes con
-   habilidades, Label y el retrabajo. Sin la aplicación, el plugin usa sus agentes de siempre;
+   habilidades, el agente de notas y el retrabajo. Sin la aplicación, el plugin usa sus agentes de siempre;
    en el programa compartido los arma igual que aquí.
 8. **El `[ci]` después de la fusión.** Vale también para esta aplicación: después de fusionar,
    `glab` dice cuál quedó como commit de la fusión, y un `[ci]` puesto después de `[fusion]`

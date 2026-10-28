@@ -1,7 +1,7 @@
 ---
 name: spec-evaluacion
 description: Para la etapa spec, cuando la tarea cambia lo que responde un modelo de IA, o el modelo mismo. Agrega a la spec la sección «Cómo se evalúa» (rúbrica, conjunto de prueba y qué cuenta como regresión) y pide como criterio que sus archivos y su comando existan.
-nikkes: rapunzel-pruebas
+oficios: pruebas
 ---
 
 # Cómo se evalúa, en la spec
@@ -10,13 +10,13 @@ Esta habilidad es de la etapa spec. Úsala solo si la tarea cambia lo que respon
 IA (su prompt, su contexto, sus herramientas) o el modelo mismo (otro modelo, otra versión, otro
 servidor). Si no es así, no escribas nada de esto: ni la sección vacía ni «no aplica».
 
-## Con quién trabajas
+## Con qué oficio trabajas
 
-Llega contigo, con su archivo entero, **Rapunzel** (`rapunzel-pruebas`). Ella escribe y corre
-pruebas sobre código ya escrito; tú dejas dicho, antes, cómo se va a juzgar lo que responda el
-modelo.
+Trabajas con el oficio **Pruebas** (`pruebas`); su texto va al final de tu prompt. Ese oficio
+escribe y corre pruebas sobre código ya escrito; tú dejas dicho, antes, cómo se va a juzgar lo
+que responda el modelo.
 
-- **De Rapunzel:** enumerar los casos antes de escribirlos (el camino normal, los límites, la
+- **De Pruebas:** enumerar los casos antes de escribirlos (el camino normal, los límites, la
   entrada inválida y el caso que motivó la tarea). Un caso de regresión que falla si la regresión
   vuelve. Seguir el estilo de las pruebas que el proyecto ya tiene. Nunca bajar el umbral para
   que pase: es su «nunca desactivar una prueba que falla». Y decir qué queda sin cubrir.

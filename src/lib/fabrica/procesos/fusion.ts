@@ -8,7 +8,7 @@
  *   - su último commit es el que pasó la integración continua en esta misma ejecución;
  *   - cada tarea que entra fue sencilla, o grande y él la probó (su veredicto «aprobada»).
  *
- * Lo que va en el cuerpo del PR lo arma el código con lo que escribió Label en cada tarea. Es lógica
+ * Lo que va en el cuerpo del PR lo arma el código con lo que escribió el agente de las notas en cada tarea. Es lógica
  * pura: recibe lo ya leído.
  */
 
@@ -27,7 +27,7 @@ export type TareaDelRango = {
   clase: "sencilla" | "grande" | null;
   /** Si él la aprobó desde la aplicación (su veredicto «aprobada»). */
   probada: boolean;
-  /** Lo que escribió Label en «## Para el PR»; vacío si no escribió. */
+  /** Lo que escribió el agente de las notas en «## Para el PR»; vacío si no escribió. */
   paraElPR: string;
 };
 
@@ -118,7 +118,7 @@ export function porQueNoFusionar(o: { pr: PRLeido | null; rama: string; base: st
 const CUERPO_MAX = 60_000;
 
 /**
- * El cuerpo del PR: quién lo abrió, si se fusiona solo, y lo que escribió Label de cada tarea que
+ * El cuerpo del PR: quién lo abrió, si se fusiona solo, y lo que escribió el agente de las notas de cada tarea que
  * entra, con su id. Un título ajeno no va: solo el id. Sin tareas, el texto de siempre.
  */
 export function cuerpoDelPR(o: { proceso: string; commit: string; seFusionaSolo: boolean; tareas: readonly TareaDelRango[] }): string {

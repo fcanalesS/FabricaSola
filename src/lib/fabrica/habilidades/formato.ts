@@ -91,10 +91,10 @@ export type HabilidadDisponible = {
   /** `disable-model-invocation: true`: no se puede dar a un agente. */
   soloAMano: boolean;
   /**
-   * Las Nikkes con que trabaja (`nikkes:` en su frontmatter): agentes del mod nikke cuyos archivos
-   * enteros le pasa la corrida al agente de su etapa. Solo nombres con forma válida.
+   * Los oficios con que trabaja (`oficios:` en su frontmatter): archivos de `fabrica/oficios/` cuyo
+   * texto le pasa la corrida al agente de su etapa. Solo nombres con forma válida.
    */
-  nikkes?: string[];
+  oficios?: string[];
   /** Dónde está su `SKILL.md` y la huella de su contenido (`huellaDe`). Solo en el servidor: no van a ninguna pantalla. */
   ruta?: string;
   huella?: string;
@@ -129,7 +129,7 @@ export function habilidadDesde(carpeta: string, texto: string, origen: OrigenDeH
     descripcion: unaLinea(datos.description ?? "").slice(0, 300),
     origen,
     soloAMano: /^true$/i.test((datos["disable-model-invocation"] ?? "").trim()),
-    ...(nikkesDe(datos.nikkes).length ? { nikkes: nikkesDe(datos.nikkes) } : {}),
+    ...(oficiosDe(datos.oficios).length ? { oficios: oficiosDe(datos.oficios) } : {}),
   };
 }
 
@@ -194,15 +194,15 @@ export const CEREBRO: readonly HabilidadDelCerebro[] = [LEY, IA];
 /** La del cerebro con ese nombre, o `undefined`. */
 export const delCerebro = (nombre: unknown) => CEREBRO.find((h) => h.nombre === nombre);
 
-/** El nombre de una Nikke: el de su archivo en la carpeta de agentes del mod, sin ruta ni extensión. */
-export const NOMBRE_DE_NIKKE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
-/** Cuántas Nikkes puede nombrar una habilidad. */
-export const MAX_NIKKES = 6;
+/** El nombre de un oficio: el de su archivo en `fabrica/oficios/`, sin ruta ni extensión. */
+export const NOMBRE_DE_OFICIO = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+/** Cuántos oficios puede nombrar una habilidad. */
+export const MAX_OFICIOS = 6;
 
-/** Las Nikkes de `nikkes: a, b`: sin repetir, solo las que tienen forma de nombre, y hasta el tope. */
-export function nikkesDe(valor: string | undefined): string[] {
+/** Los oficios de `oficios: a, b`: sin repetir, solo los que tienen forma de nombre, y hasta el tope. */
+export function oficiosDe(valor: string | undefined): string[] {
   const nombres = (valor ?? "").split(",").map((n) => n.trim());
-  return [...new Set(nombres.filter((n) => NOMBRE_DE_NIKKE.test(n)))].slice(0, MAX_NIKKES);
+  return [...new Set(nombres.filter((n) => NOMBRE_DE_OFICIO.test(n)))].slice(0, MAX_OFICIOS);
 }
 
 export type ProblemaDelCatalogo = { linea: number | null; que: string };
@@ -242,7 +242,7 @@ export function revisarCatalogo(texto: string, disponibles: readonly HabilidadDi
 }
 
 /** Las habilidades que cada etapa recibe, según el catálogo. Las que no existen o son solo a mano, no. */
-export type HabilidadDeEtapa = { nombre: string; cuando: string; origen: OrigenDeHabilidad; ruta?: string; huella?: string; nikkes?: string[] };
+export type HabilidadDeEtapa = { nombre: string; cuando: string; origen: OrigenDeHabilidad; ruta?: string; huella?: string; oficios?: string[] };
 
 export function habilidadesPorEtapa(texto: string, disponibles: readonly HabilidadDisponible[]): Record<Etapa, HabilidadDeEtapa[]> {
   const porNombre = new Map(disponibles.map((d) => [d.nombre, d]));
@@ -252,7 +252,7 @@ export function habilidadesPorEtapa(texto: string, disponibles: readonly Habilid
     if (!d || d.soloAMano) continue;
     for (const e of u.etapas) {
       const lista = porEtapa[e as Etapa];
-      if (lista && !lista.some((x) => x.nombre === u.nombre)) lista.push({ nombre: u.nombre, cuando: u.cuando, origen: d.origen, ...(d.ruta ? { ruta: d.ruta } : {}), ...(d.huella ? { huella: d.huella } : {}), ...(d.nikkes?.length ? { nikkes: d.nikkes } : {}) });
+      if (lista && !lista.some((x) => x.nombre === u.nombre)) lista.push({ nombre: u.nombre, cuando: u.cuando, origen: d.origen, ...(d.ruta ? { ruta: d.ruta } : {}), ...(d.huella ? { huella: d.huella } : {}), ...(d.oficios?.length ? { oficios: d.oficios } : {}) });
     }
   }
   return porEtapa;

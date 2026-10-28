@@ -22,9 +22,9 @@ Además, **la Ley 21.719 queda en el cerebro de la fábrica como una habilidad p
 - el modelo se elige por línea, y se puede cambiar en una tarea;
 - las evaluaciones son un proceso aparte;
 - **por ahora, solo Claude.** Codex y Gemini (Antigravity) quedan para después:
-  - Él tiene agentes ya hechos, los de nikke (`~/.claude/mods/nikke/agents/`, 44 archivos
-    Markdown), escritos para Claude.
-  - Primero se ve cómo volverlos independientes del programa que los use. Después, que Codex y
+  - Los agentes trabajan con oficios, archivos Markdown planos en `fabrica/oficios/`, que vienen
+    con el repositorio.
+  - Primero se ve que sirvan igual sin importar el programa que los use. Después, que Codex y
     Antigravity los usen.
   - Así no se inventan agentes nuevos para cada IA.
 - **la Ley 21.719 queda en el cerebro de la fábrica, como una habilidad,** no dentro de una
@@ -99,23 +99,20 @@ sin rehacer nada.
    - Si su «cuándo» del catálogo no aplica a la tarea, no escriben nada: ni «N/A» ni una
      sección vacía.
    - En «Riesgos y notas», la spec dice cuáles aplicó.
-8. **Las especialidades trabajan con sus Nikkes enteras, lore incluido** (decisión suya, 26 de
-   octubre de 2026: «la idea igual es no perder el lore de los agentes que me costó armar»).
-   - Cada especialidad nombra a sus Nikkes (`nikkes:` en su `SKILL.md`). Su texto dice solo
-     cómo se aplica el oficio de cada una antes de que exista el código, y lo nuevo que ninguna
-     cubre.
-   - Al lanzar una corrida, la aplicación le pasa al agente de spec el archivo entero de cada
-     Nikke nombrada, tal como está en `~/.claude/mods/nikke/agents/`: historia, voz, escuadrón
-     y reglas. **No se copia a ninguna habilidad ni se toca:** si él cambia a una Nikke, la
-     próxima corrida ya lleva la nueva.
-   - El agente de spec no puede llamar a esas agentes (en Claude Code, un subagente no lanza
-     otros subagentes), y que las lea él de esa carpeta se podría negar por permisos en una
-     corrida desatendida. Por eso las lleva la aplicación.
-   - **Su voz sale solo al abrir y al cerrar el resumen** que devuelve el agente de spec, la
-     misma regla que traen ellas. La spec que queda en el archivo de la tarea va técnica y
-     neutra: la leen el constructor y los revisores.
-   - Cuesta: los ocho archivos son unos 58 KB, unos 16 mil tokens más por spec si la línea
-     enciende las cuatro. Una línea con una sola lleva solo las suyas.
+8. **Las especialidades trabajan con sus oficios enteros** (decisión suya, 26 de octubre de
+   2026).
+   - Cada especialidad nombra a sus oficios (`oficios:` en su `SKILL.md`). Su texto dice solo
+     cómo se aplica cada oficio antes de que exista el código, y lo nuevo que ninguno cubre.
+   - Al lanzar una corrida, la aplicación le pasa al agente de spec el texto entero de cada
+     oficio nombrado, tal como está en `fabrica/oficios/`: sus reglas, su método, su entrega y
+     sus límites. **No se copia a ninguna habilidad ni se toca:** si un oficio cambia, la
+     próxima corrida ya lleva el nuevo.
+   - El agente de spec no puede llamar a otros agentes (en Claude Code, un subagente no lanza
+     otros subagentes), y que los lea él de esa carpeta se podría negar por permisos en una
+     corrida desatendida. Por eso los lleva la aplicación.
+   - La spec que queda en el archivo de la tarea va técnica y neutra: la leen el constructor y
+     los revisores. El resumen que devuelve el agente de spec, también.
+   - Cuesta tokens en cada spec. Una línea con una sola especialidad lleva solo sus oficios.
 9. **La Ley 21.719 es una habilidad del cerebro de la fábrica** (decisión suya).
    - Mi recomendación para el cómo: una sola, `ley-21719`, como habilidad personal
      (`~/.claude/skills/ley-21719/`). Vale en toda línea cuyo catálogo la nombre.
@@ -136,7 +133,7 @@ sin rehacer nada.
 1. **El modelo por línea.** Es casi todo lo que ya existe; falta poder elegirlo en cualquier
    línea, y que se vea.
 2. **El cambio en una tarea.** Usa lo de la etapa 1.
-3. **Las cuatro especialidades.** Empieza leyendo sus agentes nikke.
+3. **Las cuatro especialidades.** Empieza leyendo sus oficios.
 4. **La Ley 21.719, en el cerebro.** Va después de las especialidades porque «Datos y
    cumplimiento» la nombra. Se puede escribir en paralelo con la etapa 3.
 5. **Las evaluaciones, como proceso.** No depende de las etapas 1 a 4: se puede construir en
@@ -255,19 +252,19 @@ Para una tarea, él puede elegir otro modelo. Por ejemplo, Fable para un pedido 
 Cuatro habilidades para la etapa spec, que una línea enciende. Cada una agrega a la spec su
 sección, y convierte en criterios de aceptación lo que se puede comprobar.
 
-### Primero: lo que ya hacen sus agentes nikke
-Se leyeron el 26 de octubre de 2026. Ellas revisan código ya escrito; la spec trabaja antes.
-Cada especialidad toma de sus Nikkes la lista de qué mirar y la disciplina de decidir cada
-punto, convertidas en requisitos. Las Nikkes van enteras (decisión 8).
+### Primero: lo que ya hacen sus oficios
+Se leyeron el 26 de octubre de 2026. Esos oficios revisan código ya escrito; la spec trabaja
+antes. Cada especialidad toma de sus oficios la lista de qué mirar y la disciplina de decidir
+cada punto, convertidas en requisitos. Los oficios van enteros (decisión 8).
 
-| Especialidad | Sus Nikkes | Qué toma de ellas |
+| Especialidad | Sus oficios | Qué toma de ellos |
 |---|---|---|
-| `spec-guardarrailes` | `crow-abuso`, `noah-robustez` | Crow: quién interactúa, dónde deja de controlarse lo que entra, sus seis categorías (autorización, escalada, límites, económico, flujo, datos ajenos) y a quién perjudica. Noah: las categorías de falla, una de cuatro estrategias por falla con su porqué, nunca silenciar un error, y cada defensa con una prueba que provoca su falla. |
-| `spec-datos-y-contexto` | `velvet-auditoria`, `modernia-interna` | Velvet: un secreto nunca en el prompt, un registro ni un error; nada de datos reales donde van de prueba; no revelar infraestructura. Modernia: lo que la IA tiene permiso para usar contra lo que necesita, el rastro del dato hasta donde termina escrito, y el modelo con su versión fijada. |
-| `spec-evaluacion` | `rapunzel-pruebas` | Enumerar los casos antes, el caso de regresión que falla si vuelve, el estilo de las pruebas vecinas, nunca bajar el umbral para que pase, y decir qué queda sin cubrir. |
-| `spec-contratos-y-recursos` | `drake-contrato`, `behemoth-drenaje`, `jackal-carga` | Drake casi entero: las dos partes, el contrato implícito, las tres decisiones por campo, «hacer el mal», errores distinguibles, ejemplos y cómo evoluciona. Behemoth: lo que crece sin tope, lo que se repite en bucle y lo que cuesta parado. Jackal: ningún tope sin cómo se mide, y nunca carga contra producción ni un proveedor. |
+| `spec-guardarrailes` | `casos-de-abuso`, `robustez` | Casos de abuso: quién interactúa, dónde deja de controlarse lo que entra, sus seis categorías (autorización, escalada, límites, económico, flujo, datos ajenos) y a quién perjudica. Robustez: las categorías de falla, una de cuatro estrategias por falla con su porqué, nunca silenciar un error, y cada defensa con una prueba que provoca su falla. |
+| `spec-datos-y-contexto` | `auditoria-de-secretos`, `amenaza-interna` | Auditoría de secretos: un secreto nunca en el prompt, un registro ni un error; nada de datos reales donde van de prueba; no revelar infraestructura. Amenaza interna: lo que la IA tiene permiso para usar contra lo que necesita, el rastro del dato hasta donde termina escrito, y el modelo con su versión fijada. |
+| `spec-evaluacion` | `pruebas` | Enumerar los casos antes, el caso de regresión que falla si vuelve, el estilo de las pruebas vecinas, nunca bajar el umbral para que pase, y decir qué queda sin cubrir. |
+| `spec-contratos-y-recursos` | `contratos`, `consumo-de-recursos`, `pruebas-de-carga` | Contratos casi entero: las dos partes, el contrato implícito, las tres decisiones por campo, «hacer el mal», errores distinguibles, ejemplos y cómo evoluciona. Consumo de recursos: lo que crece sin tope, lo que se repite en bucle y lo que cuesta parado. Pruebas de carga: ningún tope sin cómo se mide, y nunca carga contra producción ni un proveedor. |
 
-Nuevo, porque ninguna lo cubre: la inyección por texto ajeno, qué responde la IA sin contexto,
+Nuevo, porque ninguno lo cubre: la inyección por texto ajeno, qué responde la IA sin contexto,
 el mapa del flujo de los datos, qué entra al contexto antes de cada llamada, y la rúbrica que
 no es de sí o no. La Ley 21.719 va aparte, en la etapa 4.
 
@@ -324,11 +321,11 @@ no es de sí o no. La Ley 21.719 va aparte, en la etapa 4.
 
 ### Criterios de aceptación
 1. Las cuatro viven en la aplicación como plantillas, cada una con su `SKILL.md`, en español
-   neutro, y nombran a sus Nikkes en `nikkes:`.
+   neutro, y nombran a sus oficios en `oficios:`.
 2. Al lanzar una corrida, el agente de spec con habilidades (`fabrica-hab-spec`) lleva, además,
-   el archivo entero de cada Nikke que nombren sus habilidades, leído en ese momento de la
-   carpeta de nikke. Un nombre con otra forma, o que no está en esa carpeta, no se lee y queda
-   anotado. Su voz va solo al abrir y al cerrar el resumen.
+   el texto entero de cada oficio que nombren sus habilidades, leído en ese momento de
+   `fabrica/oficios/`. Un nombre con otra forma, o que no está en esa carpeta, no se lee y queda
+   anotado.
 3. En Memoria › Habilidades de una línea, «Proponer las especialidades de la spec» las deja
    como **propuestas**:
    - el archivo para `.claude/skills/<nombre>/` del proyecto;
@@ -340,7 +337,7 @@ no es de sí o no. La Ley 21.719 va aparte, en la etapa 4.
    - una habilidad de su etapa se aplica solo si su «cuándo» vale para la tarea;
    - lo que se puede comprobar va a los criterios;
    - en «Riesgos y notas» se dice cuáles aplicó;
-   - si lleva Nikkes, su voz va solo al abrir y al cerrar el resumen, nunca en el archivo.
+   - lo que escribe, en el archivo y en su resumen, va técnico y neutro.
 
    El tope de 3 a 10 criterios sigue: si salen más, la tarea se parte.
 5. Una línea con habilidades de spec no se salta la spec.
@@ -350,32 +347,32 @@ no es de sí o no. La Ley 21.719 va aparte, en la etapa 4.
 - Las plantillas pasan el lector del catálogo y de las habilidades (`usosDelCatalogo`, huella).
 - Proponerlas en una línea que ya tiene una con ese nombre no la pisa.
 - Una línea sin especialidades no recibe nada nuevo y puede saltarse la spec como hoy.
-- El agente de spec lleva el texto exacto de los archivos de sus Nikkes, y nada de una que no
+- El agente de spec lleva el texto exacto de los archivos de sus oficios, y nada de uno que no
   está en la carpeta o con un nombre de otra forma (`../`, mayúsculas, espacios).
 
 ### Cómo quedó (26 de octubre de 2026)
 - **Las plantillas** están en `fabrica/plantillas/especialidades/<nombre>/SKILL.md`, cada una
-  con `nikkes:` en su frontmatter. La lista y su «cuándo» viven en `ESPECIALIDADES`
+  con `oficios:` en su frontmatter. La lista y su «cuándo» viven en `ESPECIALIDADES`
   (`src/lib/fabrica/habilidades/formato.ts`).
 - **Proponerlas:** en Memoria › Habilidades, la sección «Especialidades de la spec» dice cuáles
   tiene la línea y ofrece «Proponer las cuatro» (o las que faltan). `propuestasDeEspecialidades`
   escribe en el vault una propuesta por cada una, con su `SKILL.md` en `## Archivos`, sin tocar
   el repositorio. No propone la que ya existe, la que el catálogo nombra ni la que ya espera o
   se aprobó; una rechazada, sí. Aprobarla pasa por `aprobarHabilidad`, como cualquier otra.
-- **Las Nikkes en la corrida:** `habilidadDesde` lee `nikkes:` (`nikkesDe`, hasta seis, solo
-  nombres con forma). Al lanzar, `textosDeNikkes` lee cada archivo de la carpeta del mod nikke
-  de este equipo (`carpetaDeNikke`, por `CLAUDE_CODE_PLUGIN_DIRS` o los plugins instalados), y
-  `conSusNikkes` los suma enteros al prompt del agente de su etapa, con la regla de la voz y la
-  de que mandan los límites del agente. Las que no están se nombran como faltantes.
+- **Los oficios en la corrida:** `habilidadDesde` lee `oficios:` (`oficiosDe`, hasta seis, solo
+  nombres con forma). Al lanzar, `textosDeOficios` lee cada archivo de `fabrica/oficios/`
+  (`carpetaDeOficios`), y `conSusOficios` los suma enteros al prompt del agente de su etapa, con
+  la regla de que mandan los límites del agente y de que lo escrito va técnico y neutro. Los que
+  no están se nombran como faltantes.
 - **El agente de spec** (`fabrica/agents/spec-escritor.md`) suma la regla de las habilidades de
   su etapa: solo si su «cuándo» aplica, su sección antes de los criterios, lo comprobable a los
-  criterios, cuáles aplicó en «Riesgos y notas», y la voz de las Nikkes solo en el resumen.
+  criterios y cuáles aplicó en «Riesgos y notas».
 - **El mod:** con habilidades de spec en el catálogo, `decidir(T, "spec")` no le pregunta a Jev
   (`specConHabilidades`) y pide el agente de spec de Claude, también en una línea que escribía
   con Antigravity: Antigravity no recibe habilidades.
 - **Verificado:**
   - las pruebas de la app y las del mod, tipos y lint;
-  - que la aplicación encuentra la carpeta real de nikke en este equipo;
+  - que la aplicación encuentra la carpeta de los oficios;
   - la pestaña Habilidades de DoveCentral.NET10 en el navegador, solo mirando: dice «No la
     tiene» en las cuatro y ofrece «Proponer las cuatro». No se propuso nada.
 - **Verificado en la corrida real del 27 de octubre de 2026 (`npm run fabrica:corrida-real`):** la
@@ -450,14 +447,10 @@ sirve para marcar riesgos. En la revisión sirve para comprobar lo construido co
     regla de pasarles solo el texto de los archivos que cambiaron, nunca datos reales ni
     cadenas de conexión, y de comprobar en el código lo que digan;
   - al armar la corrida (`herramientasDelRol`, en `src/lib/fabrica/motor/agentes.ts`): el
-    agente de seguridad que viaja con `--agents`, con habilidades o elegido de nikke, las
+    agente de seguridad que viaja con `--agents`, con habilidades o elegido de otro mod, las
     lleva sin que se toque su archivo. Uno sin lista de herramientas (todas) queda igual.
   - Los otros dos revisores no las tienen. La habilidad lo dice: el de seguridad avisa si no
     las tuvo; los demás revisan a mano sin decirlo.
-  - **Lo que queda fuera:** con «correr con nikke» encendido, el revisor en `auto` y ninguna
-    habilidad de revisión en la línea, revisa Crow con su propia lista, que no se toca. Con la
-    habilidad de la ley en la línea, ese caso no se da: la etapa tiene habilidades y viaja la
-    copia con el validador.
 - **Verificado:** las pruebas de la app (la propuesta, la aprobación en una carpeta de Claude
   Code de mentira y el uso en una línea), tipos y lint; la fila en la pestaña Habilidades de
   DoveCentral.NET10, solo mirando.
@@ -542,10 +535,10 @@ en Ollama o la infraestructura.
 
 No es parte de este plan. Queda anotado para el siguiente, y se decide con él.
 
-- **Sus agentes nikke, para cualquier IA.**
-  - Separar en cada archivo lo que es de Claude Code (el frontmatter, `tools:`, `model:`) de lo
-    que es el oficio del agente: sus reglas, sus límites y su forma de contestar.
-  - Con eso, Claude, Codex o Gemini reciben el mismo texto.
+- **Los oficios, para cualquier IA.**
+  - Los oficios ya son archivos planos (`fabrica/oficios/`), sin lo que es de Claude Code (el
+    frontmatter, `tools:`, `model:`): solo sus reglas, sus límites y su forma de contestar.
+  - Con eso, Claude, Codex o Gemini pueden recibir el mismo texto.
 - **Codex y Antigravity como escritores de la spec,** cada uno con su modelo. Lo que se averiguó
   el 26 de octubre de 2026:
   - Hoy Antigravity recibe solo el pedido y las notas del proyecto: ni la memoria, ni las

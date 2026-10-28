@@ -642,42 +642,18 @@ export function accionPedida(dato: unknown): Accion | null {
 }
 
 /**
- * Antes de cada corrida, el mod nikke se apaga si quedó
- * encendido: la fábrica es para que trabaje sola, y sus guardas la
- * detendrían esperando una firma. Lo decidió él el 17 de octubre de 2026. Si
- * no se puede comprobar ni apagar, la corrida no se lanza. Devuelve si lo
- * apagó, o el motivo por el que no se corre.
- */
-async function sinNikke(): Promise<{ apagado: boolean } | { motivo: string }> {
-  const ajustes = await alOrquestador("/api/ajustes");
-  if (ajustes?.estado !== 200) return { motivo: "No se pudo comprobar que el mod nikke esté apagado: la corrida no se lanzó." };
-  if ((ajustes.datos as { corridaConNikke?: unknown } | null)?.corridaConNikke !== true) return { apagado: false };
-  const apagar = await alOrquestador("/api/ajustes", { corridaConNikke: false }, { metodo: "PUT" });
-  return apagar?.estado === 200 ? { apagado: true } : { motivo: "El mod nikke está encendido y no se pudo apagar: la corrida no se lanzó." };
-}
-
-/**
  * Hace en la fábrica lo que él pidió; si dice que no, vuelve su motivo.
  * `origen`: la dirección de esta aplicación, adonde la corrida manda su
  * telemetría.
  */
-export async function hacerEnLaFabrica(a: Accion, contexto: { origen?: string | null } = {}): Promise<{ hecho: true; nikkeApagado: boolean; nota?: string } | { hecho: false; motivo: string }> {
+export async function hacerEnLaFabrica(a: Accion, contexto: { origen?: string | null } = {}): Promise<{ hecho: true; nota?: string } | { hecho: false; motivo: string }> {
   const motivo = (r: { estado: number; datos: unknown } | null) => (r === null ? "La fábrica no responde." : texto((r.datos as { error?: unknown } | null)?.error, 300) || `La fábrica contestó ${r.estado}.`);
-  let nikkeApagado = false;
-  const correr = async (tareas: string[]): Promise<{ estado: number; datos: unknown } | null> => {
-    const sin = await sinNikke();
-    if ("motivo" in sin) return { estado: 409, datos: { error: sin.motivo } };
-    nikkeApagado = sin.apagado;
-    return alOrquestador("/api/corridas", { accion: "iniciar", ...(tareas.length ? { tareas } : {}) }, { origen: contexto.origen });
-  };
+  const correr = (tareas: string[]) => alOrquestador("/api/corridas", { accion: "iniciar", ...(tareas.length ? { tareas } : {}) }, { origen: contexto.origen });
   /**
    * Después de un veredicto suyo, la fábrica sigue sola con esa tarea: la corre ahora o, si hay otra
    * corrida en marcha, cuando esa termine. Si no puede, el veredicto queda igual, y se le dice.
    */
   const continuar = async (tarea: string, que = "tu veredicto"): Promise<string> => {
-    const sin = await sinNikke();
-    if ("motivo" in sin) return `Quedó ${que}, pero la fábrica no siguió: ${sin.motivo}`;
-    nikkeApagado = sin.apagado;
     const c = await alOrquestador("/api/corridas", { accion: "continuar", tareas: [tarea] }, { origen: contexto.origen });
     if (c?.estado !== 200) return `Quedó ${que}, pero la fábrica no siguió: ${motivo(c)}`;
     return (c.datos as { encolada?: unknown } | null)?.encolada === true
@@ -722,18 +698,17 @@ export async function hacerEnLaFabrica(a: Accion, contexto: { origen?: string | 
       r = await alOrquestador("/api/deuda", { hallazgo: a.hallazgo });
       break;
   }
-  return r?.estado === 200 ? { hecho: true, nikkeApagado, ...(nota ? { nota } : {}) } : { hecho: false, motivo: motivo(r) };
+  return r?.estado === 200 ? { hecho: true, ...(nota ? { nota } : {}) } : { hecho: false, motivo: motivo(r) };
 }
 
 // ---- La configuración de la fábrica -------------------------------------------------------------
 
-/** Qué proyecto mira la fábrica, y si las corridas cargan el mod nikke. */
+/** Qué proyecto mira la fábrica, y cómo está configurado. */
 export type AjustesDeLaFabrica = {
   /** El proyecto elegido; vacía si todavía no hay uno. */
   raiz: string;
   fuente: "configuracion" | "ninguno";
   proyecto: { existe: boolean; esCarpeta: boolean; tieneFabrica: boolean; tieneGit: boolean };
-  corridaConNikke: boolean;
   /** El modelo del orquestador de Claude en las corridas, y de dónde sale. `null`: el de Claude Code. */
   modelo: { modelo: ModeloDeClaude | null; fuente: "configuracion" | "claude" };
   /** El modelo de cada rol, de factory/config.md del proyecto. `null` si el proyecto no tiene fábrica. */
@@ -805,7 +780,7 @@ function ramaDe(v: unknown): RamaALaVista | null {
   };
 }
 
-/** Un agente que se puede poner en una etapa. `inyectado`: es de nikke, y viaja con la corrida sin sus guardas. */
+/** Un agente que se puede poner en una etapa. `inyectado`: es de un mod que la corrida no carga, y viaja con ella sin sus guardas. */
 export type AgenteALaVista = { nombre: string; origen: string; descripcion: string; enCorridas: "si" | "inyectado" };
 
 export { MODELOS_DE_CLAUDE, ROLES_CON_MODELO, type ModeloDeClaude, type ModeloDeRol, type RolConModelo } from "./modelos.ts";
@@ -861,7 +836,6 @@ export function resumirAjustes(dato: unknown): AjustesDeLaFabrica | null {
     raiz,
     fuente: raiz ? (FUENTES.find((f) => f === a.fuente) ?? "configuracion") : "ninguno",
     proyecto: { existe: p.existe === true, esCarpeta: p.esCarpeta === true, tieneFabrica: p.tieneFabrica === true, tieneGit: p.tieneGit === true },
-    corridaConNikke: a.corridaConNikke === true,
     modelo: (() => {
       const m = (a.modelo && typeof a.modelo === "object" ? a.modelo : {}) as Record<string, unknown>;
       const fuente = m.fuente === "configuracion" ? m.fuente : "claude";
@@ -1006,8 +980,6 @@ export type Ajuste =
   | { ajuste: "crear_proceso"; cual: "publicar" | "vigia" | "evaluacion" }
   /** Sacar una línea de la fábrica. Su repositorio, sus tareas y su memoria quedan como están. */
   | { ajuste: "quitar_linea"; linea: string }
-  /** Apagar el mod nikke en las corridas. Encenderlo no se pide desde aquí: sus guardas no dejarían a la fábrica trabajar sola. */
-  | { ajuste: "sin_nikke" }
   | { ajuste: "requerimientos"; titulo: string; texto: string; porSeccion: boolean }
   /** Hacer sonar el teléfono ahora, para probar. */
   | { ajuste: "probar_telefono" }
@@ -1058,8 +1030,6 @@ export function ajustePedido(dato: unknown): Ajuste | null {
       return { ajuste: "crear_proceso", cual: d.cual === "vigia" || d.cual === "evaluacion" ? d.cual : "publicar" };
     case "quitar_linea":
       return typeof d.linea === "string" && ID_DE_LINEA.test(d.linea) ? { ajuste: "quitar_linea", linea: d.linea } : null;
-    case "sin_nikke":
-      return { ajuste: "sin_nikke" };
     case "requerimientos": {
       const escrito = typeof d.texto === "string" ? d.texto : "";
       const titulo = typeof d.titulo === "string" ? d.titulo.trim() : "";
@@ -1194,9 +1164,6 @@ export async function ajustarLaFabrica(a: Ajuste): Promise<
     }
     case "inicializar":
       r = await alOrquestador("/api/ajustes", { accion: "inicializar" });
-      break;
-    case "sin_nikke":
-      r = await alOrquestador("/api/ajustes", { corridaConNikke: false }, { metodo: "PUT" });
       break;
     case "requerimientos":
       r = await alOrquestador("/api/requerimientos", { titulo: a.titulo, texto: a.texto, porSeccion: a.porSeccion });

@@ -126,13 +126,12 @@ export type Aprobacion = 'agente' | 'externa' | 'ambas'
 
 // ---- Roles: qué agente hace cada etapa ------------------------------------------------------
 
-// Con `auto`, un rol usa el primer preferido que exista en la sesión y si no el de fábrica, así
-// que en un equipo con nikke se usan sus agentes y en uno sin nada, los que trae el plugin.
+// Con `auto`, un rol usa el agente de la fábrica, que ya trae su oficio (fabrica/oficios/).
 export const ROLES = {
   spec: { clave: 'agente_spec', nombre: 'Especificación', preferidos: [], defecto: 'fabrica:spec-escritor', archivo: 'spec-escritor' },
-  construccion: { clave: 'agente_construccion', nombre: 'Construcción', preferidos: ['nikke:centi-implementacion'], defecto: 'fabrica:constructor', archivo: 'constructor' },
-  revision_codigo: { clave: 'agente_revision_codigo', nombre: 'Revisión de código', preferidos: ['nikke:anis-revision'], defecto: 'fabrica:revisor-codigo', archivo: 'revisor-codigo' },
-  revision_seguridad: { clave: 'agente_revision_seguridad', nombre: 'Revisión de seguridad', preferidos: ['nikke:crow-abuso'], defecto: 'fabrica:revisor-seguridad', archivo: 'revisor-seguridad' },
+  construccion: { clave: 'agente_construccion', nombre: 'Construcción', preferidos: [], defecto: 'fabrica:constructor', archivo: 'constructor' },
+  revision_codigo: { clave: 'agente_revision_codigo', nombre: 'Revisión de código', preferidos: [], defecto: 'fabrica:revisor-codigo', archivo: 'revisor-codigo' },
+  revision_seguridad: { clave: 'agente_revision_seguridad', nombre: 'Revisión de seguridad', preferidos: [], defecto: 'fabrica:revisor-seguridad', archivo: 'revisor-seguridad' },
   ui: { clave: 'agente_ui', nombre: 'Revisión de UI/UX', preferidos: [], defecto: 'fabrica:revisor-ui', archivo: 'revisor-ui' },
   aprobacion: { clave: 'agente_aprobacion', nombre: 'Aprobación', preferidos: [], defecto: 'fabrica:aprobador', archivo: 'aprobador' },
 } as const satisfies Record<string, { clave: string; nombre: string; preferidos: readonly string[]; defecto: string; archivo: string }>
@@ -153,7 +152,7 @@ export const nombreDeCopia = (rol: Rol) => `fabrica-${ROLES[rol].archivo}`
  */
 export function candidatos(rol: Rol, valor: string): string[] {
   const r = ROLES[rol]
-  // Un agente de un plugin que la corrida no carga (nikke, en las de la aplicación) le llega con
+  // Un agente de un mod que la corrida no carga (en las de la aplicación, los de CLAUDE_CODE_PLUGIN_DIRS) le llega con
   // `--agents`, con su nombre sin el del plugin: se prueba también así.
   const sinPlugin = (n: string) => (n.includes(':') ? [n, n.split(':')[1]!] : [n])
   const lista = valor === 'auto' ? [...r.preferidos, r.defecto] : [...sinPlugin(valor), r.defecto]
@@ -665,7 +664,7 @@ export function salidaEnLaTarea(
   }
   return { error: 'decision es «tu-clic» o «sin-objecion».' }
 }
-// ---- Lo que escribe Label --------------------------------------------------------------------
+// ---- Lo que escribe el agente de las notas --------------------------------------------------------------------
 
 /** El agente que escribe lo que se lee sin mirar el código (fabrica/docs/Plan-Integracion.md, etapa 4). Lo arma la aplicación. */
 export const AGENTE_DE_ANUNCIO = 'fabrica-anuncio'
@@ -675,7 +674,7 @@ export const PARA_EL_PR = 'Para el PR'
 export const PARA_PROBAR_A_MANO = 'Para probar a mano'
 const ANUNCIO_MAX = 4000
 
-/** El cuerpo sin lo que escribió Label: al volver a construcción, es de la vuelta anterior. */
+/** El cuerpo sin lo que escribió el agente de las notas: al volver a construcción, es de la vuelta anterior. */
 export function sinLoDeLabel(cuerpo: string): string {
   let out = cuerpo
   for (const nombre of [PARA_EL_PR, PARA_PROBAR_A_MANO]) {
@@ -690,20 +689,20 @@ export function sinLoDeLabel(cuerpo: string): string {
 }
 
 /**
- * Lo que deja Label en una tarea ya clasificada. La sección la decide la clase, no el agente: en una
+ * Lo que deja el agente de las notas en una tarea ya clasificada. La sección la decide la clase, no el agente: en una
  * sencilla, «Para el PR»; en una grande, «Para probar a mano». Reemplaza la que hubiera, con tope,
  * y no toca nada más. Es lógica pura.
  */
 export function anuncioEnLaTarea(datos: Datos, cuerpo: string, texto: unknown, ts: string): { cuerpo: string; nota: string; seccion: string } | { error: string } {
   const id = datos.id ?? 'La tarea'
-  if (datos.estado !== 'aprobacion' && datos.estado !== 'hecho') return { error: `${id} está en "${datos.estado}": lo de Label se escribe con la tarea aprobada.` }
+  if (datos.estado !== 'aprobacion' && datos.estado !== 'hecho') return { error: `${id} está en "${datos.estado}": lo del agente de las notas se escribe con la tarea aprobada.` }
   const clase = datos.integracion_clase
   if (clase !== 'sencilla' && clase !== 'grande') return { error: `${id} todavía no se clasificó: primero mcp__fabrica__decidir(T, "integracion").` }
   const limpio = (typeof texto === 'string' ? texto : '').replace(/\r\n?/g, '\n').replace(/^#{1,2} .*$/gm, '').trim()
   if (!limpio) return { error: 'texto vacío: escribe lo que se lee, en Markdown, sin títulos de nivel 1 o 2.' }
   const recortado = limpio.length > ANUNCIO_MAX ? `${limpio.slice(0, ANUNCIO_MAX - 1)}…` : limpio
   const seccion = clase === 'sencilla' ? PARA_EL_PR : PARA_PROBAR_A_MANO
-  const nota = `Label escribió «${seccion}»`
+  const nota = `El agente de las notas escribió «${seccion}»`
   return { cuerpo: anotar(ponerSeccionAntesDeLaBitacora(cuerpo, seccion, recortado), `${ts} · ${nota}`), nota, seccion }
 }
 
@@ -791,18 +790,6 @@ export const PROCESOS_SOLO_EL_USUARIO =
 
 /** Si un Edit o un Write sobre esa ruta se frena: un proceso, desde un subagente. El hilo principal sí puede. */
 export const frenaProcesos = (ruta: string, agentId: string | undefined) => (esDeLosProcesos(ruta) && agentId ? PROCESOS_SOLO_EL_USUARIO : null)
-
-export const NIKKE_SIN_HERRAMIENTAS =
-  'Las herramientas del mod nikke no se usan en la fábrica: esperan una firma de la persona y la corrida quedaría parada. ' +
-  'Escribe tu entrega en texto, como dice tu agente de la fábrica; tu veredicto o tu plan van ahí.'
-
-/**
- * Si se frena una herramienta del mod nikke (`mcp__nikke__*`): siempre, desde un subagente
- * (`agentId`). Las Nikkes llegan a la fábrica con sus reglas y su método, no con sus herramientas,
- * que piden una firma y dejarían la corrida esperando. Lo decidió él el 27 de octubre de 2026. El
- * hilo principal, fuera de una corrida, sí puede.
- */
-export const frenaNikke = (herramienta: string, agentId: string | undefined) => (herramienta.startsWith('mcp__nikke__') && agentId ? NIKKE_SIN_HERRAMIENTAS : null)
 
 /** Un Edit que toca una línea de esos campos. */
 export const editaCamposDelMod = (viejo: string, nuevo: string) => LINEA_DEL_MOD.test(viejo) || LINEA_DEL_MOD.test(nuevo)

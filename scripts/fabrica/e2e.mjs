@@ -10,7 +10,7 @@
 // con la clave de la API de la aplicación). Son unas diez. Pregunta antes de correrla.
 //
 // Claude Code se lanza por COMPANIA_CLAUDE_CODE_BIN de .env.local o, sin ella, el del PATH, con solo el mod
-// de la aplicación (sin nikke ni otra copia). Al final dice qué pasó y qué no, y sale con 1 si
+// de la aplicación (sin otros mods ni otra copia). Al final dice qué pasó y qué no, y sale con 1 si
 // algo falló. El repo vive en la carpeta temporal del sistema: nunca en un proyecto real.
 
 import { execFileSync, spawnSync } from "node:child_process";

@@ -1,21 +1,25 @@
 // Solo servidor: los agentes que la fábrica puede poner en cada etapa, y cómo llegan a la corrida.
 // Él los elige en la configuración, por proyecto (las claves `agente_<rol>` de factory/config.md).
-// Los de un plugin que la corrida no carga (nikke: sus guardas piden una firma que nadie da sin
-// interfaz) viajan con `--agents`: llega el agente, sin las guardas de su plugin. Lo pidió él el
-// 19 de octubre de 2026, para usar en paralelo los agentes que tiene instalados.
+// La corrida no carga los mods de CLAUDE_CODE_PLUGIN_DIRS: sus guardas podrían pedir una firma que
+// nadie da en una corrida sin interfaz. Si se elige uno de sus agentes, viaja con `--agents`: llega
+// el agente, sin las guardas de su mod. Cada agente trabaja con los oficios de su etapa, que vienen
+// con la fábrica (`fabrica/oficios/`): reglas, método, entrega y límites, en texto plano.
 import { promises as fs } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { ROLES_DE_AGENTE, type RolDeAgente } from "../modelos.ts";
-import { nikkesDe } from "../habilidades/formato.ts";
+import { oficiosDe } from "../habilidades/formato.ts";
 import { partir } from "./formato.ts";
 
 /** Un agente que se puede elegir. `enCorridas`: `si` si la corrida lo tiene; `inyectado` si viaja con --agents. */
 export type AgenteDisponible = { nombre: string; origen: string; descripcion: string; enCorridas: "si" | "inyectado" };
 
-/** Un agente leído de su archivo: el frontmatter y el cuerpo, que es su prompt. */
-/** `nikkes`: las que el agente nombra en su frontmatter (`nikkes:`), cuyos archivos le pasa la corrida enteros. */
-export type DefinicionDeAgente = { nombre: string; descripcion: string; prompt: string; tools: string[]; model: string | null; archivo: string; nikkes?: string[] };
+/**
+ * Un agente leído de su archivo: el frontmatter y el cuerpo, que es su prompt. `oficios`: los que
+ * nombra en su frontmatter (`oficios:`), cuyo texto le suma la corrida. `incluye`: los que ya trae
+ * escritos en su cuerpo (`incluye:`, los agentes por defecto de la fábrica), que no se suman otra vez.
+ */
+export type DefinicionDeAgente = { nombre: string; descripcion: string; prompt: string; tools: string[]; model: string | null; archivo: string; oficios?: string[]; incluye?: string[] };
 
 /** Lee un agente de su .md. `null` si no tiene nombre ni cuerpo. Es lógica pura. */
 export function agenteDesde(texto: string, archivo: string): DefinicionDeAgente | null {
@@ -29,7 +33,8 @@ export function agenteDesde(texto: string, archivo: string): DefinicionDeAgente 
     tools: (datos.tools ?? "").split(",").map((t) => t.trim()).filter(Boolean),
     model: datos.model?.trim() && datos.model.trim() !== "inherit" ? datos.model.trim() : null,
     archivo,
-    ...(nikkesDe(datos.nikkes).length ? { nikkes: nikkesDe(datos.nikkes) } : {}),
+    ...(oficiosDe(datos.oficios).length ? { oficios: oficiosDe(datos.oficios) } : {}),
+    ...(oficiosDe(datos.incluye).length ? { incluye: oficiosDe(datos.incluye) } : {}),
   };
 }
 
@@ -80,10 +85,11 @@ async function pluginsInstalados(): Promise<{ dir: string; nombre: string }[]> {
 
 /**
  * Todos los agentes que se pueden poner en una etapa: los de la fábrica (de la aplicación), los del
- * usuario, los del proyecto y los de sus plugins. `conNikke`: si la corrida carga nikke; si no, los
- * suyos se inyectan. La fábrica y nikke no se repiten desde otra copia.
+ * usuario, los del proyecto y los de sus plugins. Los de un plugin instalado (`claude plugin
+ * install`) los tiene la corrida; los de un mod de CLAUDE_CODE_PLUGIN_DIRS, no: se inyectan. La
+ * fábrica no se repite desde otra copia, y un agente que ya está no se cuenta otra vez.
  */
-export async function definicionesDisponibles(raiz: string | null, carpetaDelPlugin: string, conNikke: boolean): Promise<(DefinicionDeAgente & { origen: string; enCorridas: "si" | "inyectado" })[]> {
+export async function definicionesDisponibles(raiz: string | null, carpetaDelPlugin: string): Promise<(DefinicionDeAgente & { origen: string; enCorridas: "si" | "inyectado" })[]> {
   const out: (DefinicionDeAgente & { origen: string; enCorridas: "si" | "inyectado" })[] = [];
   const sumar = (lista: DefinicionDeAgente[], origen: string, enCorridas: "si" | "inyectado") => {
     for (const a of lista) if (!out.some((x) => x.nombre === a.nombre)) out.push({ ...a, origen, enCorridas });
@@ -91,9 +97,13 @@ export async function definicionesDisponibles(raiz: string | null, carpetaDelPlu
   sumar(await agentesEn(path.join(carpetaDelPlugin, "agents"), "fabrica"), "la fábrica", "si");
   if (raiz) sumar(await agentesEn(path.join(raiz, ".claude", "agents"), null), "el proyecto", "si");
   sumar(await agentesEn(path.join(os.homedir(), ".claude", "agents"), null), "tus agentes", "si");
-  for (const p of [...(await carpetasDePlugins()), ...(await pluginsInstalados())]) {
+  for (const p of await pluginsInstalados()) {
     if (!p.nombre || p.nombre === "fabrica") continue;
-    sumar(await agentesEn(path.join(p.dir, "agents"), p.nombre), p.nombre, p.nombre === "nikke" && !conNikke ? "inyectado" : "si");
+    sumar(await agentesEn(path.join(p.dir, "agents"), p.nombre), p.nombre, "si");
+  }
+  for (const p of await carpetasDePlugins()) {
+    if (!p.nombre || p.nombre === "fabrica") continue;
+    sumar(await agentesEn(path.join(p.dir, "agents"), p.nombre), p.nombre, "inyectado");
   }
   return out;
 }
@@ -104,15 +114,6 @@ export const disponibles = (defs: Awaited<ReturnType<typeof definicionesDisponib
 
 // ---- Las habilidades de cada etapa ---------------------------------------------------------------
 
-/** Los que el plugin prueba antes del suyo cuando el rol está en `auto` (fabrica/hooks/tareas.ts, `ROLES`). */
-const PREFERIDOS: Record<RolDeAgente, readonly string[]> = {
-  spec: [],
-  construccion: ["nikke:centi-implementacion"],
-  revision_codigo: ["nikke:anis-revision"],
-  revision_seguridad: ["nikke:crow-abuso"],
-  ui: [],
-  aprobacion: [],
-};
 
 /** La etapa del catálogo de habilidades de cada rol: los tres revisores comparten `revision`. La misma del plugin. */
 export const ETAPA_DEL_ROL: Record<RolDeAgente, "spec" | "construccion" | "revision" | "aprobacion"> = {
@@ -153,12 +154,12 @@ export const nombreConHabilidades = (rol: RolDeAgente) => `fabrica-hab-${rol.rep
 type DefinicionEnCorrida = DefinicionDeAgente & { enCorridas: "si" | "inyectado" };
 
 /**
- * El agente que la corrida usaría para un rol, como lo resuelve el plugin: el elegido (o, en
- * `auto`, el preferido que la corrida tenga) y si no, el de la fábrica. Uno que viaja con
- * `--agents` cuenta solo si él lo eligió. `null` si no hay ninguno. Es lógica pura.
+ * El agente que la corrida usaría para un rol, como lo resuelve el plugin: el elegido y si no, el
+ * de la fábrica (en `auto`, ese). Uno que viaja con `--agents` cuenta solo si él lo eligió. `null`
+ * si no hay ninguno. Es lógica pura.
  */
 export function agenteDelRol(rol: RolDeAgente, valor: string, defs: readonly DefinicionEnCorrida[]): DefinicionEnCorrida | null {
-  const lista = valor === "auto" ? [...PREFERIDOS[rol], ROLES_DE_AGENTE[rol].defecto] : [valor, ROLES_DE_AGENTE[rol].defecto];
+  const lista = valor === "auto" ? [ROLES_DE_AGENTE[rol].defecto] : [valor, ROLES_DE_AGENTE[rol].defecto];
   for (const nombre of lista) {
     const d = defs.find((x) => x.nombre === nombre);
     if (d && (d.enCorridas === "si" || nombre === valor)) return d;
@@ -167,48 +168,40 @@ export function agenteDelRol(rol: RolDeAgente, valor: string, defs: readonly Def
 }
 
 /**
- * El prompt del agente de una etapa con las Nikkes de sus habilidades: el archivo entero de cada
- * una, tal como lo escribió él, con su historia, su voz y sus reglas. No se resume ni se corta: es
- * la decisión del 26 de octubre de 2026 (fabrica/docs/Plan-Spec.md, decisión 8). Su voz va solo al
- * abrir y al cerrar el resumen; lo que el agente escribe en el archivo de la tarea va neutro. Una
- * Nikke que no está en la carpeta de nikke se nombra como faltante. Es lógica pura.
+ * El prompt del agente de una etapa con los oficios de sus habilidades: el texto de cada uno, como
+ * viene en `fabrica/oficios/`, con sus reglas, su método, su entrega y sus límites. Los que el
+ * agente ya trae escritos (`incluye`) no van otra vez: eso lo resuelve quien llama. Un oficio que no
+ * está en esa carpeta se nombra como faltante. Es lógica pura.
  */
-export function conSusNikkes(prompt: string, nikkes: readonly string[], textos: ReadonlyMap<string, string>): string {
-  if (!nikkes.length) return prompt;
-  const halladas = nikkes.filter((n) => textos.has(n));
-  const faltan = nikkes.filter((n) => !textos.has(n));
+export function conSusOficios(prompt: string, oficios: readonly string[], textos: ReadonlyMap<string, string>): string {
+  if (!oficios.length) return prompt;
+  const hallados = oficios.filter((n) => textos.has(n));
+  const faltan = oficios.filter((n) => !textos.has(n));
   const partes = [
     prompt,
     "",
-    "## Las Nikkes de tus habilidades",
+    "## Los oficios de tu etapa",
     "",
-    "Tus habilidades de esta etapa trabajan con estas Nikkes. Van sus archivos enteros, tal como los escribió él: su historia, su voz, su escuadrón y sus reglas.",
-    "Aplica su método desde tu etapa: lo que ellas buscarían en el código ya escrito, tú lo pides o lo compruebas como dice tu habilidad.",
+    "Tus habilidades de esta etapa trabajan con estos oficios. Aplica su método desde tu etapa: lo que ellos buscarían en el código ya escrito, tú lo pides o lo compruebas como dice tu habilidad.",
     "",
-    "- **Su voz sale solo al abrir y al cerrar tu resumen final**, una línea cada una, como dicen sus propias reglas. Lo que escribes en el archivo de la tarea va técnico y neutro: sin su voz, sus nombres ni su lore, porque lo leen otros agentes.",
-    "- **Tus límites mandan sobre los suyos.** Lo que ellas hacen y tú no puedes (correr, medir, editar otros archivos, revisar otro repositorio) no lo haces.",
-    "- **Sus herramientas propias (`mcp__nikke__*`) no se usan aquí:** esperan una firma y la corrida quedaría parada. Lo que ellas entregarían con una herramienta, tú lo escribes en tu entrega.",
-    ...(faltan.length ? [`- No llegaron, porque no están en la carpeta de nikke de este equipo: ${faltan.join(", ")}. Trabaja sin ellas y dilo en tu resumen.`] : []),
-    ...halladas.flatMap((n) => ["", `### ${n}`, "", textos.get(n)!.replace(/\r\n?/g, "\n").trim()]),
+    "- **Tus límites mandan sobre los suyos.** Lo que un oficio hace y tú no puedes (correr, medir, editar otros archivos, revisar otro repositorio) no lo haces.",
+    "- **Lo que escribes en el archivo de la tarea va técnico y neutro**, porque lo leen otros agentes.",
+    ...(faltan.length ? [`- No llegaron, porque no están en fabrica/oficios/: ${faltan.join(", ")}. Trabaja sin ellos y dilo en tu resumen.`] : []),
+    ...hallados.flatMap((n) => ["", `### Oficio: ${n}`, "", textos.get(n)!.replace(/\r\n?/g, "\n").trim()]),
   ];
   return partes.join("\n");
 }
 
-/** La carpeta de agentes del mod nikke en este equipo, o `null` si no está. */
-export async function carpetaDeNikke(): Promise<string | null> {
-  const p = [...(await carpetasDePlugins()), ...(await pluginsInstalados())].find((x) => x.nombre === "nikke");
-  return p ? path.join(p.dir, "agents") : null;
-}
+/** La carpeta de los oficios: viene con la fábrica, junto a su plugin. */
+export const carpetaDeOficios = () => path.join(/*turbopackIgnore: true*/ process.cwd(), "fabrica", "oficios");
 
 /**
- * Los archivos enteros de esas Nikkes, leídos ahora de la carpeta de nikke: sin copiarlos a ningún
- * lado ni tocarlos. Solo nombres con forma válida y archivos que están justo en esa carpeta; los
- * demás no se leen. Solo para el servidor.
+ * El texto de esos oficios, leído ahora de `fabrica/oficios/`. Solo nombres con forma válida y
+ * archivos que están justo en esa carpeta; los demás no se leen. Solo para el servidor.
  */
-export async function textosDeNikkes(nombres: readonly string[], dir: string | null = null): Promise<Map<string, string>> {
-  const carpeta = dir ?? (await carpetaDeNikke());
+export async function textosDeOficios(nombres: readonly string[], dir: string = carpetaDeOficios()): Promise<Map<string, string>> {
+  const carpeta = dir;
   const out = new Map<string, string>();
-  if (!carpeta) return out;
   for (const n of new Set(nombres)) {
     if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(n)) continue;
     const texto = await leer(path.join(carpeta, `${n}.md`));
@@ -225,8 +218,8 @@ export async function textosDeNikkes(nombres: readonly string[], dir: string | n
 export function agentesConHabilidades(
   porRol: Record<RolDeAgente, string>,
   defs: readonly DefinicionEnCorrida[],
-  porEtapa: Record<string, readonly { nombre: string; nikkes?: readonly string[] }[]>,
-  textosDeNikkes: ReadonlyMap<string, string> = new Map(),
+  porEtapa: Record<string, readonly { nombre: string; oficios?: readonly string[] }[]>,
+  textosDeOficios: ReadonlyMap<string, string> = new Map(),
 ): Record<string, { description: string; prompt: string; tools?: string[]; model?: string; skills: string[] }> {
   const out: Record<string, { description: string; prompt: string; tools?: string[]; model?: string; skills: string[] }> = {};
   for (const rol of Object.keys(ROLES_DE_AGENTE) as RolDeAgente[]) {
@@ -235,10 +228,9 @@ export function agentesConHabilidades(
     const d = agenteDelRol(rol, porRol[rol] ?? "auto", defs);
     if (!d) continue;
     const tools = herramientasDelRol(rol, d.tools);
-    // Si el agente ya es una Nikke (Centi como constructor), su archivo es su prompt: no va otra vez.
-    const propia = d.nombre.startsWith("nikke:") ? d.nombre.slice("nikke:".length) : null;
-    const nikkes = [...new Set((porEtapa[ETAPA_DEL_ROL[rol]] ?? []).flatMap((h) => h.nikkes ?? []))].filter((n) => n !== propia);
-    const prompt = conSusNikkes(d.prompt, nikkes, textosDeNikkes);
+    // Los oficios que el agente ya trae escritos (el constructor de la fábrica, el de Implementación) no van otra vez.
+    const oficios = [...new Set((porEtapa[ETAPA_DEL_ROL[rol]] ?? []).flatMap((h) => h.oficios ?? []))].filter((n) => !d.incluye?.includes(n));
+    const prompt = conSusOficios(d.prompt, oficios, textosDeOficios);
     out[nombreConHabilidades(rol)] = { description: d.descripcion || d.nombre, prompt, ...(tools.length ? { tools } : {}), ...(d.model ? { model: d.model } : {}), skills };
   }
   return out;
@@ -272,30 +264,30 @@ export const archivoDelAgenteDeSalida = (carpetaDelPlugin: string) => path.join(
 
 /**
  * Lo que viaja con `--agents` para el agente de salida (fabrica/docs/Plan-Aprobador.md, etapa 4):
- * su definición con los archivos enteros de sus Nikkes (Viper y Marian), como los agentes con
- * habilidades. Sin definición, nada. Es lógica pura.
+ * su definición con sus oficios (Plan de reversión y Compatibilidad hacia atrás), como los agentes
+ * con habilidades. Sin definición, nada. Es lógica pura.
  */
 export function agenteDeSalida(def: DefinicionDeAgente | null, textos: ReadonlyMap<string, string>): Record<string, { description: string; prompt: string; tools?: string[]; model?: string }> {
   return agenteDePlantilla(AGENTE_DE_SALIDA, def, textos);
 }
 
-// ---- Label: lo que se lee sin mirar el código ------------------------------------------------------
+// ---- Las notas: lo que se lee sin mirar el código ---------------------------------------------------
 
-/** El nombre con que viaja Label. El mod acepta su texto solo de él (fabrica/hooks/tareas.ts, el mismo nombre). */
+/** El nombre con que viaja el agente de las notas. El mod acepta su texto solo de él (fabrica/hooks/tareas.ts, el mismo nombre). */
 export const AGENTE_DE_ANUNCIO = "fabrica-anuncio";
 
 /** Dónde está su definición: una plantilla que usa solo la aplicación, como la del agente de salida. */
 export const archivoDelAgenteDeAnuncio = (carpetaDelPlugin: string) => path.join(carpetaDelPlugin, "plantillas", "agentes", "anuncio.md");
 
 /**
- * Lo que viaja con `--agents` para Label (fabrica/docs/Plan-Integracion.md, etapa 4): su definición
- * con el archivo entero de su Nikke. Sin definición, nada. Es lógica pura.
+ * Lo que viaja con `--agents` para el agente de las notas (fabrica/docs/Plan-Integracion.md, etapa
+ * 4): su definición con su oficio (Notas de versión y avisos). Sin definición, nada. Es lógica pura.
  */
 export function agenteDeAnuncio(def: DefinicionDeAgente | null, textos: ReadonlyMap<string, string>): Record<string, { description: string; prompt: string; tools?: string[]; model?: string }> {
   return agenteDePlantilla(AGENTE_DE_ANUNCIO, def, textos);
 }
 
-// ---- El retrabajo: Snow White y Rapunzel -----------------------------------------------------------
+// ---- El retrabajo: arreglo de raíz y pruebas ---------------------------------------------------------
 
 /** El nombre con que viaja el agente de retrabajo. El mod lo cuenta como de la etapa de construcción. */
 export const AGENTE_DE_RETRABAJO = "fabrica-retrabajo";
@@ -305,8 +297,8 @@ export const archivoDelAgenteDeRetrabajo = (carpetaDelPlugin: string) => path.jo
 
 /**
  * Lo que viaja con `--agents` para el retrabajo (fabrica/docs/Plan-Integracion.md, etapa 6): su
- * definición con los archivos enteros de Snow White y Rapunzel, y las habilidades de construcción
- * de la línea (`skills:`). Las Nikkes de las especialidades de construcción no van: el retrabajo
+ * definición con sus oficios (Arreglo de raíz y Pruebas), y las habilidades de construcción de la
+ * línea (`skills:`). Los oficios de las especialidades de construcción no van: el retrabajo
  * corrige lo bloqueante, y sus habilidades ya traen el estándar de la línea. Sin `model`: lo pone el
  * orquestador, el de la construcción de la tarea. Sin definición, nada. Es lógica pura.
  */
@@ -320,20 +312,20 @@ export function agenteDeRetrabajo(
   return {
     [AGENTE_DE_RETRABAJO]: {
       description: def.descripcion || def.nombre,
-      prompt: conSusNikkes(def.prompt, def.nikkes ?? [], textos),
+      prompt: conSusOficios(def.prompt, def.oficios ?? [], textos),
       ...(def.tools.length ? { tools: def.tools } : {}),
       ...(unicas.length ? { skills: unicas } : {}),
     },
   };
 }
 
-/** Un agente de una plantilla de la fábrica, con el nombre con que viaja y los archivos enteros de sus Nikkes. */
+/** Un agente de una plantilla de la fábrica, con el nombre con que viaja y sus oficios. */
 function agenteDePlantilla(nombre: string, def: DefinicionDeAgente | null, textos: ReadonlyMap<string, string>): Record<string, { description: string; prompt: string; tools?: string[]; model?: string }> {
   if (!def) return {};
   return {
     [nombre]: {
       description: def.descripcion || def.nombre,
-      prompt: conSusNikkes(def.prompt, def.nikkes ?? [], textos),
+      prompt: conSusOficios(def.prompt, def.oficios ?? [], textos),
       ...(def.tools.length ? { tools: def.tools } : {}),
       ...(def.model ? { model: def.model } : {}),
     },

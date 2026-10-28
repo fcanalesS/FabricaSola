@@ -43,8 +43,6 @@ export type Ajustes = {
   lineas?: Linea[];
   /** La línea que miran la Columna y la configuración, y donde corren las corridas. */
   lineaActiva?: string;
-  /** Cargar el mod nikke en las corridas. Va apagado: sus guardas piden una firma que nadie da en una corrida sola. */
-  corridaConNikke?: boolean;
   /** El modelo del orquestador de Claude en las corridas. Sin él, el de Claude Code. */
   modelo?: string;
   /** Si el teléfono suena solo cuando algo lo espera. Va apagado: cada llamada cuesta. */
@@ -187,10 +185,6 @@ export const fijarProcesoSolo = (linea: string, proceso: string, valor: boolean)
 export const procesosSinClicDe = async (linea: string) => procesosDeLaLista((await leerAjustes()).procesosSinClic, linea);
 /** Quita o vuelve a poner su clic para producción en un proceso de esa línea. Las condiciones las mira quien llama. */
 export const fijarProcesoSinClic = (linea: string, proceso: string, valor: boolean) => fijarEnLaLista("procesosSinClic", linea, proceso, valor);
-
-export async function fijarCorridaConNikke(valor: boolean) {
-  await guardarAjustes({ ...(await leerAjustes()), corridaConNikke: valor });
-}
 
 /** El proyecto de la línea activa, o `null` si todavía no hay una. */
 export async function raiz(): Promise<string | null> {
@@ -1018,7 +1012,7 @@ export async function escribirVeredicto(id: string, veredicto: Veredicto, motivo
 const SECCION_MAX = 30_000;
 
 /**
- * Lo que dice una tarea. `paraElPR` y `probarAMano` los escribe Label (fabrica/docs/Plan-Integracion.md,
+ * Lo que dice una tarea. `paraElPR` y `probarAMano` los escribe el agente de las notas (fabrica/docs/Plan-Integracion.md,
  * etapa 4): se muestran en su pantalla, nunca en voz alta.
  */
 export type SeccionesDeTarea = { pedido: string; spec: string; hallazgos: string; respuesta: string; paraElPR: string; probarAMano: string };

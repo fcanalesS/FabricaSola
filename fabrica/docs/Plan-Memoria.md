@@ -260,7 +260,7 @@ vigente.
 - `fabrica/agents/aprobador.md`: comprueba que el cambio respeta las fichas.
 - El mod corre `contradice` sobre el pedido al pasar a spec: si lo ve, deja la sospecha en la
   bitácora de la tarea para el agente de spec (no decide solo).
-- Lo mismo para los agentes de nikke que la fábrica usa (la instrucción va en lo que se les pasa,
+- Lo mismo para los agentes de otros mods que la fábrica usa (la instrucción va en lo que se les pasa,
   no en su archivo).
 
 ### Archivos o zonas que toca

@@ -18,7 +18,7 @@ exista es el que usará `/fabrica:correr`), y muestra una tabla:
 | Rol | Config | Lo hace | De dónde viene |
 |---|---|---|---|
 
-"De dónde viene": `fabrica` (del plugin), `nikke` u otro plugin por su prefijo, o "proyecto /
+"De dónde viene": `fabrica` (del plugin), otro plugin por su prefijo, o "proyecto /
 usuario" si es un nombre sin prefijo (una copia en `.claude/agents/`).
 
 Debajo, en dos líneas: cómo personalizar uno (`/fabrica:agentes copiar <rol>`) y que también se

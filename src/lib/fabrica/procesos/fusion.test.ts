@@ -63,7 +63,7 @@ test("no se fusiona sin PR, con otro commit, contra otra base, cerrado, con una 
   assert.deepEqual(porQueNoFusionar({ ...base, tareas: [tarea({ clase: null, probada: true })] }), []);
 });
 
-test("el cuerpo del PR dice si se fusiona solo y trae lo de Label de cada tarea; un título ajeno no va", () => {
+test("el cuerpo del PR dice si se fusiona solo y trae lo del agente de las notas de cada tarea; un título ajeno no va", () => {
   const sin = cuerpoDelPR({ proceso: "publicar", commit: COMMIT, seFusionaSolo: false, tareas: [] });
   assert.equal(sin, `Lo abrió la fábrica de software con el proceso publicar, en el commit ${COMMIT}. Integrarlo es una decisión de una persona.`);
   const con = cuerpoDelPR({

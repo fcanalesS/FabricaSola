@@ -136,21 +136,21 @@ const DE_LA_ETAPA: Record<EtapaConEspecialidades, { titulo: string; texto: strin
   },
   construccion: {
     titulo: "Especialidades del constructor",
-    texto: "Código, seguridad e interfaz: cada línea enciende las que necesita. Las Nikkes que solo leen revisan lo construido antes de entregar.",
+    texto: "Código, seguridad e interfaz: cada línea enciende las que necesita. Los oficios que solo leen revisan lo construido antes de entregar.",
     agente: "al constructor",
     todas: "Proponer las tres",
     vez: "por construcción, y otra vez en cada retrabajo",
   },
   aprobacion: {
     titulo: "Especialidades del aprobador",
-    texto: "Privaty: un veredicto sin matices, lo que se coló sin querer en el diff, y que el diff haga lo que dice la tarea. No corre las pruebas: vale la verificación que ya pasó.",
+    texto: "Comprobación de entrega: un veredicto sin matices, lo que se coló sin querer en el diff, y que el diff haga lo que dice la tarea. No corre las pruebas: vale la verificación que ya pasó.",
     agente: "al aprobador",
     todas: "Proponerla",
     vez: "por aprobación",
   },
 };
 
-/** Cuánto pesan unas Nikkes en el prompt: «34 KB, unos 10 mil tokens». Se cuentan unos 3,5 caracteres por token. */
+/** Cuánto pesan unos oficios en el prompt: «34 KB, unos 10 mil tokens». Se cuentan unos 3,5 caracteres por token. */
 const peso = (bytes: number) => `${Math.max(1, Math.round(bytes / 1024))} KB, unos ${Math.max(1, Math.round(bytes / 3500))} mil tokens`;
 
 /**
@@ -170,7 +170,7 @@ function Especialidades({ etapa, h, ocupada, hacer }: { etapa: EtapaConEspeciali
         {d.titulo}
       </h2>
       <p className="text-sm text-tenue">
-        {d.texto} Cada una trabaja con sus Nikkes: la corrida le pasa sus archivos enteros {d.agente}, y su voz sale solo al abrir y al cerrar su resumen.
+        {d.texto} Cada una trabaja con sus oficios: la corrida le pasa su texto {d.agente}.
       </p>
       <ul className="flex flex-col gap-2">
         {lista.map((e) => {
@@ -182,10 +182,10 @@ function Especialidades({ etapa, h, ocupada, hacer }: { etapa: EtapaConEspeciali
                 <span className={`text-xs font-bold ${enUso.has(e.nombre) ? "" : "text-tenue"}`}>{enUso.has(e.nombre) ? "En uso" : sinEtapa.has(e.nombre) ? "Existe, sin etapa" : "No la tiene"}</span>
               </span>
               <span className="text-tenue">{e.cuando}</span>
-              {costo && costo.nikkes.length > 0 && (
+              {costo && costo.oficios.length > 0 && (
                 <span className="text-xs text-tenue">
-                  Con {costo.nikkes.join(", ")}
-                  {costo.bytes ? ` · ${peso(costo.bytes)} ${d.vez}` : " · la carpeta de nikke no está en este equipo"}
+                  Con {costo.oficios.join(", ")}
+                  {costo.bytes ? ` · ${peso(costo.bytes)} ${d.vez}` : " · falta la carpeta fabrica/oficios/"}
                 </span>
               )}
             </li>
@@ -223,10 +223,10 @@ function DelCerebro({ habilidad, costo, vez, h, ocupada, hacer }: { habilidad: H
       <span className="text-tenue">
         {habilidad.resumen} {habilidad.cuando}
       </span>
-      {costo && costo.nikkes.length > 0 && (
+      {costo && costo.oficios.length > 0 && (
         <span className="text-xs text-tenue">
-          Con {costo.nikkes.join(", ")}
-          {costo.bytes ? ` · ${peso(costo.bytes)} ${vez}` : " · la carpeta de nikke no está en este equipo"}
+          Con {costo.oficios.join(", ")}
+          {costo.bytes ? ` · ${peso(costo.bytes)} ${vez}` : " · falta la carpeta fabrica/oficios/"}
         </span>
       )}
       {!existe ? (

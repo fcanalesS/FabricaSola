@@ -5,10 +5,10 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
 import { leerVault, revisarVault, type ArchivoDelVault } from "../memoria/formato.ts";
-import { agentesConHabilidades, conSusNikkes, textosDeNikkes } from "../motor/agentes.ts";
+import { agentesConHabilidades, conSusOficios, textosDeOficios } from "../motor/agentes.ts";
 import { costoDeEspecialidades, plantillaDelCerebro, plantillasDeEspecialidades } from "./disco.ts";
 import { CEREBRO as LISTA_DEL_CEREBRO, ESPECIALIDADES, IA, LEY, propuestaDelCerebro, propuestaDeLaLey, propuestasDeEspecialidades } from "./especialidades.ts";
-import { habilidadDesde, habilidadesPorEtapa, huellaDe, nikkesDe, TOPES_DE_HABILIDAD, type HabilidadDisponible } from "./formato.ts";
+import { habilidadDesde, habilidadesPorEtapa, huellaDe, oficiosDe, TOPES_DE_HABILIDAD, type HabilidadDisponible } from "./formato.ts";
 import { aprobarHabilidad, aprobarHabilidadSuya, problemasDeLaHabilidad } from "./propuestas.ts";
 
 const PLANTILLAS = path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "..", "..", "..", "fabrica", "plantillas", "especialidades");
@@ -18,18 +18,18 @@ const delAprobador = await plantillasDeEspecialidades(PLANTILLAS, "aprobacion");
 const VAULT: ArchivoDelVault[] = [{ ruta: "ficha.md", texto: "# Memoria de caja\n\n## Reglas\n" }];
 const FECHA = "2026-10-26";
 
-const NIKKES: Record<string, string[]> = {
-  "spec-guardarrailes": ["crow-abuso", "noah-robustez"],
-  "spec-datos-y-contexto": ["velvet-auditoria", "modernia-interna"],
-  "spec-evaluacion": ["rapunzel-pruebas"],
-  "spec-contratos-y-recursos": ["drake-contrato", "behemoth-drenaje", "jackal-carga"],
-  "construir-codigo": ["centi-implementacion", "ade-convenciones", "drake-contrato", "noah-robustez", "rapunzel-pruebas"],
-  "construir-seguridad": ["crow-abuso", "modernia-interna", "velvet-auditoria"],
-  "construir-interfaz": ["ade-convenciones", "modernia-recien-llegada", "liberalio-ruido"],
-  "aprobar-entrega": ["privaty-entrega"],
+const OFICIOS: Record<string, string[]> = {
+  "spec-guardarrailes": ["casos-de-abuso", "robustez"],
+  "spec-datos-y-contexto": ["auditoria-de-secretos", "amenaza-interna"],
+  "spec-evaluacion": ["pruebas"],
+  "spec-contratos-y-recursos": ["contratos", "consumo-de-recursos", "pruebas-de-carga"],
+  "construir-codigo": ["implementacion", "convenciones", "contratos", "robustez", "pruebas"],
+  "construir-seguridad": ["casos-de-abuso", "amenaza-interna", "auditoria-de-secretos"],
+  "construir-interfaz": ["convenciones", "mirada-sin-contexto", "ruido-y-registros"],
+  "aprobar-entrega": ["entrega"],
 };
 
-test("las ocho plantillas se leen como habilidades de su etapa, con sus Nikkes y dentro de los topes", () => {
+test("las ocho plantillas se leen como habilidades de su etapa, con sus oficios y dentro de los topes", () => {
   assert.deepEqual([...plantillas, ...delConstructor, ...delAprobador].map((p) => p.nombre), ESPECIALIDADES.map((e) => e.nombre));
   assert.deepEqual(delAprobador.map((p) => [p.nombre, p.etapa]), [["aprobar-entrega", "aprobacion"]]);
   assert.deepEqual(plantillas.map((p) => p.etapa), ["spec", "spec", "spec", "spec"]);
@@ -39,17 +39,17 @@ test("las ocho plantillas se leen como habilidades de su etapa, con sus Nikkes y
     assert.equal(h?.nombre, p.nombre);
     assert.ok(h?.descripcion, `${p.nombre} sin descripción`);
     assert.equal(h?.soloAMano, false);
-    assert.deepEqual(h?.nikkes, NIKKES[p.nombre]);
+    assert.deepEqual(h?.oficios, OFICIOS[p.nombre]);
     assert.ok(p.cuando.length <= TOPES_DE_HABILIDAD.cuando, `${p.nombre}: su «cuándo» pasa del tope`);
     assert.ok(new TextEncoder().encode(p.skill).length <= TOPES_DE_HABILIDAD.bytesPorArchivo);
     assert.doesNotMatch(p.skill, /\r/);
   }
 });
 
-test("las Nikkes de una habilidad: solo nombres con forma, sin repetir y con tope", () => {
-  assert.deepEqual(nikkesDe("crow-abuso, ../secreto, Crow, crow-abuso, a b, noah-robustez"), ["crow-abuso", "noah-robustez"]);
-  assert.deepEqual(nikkesDe(undefined), []);
-  assert.equal(nikkesDe(Array.from({ length: 9 }, (_, i) => `n${i}`).join(",")).length, 6);
+test("los oficios de una habilidad: solo nombres con forma, sin repetir y con tope", () => {
+  assert.deepEqual(oficiosDe("casos-de-abuso, ../secreto, Abuso, casos-de-abuso, a b, robustez"), ["casos-de-abuso", "robustez"]);
+  assert.deepEqual(oficiosDe(undefined), []);
+  assert.equal(oficiosDe(Array.from({ length: 9 }, (_, i) => `n${i}`).join(",")).length, 6);
 });
 
 test("proponerlas deja una propuesta por cada una que falta, que el vault da por buena y que se aprueba tal cual", () => {
@@ -98,33 +98,33 @@ test("no se propone la que ya existe, la que el catálogo nombra ni la que ya es
   ]);
 });
 
-test("el agente de la etapa lleva el archivo entero de cada Nikke, leído de la carpeta de nikke y nada de fuera", async () => {
-  const base = mkdtempSync(path.join(os.tmpdir(), "nikkes-"));
-  const dir = path.join(base, "agents");
+test("el agente de la etapa lleva el texto de cada oficio, leído de su carpeta y nada de fuera", async () => {
+  const base = mkdtempSync(path.join(os.tmpdir(), "oficios-"));
+  const dir = path.join(base, "oficios");
   mkdirSync(dir);
-  const crow = "---\nname: crow-abuso\n---\n\n# Crow — Casos de abuso\n\nNaciste en el Outer Rim.\nLlamas al Comandante «Commander».\n";
-  writeFileSync(path.join(dir, "crow-abuso.md"), crow);
+  const abuso = "# Casos de abuso\n\nAnaliza cómo se abusaría del sistema para que se cierre.\n\n## Reglas\n\n1. Estrictamente defensivo.\n";
+  writeFileSync(path.join(dir, "casos-de-abuso.md"), abuso);
   writeFileSync(path.join(base, "secreto.md"), "no me leas");
 
-  const textos = await textosDeNikkes(["crow-abuso", "noah-robustez", "../secreto", "Crow-Abuso", "crow-abuso"], dir);
-  assert.deepEqual([...textos.keys()], ["crow-abuso"]);
-  assert.equal(textos.get("crow-abuso"), crow);
-  assert.equal((await textosDeNikkes(["crow-abuso"], path.join(base, "no-existe"))).size, 0);
+  const textos = await textosDeOficios(["casos-de-abuso", "robustez", "../secreto", "Casos-De-Abuso", "casos-de-abuso"], dir);
+  assert.deepEqual([...textos.keys()], ["casos-de-abuso"]);
+  assert.equal(textos.get("casos-de-abuso"), abuso);
+  assert.equal((await textosDeOficios(["casos-de-abuso"], path.join(base, "no-existe"))).size, 0);
 
-  const prompt = conSusNikkes("# Escritor de specs", ["crow-abuso", "noah-robustez"], textos);
+  const prompt = conSusOficios("# Escritor de specs", ["casos-de-abuso", "robustez"], textos);
   assert.ok(prompt.startsWith("# Escritor de specs\n"));
-  // Entero, tal cual: con su frontmatter, su historia y su voz.
-  assert.ok(prompt.includes(crow.trim()));
-  assert.match(prompt, /solo al abrir y al cerrar tu resumen final/);
-  assert.match(prompt, /No llegaron, porque no están en la carpeta de nikke de este equipo: noah-robustez/);
+  // Tal cual viene en su archivo, bajo su título de oficio.
+  assert.ok(prompt.includes("### Oficio: casos-de-abuso\n\n" + abuso.trim()));
+  assert.match(prompt, /## Los oficios de tu etapa/);
+  assert.match(prompt, /No llegaron, porque no están en fabrica\/oficios\/: robustez/);
   assert.doesNotMatch(prompt, /no me leas/);
-  assert.equal(conSusNikkes("# Solo", [], textos), "# Solo");
+  assert.equal(conSusOficios("# Solo", [], textos), "# Solo");
 
   const def = (nombre: string) => ({ nombre, descripcion: nombre, prompt: `# ${nombre}`, tools: ["Read"], model: null, archivo: "x.md", enCorridas: "si" as const });
   const defs = ["fabrica:spec-escritor", "fabrica:constructor", "fabrica:revisor-codigo", "fabrica:revisor-seguridad", "fabrica:revisor-ui", "fabrica:aprobador"].map(def);
   const auto = { spec: "auto", construccion: "auto", revision_codigo: "auto", revision_seguridad: "auto", ui: "auto", aprobacion: "auto" };
-  const agentes = agentesConHabilidades(auto, defs, { spec: [{ nombre: "spec-guardarrailes", nikkes: ["crow-abuso"] }], construccion: [{ nombre: "wolff-db" }], revision: [], aprobacion: [] }, textos);
-  assert.ok(agentes["fabrica-hab-spec"]!.prompt.includes(crow.trim()));
+  const agentes = agentesConHabilidades(auto, defs, { spec: [{ nombre: "spec-guardarrailes", oficios: ["casos-de-abuso"] }], construccion: [{ nombre: "wolff-db" }], revision: [], aprobacion: [] }, textos);
+  assert.ok(agentes["fabrica-hab-spec"]!.prompt.includes(abuso.trim()));
   assert.equal(agentes["fabrica-hab-construccion"]!.prompt, "# fabrica:constructor");
 });
 
@@ -146,8 +146,8 @@ test("las del constructor se proponen para la construcción, y se aprueban en su
   // Lo que dice de qué implica es de la construcción, no de la spec.
   const texto = r.nuevas[0]!.texto;
   assert.match(texto, /Plan-Builder\.md/);
-  assert.match(texto, /otra vez en\s+cada vuelta de retrabajo/);
-  assert.match(texto, /archivos enteros\s+al constructor/);
+  assert.match(texto, /otra\s+vez\s+en\s+cada\s+vuelta\s+de\s+retrabajo/);
+  assert.match(texto, /su\s+texto\s+al\s+constructor/);
   assert.match(texto, /Darle a la construcción de esta línea/);
   assert.doesNotMatch(texto, /la spec de esta línea no se salta/);
 
@@ -156,16 +156,16 @@ test("las del constructor se proponen para la construcción, y se aprueban en su
   assert.match(aprobada.repositorio.find((a) => a.ruta === "factory/habilidades.md")!.texto, /^- \[construccion\] construir-codigo: Cuando la tarea cambie o agregue código del proyecto\.$/m);
 });
 
-test("el constructor lleva las Nikkes de sus especialidades una vez cada una, y si ya es Centi, Centi no va otra vez", async () => {
-  const dir = mkdtempSync(path.join(os.tmpdir(), "nikkes-"));
-  const nombres = [...new Set([...NIKKES["construir-codigo"]!, ...NIKKES["construir-seguridad"]!])];
+test("el constructor lleva los oficios de sus especialidades una vez cada uno, y los que ya trae escritos no van otra vez", async () => {
+  const dir = mkdtempSync(path.join(os.tmpdir(), "oficios-"));
+  const nombres = [...new Set([...OFICIOS["construir-codigo"]!, ...OFICIOS["construir-seguridad"]!])];
   for (const n of nombres) writeFileSync(path.join(dir, `${n}.md`), `---\nname: ${n}\n---\n\n# ${n}\n\nEl oficio de ${n}.\n`);
-  const textos = await textosDeNikkes(nombres, dir);
+  const textos = await textosDeOficios(nombres, dir);
   const porEtapa = {
     spec: [],
     construccion: [
-      { nombre: "construir-codigo", nikkes: NIKKES["construir-codigo"] },
-      { nombre: "construir-seguridad", nikkes: NIKKES["construir-seguridad"] },
+      { nombre: "construir-codigo", oficios: OFICIOS["construir-codigo"] },
+      { nombre: "construir-seguridad", oficios: OFICIOS["construir-seguridad"] },
     ],
     revision: [],
     aprobacion: [],
@@ -174,30 +174,31 @@ test("el constructor lleva las Nikkes de sus especialidades una vez cada una, y 
   const auto = { spec: "auto", construccion: "auto", revision_codigo: "auto", revision_seguridad: "auto", ui: "auto", aprobacion: "auto" };
   const cuantas = (prompt: string, n: string) => prompt.split(`El oficio de ${n}.`).length - 1;
 
-  // Con el constructor de la fábrica: las ocho, una vez cada una.
+  // Con un constructor sin oficios escritos: todos, una vez cada uno.
   const conElDeLaFabrica = agentesConHabilidades(auto, [def("fabrica:constructor")], porEtapa, textos)["fabrica-hab-construccion"]!;
   for (const n of nombres) assert.equal(cuantas(conElDeLaFabrica.prompt, n), 1, n);
   assert.deepEqual(conElDeLaFabrica.skills, ["construir-codigo", "construir-seguridad"]);
 
-  // Con Centi elegida como constructora: su prompt ya es su archivo, y no se suma otra vez.
-  const centi = { ...def("nikke:centi-implementacion", "inyectado"), prompt: textos.get("centi-implementacion")! };
-  const conCenti = agentesConHabilidades({ ...auto, construccion: "nikke:centi-implementacion" }, [def("fabrica:constructor"), centi], porEtapa, textos)["fabrica-hab-construccion"]!;
-  assert.equal(cuantas(conCenti.prompt, "centi-implementacion"), 1);
-  assert.equal(cuantas(conCenti.prompt, "drake-contrato"), 1);
+  // Un constructor que ya trae escrito el de Implementación (`incluye:`): ese no se suma otra vez.
+  const conIncluye = { ...def("fabrica:constructor"), prompt: `# fabrica:constructor\n\n${textos.get("implementacion")!}`, incluye: ["implementacion"] };
+  const conElSuyo = agentesConHabilidades(auto, [conIncluye], porEtapa, textos)["fabrica-hab-construccion"]!;
+  assert.equal(cuantas(conElSuyo.prompt, "implementacion"), 1);
+  assert.equal(cuantas(conElSuyo.prompt, "contratos"), 1);
+  assert.doesNotMatch(conElSuyo.prompt, /### Oficio: implementacion/);
 });
 
-test("lo que pesa cada especialidad: sus Nikkes y sus bytes, sin leerlas; sin la carpeta de nikke, no se sabe", async () => {
-  const dir = mkdtempSync(path.join(os.tmpdir(), "nikkes-"));
-  writeFileSync(path.join(dir, "crow-abuso.md"), "x".repeat(1000));
-  writeFileSync(path.join(dir, "modernia-interna.md"), "x".repeat(500));
+test("lo que pesa cada especialidad: sus oficios y sus bytes, sin leerlos; sin la carpeta de oficios, no se sabe", async () => {
+  const dir = mkdtempSync(path.join(os.tmpdir(), "oficios-"));
+  writeFileSync(path.join(dir, "casos-de-abuso.md"), "x".repeat(1000));
+  writeFileSync(path.join(dir, "amenaza-interna.md"), "x".repeat(500));
   const costos = await costoDeEspecialidades(PLANTILLAS, dir, CEREBRO);
   // Las especialidades y, después, las del cerebro.
   assert.deepEqual(costos.map((c) => c.nombre), [...ESPECIALIDADES.map((e) => e.nombre), "ley-21719", "construir-con-ia"]);
-  assert.deepEqual(costos.find((c) => c.nombre === "ley-21719"), { nombre: "ley-21719", nikkes: [], bytes: 0 });
+  assert.deepEqual(costos.find((c) => c.nombre === "ley-21719"), { nombre: "ley-21719", oficios: [], bytes: 0 });
   // Sin la plantilla de una del cerebro, esa no se muestra.
   assert.equal((await costoDeEspecialidades(PLANTILLAS, dir, path.join(dir, "no-existe"))).length, ESPECIALIDADES.length);
-  // velvet-auditoria no está en esa carpeta: cuenta cero.
-  assert.deepEqual(costos.find((c) => c.nombre === "construir-seguridad"), { nombre: "construir-seguridad", nikkes: NIKKES["construir-seguridad"], bytes: 1500 });
+  // auditoria-de-secretos no está en esa carpeta: cuenta cero.
+  assert.deepEqual(costos.find((c) => c.nombre === "construir-seguridad"), { nombre: "construir-seguridad", oficios: OFICIOS["construir-seguridad"], bytes: 1500 });
   assert.equal((await costoDeEspecialidades(PLANTILLAS, null, CEREBRO)).find((c) => c.nombre === "construir-codigo")?.bytes, null);
 });
 
@@ -208,7 +209,7 @@ test("la habilidad de la Ley 21.719: dice de qué versión es, no certifica y en
   const h = habilidadDesde(LEY.nombre, skill, "suya");
   assert.equal(h?.nombre, "ley-21719");
   assert.ok(h?.descripcion);
-  assert.equal(h?.nikkes, undefined);
+  assert.equal(h?.oficios, undefined);
   assert.match(skill, /13 de diciembre de 2024/);
   assert.match(skill, /1 de diciembre de 2026/);
   assert.match(skill, /No certifica/);
@@ -238,11 +239,11 @@ test("se propone en la planta y, aprobada, queda como habilidad suya tal cual; n
   assert.throws(() => aprobarHabilidadSuya(archivos, r.nueva.id, { suyas: [suya], leyoLosScripts: false }), /no la pisa/);
 });
 
-test("construir con IA: del cerebro, para la construcción, con Noah, Drake y Behemoth; la ley y ella salen de una sola lista", async () => {
+test("construir con IA: del cerebro, para la construcción, con robustez, contratos y consumo de recursos; la ley y ella salen de una sola lista", async () => {
   assert.deepEqual(LISTA_DEL_CEREBRO.map((h) => h.nombre), ["ley-21719", "construir-con-ia"]);
   const skill = await plantillaDelCerebro(IA.nombre, CEREBRO);
   const h = habilidadDesde(IA.nombre, skill, "suya");
-  assert.deepEqual(h?.nikkes, ["noah-robustez", "drake-contrato", "behemoth-drenaje"]);
+  assert.deepEqual(h?.oficios, ["robustez", "contratos", "consumo-de-recursos"]);
   assert.ok(h?.descripcion);
   assert.deepEqual([...IA.etapas], ["construccion"]);
   assert.ok(IA.cuando.length <= TOPES_DE_HABILIDAD.cuando);
@@ -269,27 +270,26 @@ test("construir con IA: del cerebro, para la construcción, con Noah, Drake y Be
   assert.ok("omitida" in propuestaDelCerebro(archivos, IA, skill, { suyas: [], fecha: FECHA }));
 });
 
-test("las Nikkes de una habilidad suya llegan al constructor igual que las de una del proyecto", async () => {
+test("los oficios de una habilidad suya llegan al constructor igual que las de una del proyecto", async () => {
   const skill = await plantillaDelCerebro(IA.nombre, CEREBRO);
   const suya = habilidadDesde(IA.nombre, skill, "suya")!;
   const porEtapa = habilidadesPorEtapa(`# Habilidades\n\n- [construccion] construir-con-ia: ${IA.cuando}\n`, [suya]);
-  assert.deepEqual(porEtapa.construccion.map((x) => [x.nombre, x.origen, x.nikkes]), [["construir-con-ia", "suya", ["noah-robustez", "drake-contrato", "behemoth-drenaje"]]]);
+  assert.deepEqual(porEtapa.construccion.map((x) => [x.nombre, x.origen, x.oficios]), [["construir-con-ia", "suya", ["robustez", "contratos", "consumo-de-recursos"]]]);
 
-  const dir = mkdtempSync(path.join(os.tmpdir(), "nikkes-"));
-  for (const n of suya.nikkes!) writeFileSync(path.join(dir, `${n}.md`), `# ${n}\n\nEl oficio de ${n}.\n`);
-  const textos = await textosDeNikkes(suya.nikkes!, dir);
+  const dir = mkdtempSync(path.join(os.tmpdir(), "oficios-"));
+  for (const n of suya.oficios!) writeFileSync(path.join(dir, `${n}.md`), `# ${n}\n\nEl oficio de ${n}.\n`);
+  const textos = await textosDeOficios(suya.oficios!, dir);
   const def = { nombre: "fabrica:constructor", descripcion: "x", prompt: "# Constructor", tools: ["Read"], model: null, archivo: "x.md", enCorridas: "si" as const };
   const auto = { spec: "auto", construccion: "auto", revision_codigo: "auto", revision_seguridad: "auto", ui: "auto", aprobacion: "auto" };
   const agente = agentesConHabilidades(auto, [def], porEtapa, textos)["fabrica-hab-construccion"]!;
   assert.deepEqual(agente.skills, ["construir-con-ia"]);
-  for (const n of suya.nikkes!) assert.match(agente.prompt, new RegExp(`El oficio de ${n}\.`));
+  for (const n of suya.oficios!) assert.match(agente.prompt, new RegExp(`El oficio de ${n}\.`));
 });
 
-test("la del aprobador: Privaty sin correr las pruebas ni sus herramientas, y se propone para la aprobación", async () => {
+test("la del aprobador: la comprobación de entrega sin correr las pruebas, y se propone para la aprobación", async () => {
   const p = delAprobador[0]!;
   assert.match(p.skill, /No corres la construcción ni las pruebas/);
   assert.match(p.skill, /mcp__fabrica__aprobar/);
-  assert.match(p.skill, /nunca con\s+una herramienta del mod nikke/);
   const r = propuestasDeEspecialidades(VAULT, delAprobador, { disponibles: [], catalogo: null, fecha: FECHA });
   const archivos = [...VAULT, ...r.nuevas.map(({ ruta, texto }) => ({ ruta, texto }))];
   const propuesta = leerVault(archivos).propuestas[0]!;
@@ -299,68 +299,66 @@ test("la del aprobador: Privaty sin correr las pruebas ni sus herramientas, y se
   const aprobada = aprobarHabilidad(archivos, propuesta.id, { catalogo: null, nombreDeLinea: "caja", disponibles: [], leyoLosScripts: false });
   assert.match(aprobada.repositorio.find((a) => a.ruta === "factory/habilidades.md")!.texto, /^- \[aprobacion\] aprobar-entrega: /m);
 
-  // El aprobador con la especialidad lleva a Privaty, con la regla de no usar sus herramientas.
-  const dir = mkdtempSync(path.join(os.tmpdir(), "nikkes-"));
-  writeFileSync(path.join(dir, "privaty-entrega.md"), "# Privaty\n\nUsa mcp__nikke__entrega_veredicto.\n");
-  const textos = await textosDeNikkes(["privaty-entrega"], dir);
+  // El aprobador con la especialidad lleva el oficio de Comprobación de entrega.
+  const dir = mkdtempSync(path.join(os.tmpdir(), "oficios-"));
+  writeFileSync(path.join(dir, "entrega.md"), "# Comprobación de entrega\n\nEl veredicto va escrito en la entrega.\n");
+  const textos = await textosDeOficios(["entrega"], dir);
   const def = { nombre: "fabrica:aprobador", descripcion: "x", prompt: "# Aprobador", tools: ["Read", "mcp__fabrica__aprobar"], model: null, archivo: "x.md", enCorridas: "si" as const };
   const auto = { spec: "auto", construccion: "auto", revision_codigo: "auto", revision_seguridad: "auto", ui: "auto", aprobacion: "auto" };
-  const agente = agentesConHabilidades(auto, [def], { spec: [], construccion: [], revision: [], aprobacion: [{ nombre: "aprobar-entrega", nikkes: ["privaty-entrega"] }] }, textos)["fabrica-hab-aprobacion"]!;
-  assert.match(agente.prompt, /# Privaty/);
-  assert.match(agente.prompt, /Sus herramientas propias \(`mcp__nikke__\*`\) no se usan aquí/);
-  assert.ok(!agente.tools!.some((t) => t.startsWith("mcp__nikke__")));
+  const agente = agentesConHabilidades(auto, [def], { spec: [], construccion: [], revision: [], aprobacion: [{ nombre: "aprobar-entrega", oficios: ["entrega"] }] }, textos)["fabrica-hab-aprobacion"]!;
+  assert.match(agente.prompt, /### Oficio: entrega\n\n# Comprobación de entrega/);
+  assert.deepEqual(agente.tools, ["Read", "mcp__fabrica__aprobar"]);
 });
 
-test("el agente de salida: con Viper y Marian enteras, solo su herramienta de la fábrica, y fuera de los que se eligen por etapa", async () => {
+test("el agente de salida: con Plan de reversión y Compatibilidad, solo su herramienta de la fábrica, y fuera de los que se eligen por etapa", async () => {
   const { agenteDesde, agenteDeSalida, archivoDelAgenteDeSalida, AGENTE_DE_SALIDA, definicionesDisponibles } = await import("../motor/agentes.ts");
   const { readFileSync } = await import("node:fs");
   const plugin = path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "..", "..", "..", "fabrica");
   const archivo = archivoDelAgenteDeSalida(plugin);
   const def = agenteDesde(readFileSync(archivo, "utf8"), archivo)!;
-  assert.deepEqual(def.nikkes, ["viper-salida", "marian-compatibilidad"]);
+  assert.deepEqual(def.oficios, ["plan-de-reversion", "compatibilidad"]);
   assert.equal(def.model, "sonnet");
   assert.match(def.prompt, /Solo puedes endurecer/);
 
-  const dir = mkdtempSync(path.join(os.tmpdir(), "nikkes-"));
-  writeFileSync(path.join(dir, "viper-salida.md"), "# Viper\n\nUsa mcp__nikke__salida_plan.\n");
-  writeFileSync(path.join(dir, "marian-compatibilidad.md"), "# Marian\n\nQuién depende.\n");
-  const agentes = agenteDeSalida(def, await textosDeNikkes(def.nikkes!, dir));
+  const dir = mkdtempSync(path.join(os.tmpdir(), "oficios-"));
+  writeFileSync(path.join(dir, "plan-de-reversion.md"), "# Plan de reversión\n\nCómo se deshace.\n");
+  writeFileSync(path.join(dir, "compatibilidad.md"), "# Compatibilidad hacia atrás\n\nQuién depende.\n");
+  const agentes = agenteDeSalida(def, await textosDeOficios(def.oficios!, dir));
   const salida = agentes[AGENTE_DE_SALIDA]!;
   assert.equal(AGENTE_DE_SALIDA, "fabrica-salida");
-  assert.match(salida.prompt, /# Viper/);
-  assert.match(salida.prompt, /# Marian/);
-  assert.match(salida.prompt, /no se usan aquí/);
+  assert.match(salida.prompt, /# Plan de reversión/);
+  assert.match(salida.prompt, /# Compatibilidad hacia atrás/);
   assert.deepEqual(salida.tools, ["Read", "Grep", "Glob", "Bash", "mcp__fabrica__salida"]);
   assert.deepEqual(agenteDeSalida(null, new Map()), {});
 
   // No está entre los agentes de la fábrica que se eligen para una etapa.
-  const defs = await definicionesDisponibles(null, plugin, false);
+  const defs = await definicionesDisponibles(null, plugin);
   assert.ok(defs.some((d) => d.nombre === "fabrica:aprobador"));
   assert.ok(!defs.some((d) => d.nombre === "fabrica:salida" || d.nombre === AGENTE_DE_SALIDA));
 });
 
-test("Label: con su archivo entero, solo herramientas de lectura y la suya de la fábrica, y fuera de los que se eligen por etapa", async () => {
+test("el agente de las notas: con su oficio, solo herramientas de lectura y la suya de la fábrica, y fuera de los que se eligen por etapa", async () => {
   const { agenteDesde, agenteDeAnuncio, archivoDelAgenteDeAnuncio, AGENTE_DE_ANUNCIO, definicionesDisponibles } = await import("../motor/agentes.ts");
   const { readFileSync } = await import("node:fs");
   const plugin = path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "..", "..", "..", "fabrica");
   const archivo = archivoDelAgenteDeAnuncio(plugin);
   const def = agenteDesde(readFileSync(archivo, "utf8"), archivo)!;
-  assert.deepEqual(def.nikkes, ["label-anuncio"]);
+  assert.deepEqual(def.oficios, ["notas-de-version"]);
   assert.equal(def.model, "sonnet");
   assert.match(def.prompt, /Lo que rompe va primero/);
   assert.match(def.prompt, /Nunca copies el texto de un issue/);
   assert.match(def.prompt, /Un valor esperado que no corriste va marcado «\(sin correr\)»/);
 
-  const dir = mkdtempSync(path.join(os.tmpdir(), "nikkes-"));
-  writeFileSync(path.join(dir, "label-anuncio.md"), "# Label\n\nEscribe el README con Write.\n");
-  const label = agenteDeAnuncio(def, await textosDeNikkes(def.nikkes!, dir))[AGENTE_DE_ANUNCIO]!;
+  const dir = mkdtempSync(path.join(os.tmpdir(), "oficios-"));
+  writeFileSync(path.join(dir, "notas-de-version.md"), "# Notas de versión y avisos\n\nEscribe el README con Write.\n");
+  const label = agenteDeAnuncio(def, await textosDeOficios(def.oficios!, dir))[AGENTE_DE_ANUNCIO]!;
   assert.equal(AGENTE_DE_ANUNCIO, "fabrica-anuncio");
-  assert.match(label.prompt, /# Label/);
+  assert.match(label.prompt, /# Notas de versión y avisos/);
   // Su archivo nombra Write, pero el agente no lo tiene: solo lee, y su texto lo registra el mod.
   assert.deepEqual(label.tools, ["Read", "Grep", "Glob", "Bash", "mcp__fabrica__anuncio"]);
   assert.deepEqual(agenteDeAnuncio(null, new Map()), {});
 
-  const defs = await definicionesDisponibles(null, plugin, false);
+  const defs = await definicionesDisponibles(null, plugin);
   assert.ok(!defs.some((d) => d.nombre === "fabrica:anuncio" || d.nombre === AGENTE_DE_ANUNCIO));
 });
 
@@ -376,25 +374,25 @@ test("el revisor de interfaz revisa también la UX: el recorrido de quien la usa
   assert.equal(def.model, "sonnet");
 });
 
-test("el retrabajo: Snow White y Rapunzel enteras, las habilidades de construcción de la línea, sin modelo propio y fuera de los que se eligen", async () => {
+test("el retrabajo: con Arreglo de raíz y Pruebas, las habilidades de construcción de la línea, sin modelo propio y fuera de los que se eligen", async () => {
   const { agenteDesde, agenteDeRetrabajo, archivoDelAgenteDeRetrabajo, AGENTE_DE_RETRABAJO, definicionesDisponibles } = await import("../motor/agentes.ts");
   const { readFileSync } = await import("node:fs");
   const plugin = path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "..", "..", "..", "fabrica");
   const archivo = archivoDelAgenteDeRetrabajo(plugin);
   const def = agenteDesde(readFileSync(archivo, "utf8"), archivo)!;
-  assert.deepEqual(def.nikkes, ["snow-white-arreglo", "rapunzel-pruebas"]);
+  assert.deepEqual(def.oficios, ["arreglo-de-raiz", "pruebas"]);
   // El modelo lo pone el orquestador: el de la construcción de la tarea, que Jev no abarata en el retrabajo.
   assert.equal(def.model, null);
   assert.match(def.prompt, /CAUSA FUERA DE LA TAREA:/);
   assert.match(def.prompt, /Corres solo las que\s+escribiste/);
 
-  const dir = mkdtempSync(path.join(os.tmpdir(), "nikkes-"));
-  writeFileSync(path.join(dir, "snow-white-arreglo.md"), "# Snow White\n\nReproduce el fallo.\n");
-  writeFileSync(path.join(dir, "rapunzel-pruebas.md"), "# Rapunzel\n\nEjecuta la suite existente.\n");
-  const agente = agenteDeRetrabajo(def, ["construir-codigo", "construir-con-ia", "construir-codigo"], await textosDeNikkes(def.nikkes!, dir))[AGENTE_DE_RETRABAJO]!;
+  const dir = mkdtempSync(path.join(os.tmpdir(), "oficios-"));
+  writeFileSync(path.join(dir, "arreglo-de-raiz.md"), "# Arreglo de raíz\n\nReproduce el fallo.\n");
+  writeFileSync(path.join(dir, "pruebas.md"), "# Pruebas\n\nEjecuta la suite existente.\n");
+  const agente = agenteDeRetrabajo(def, ["construir-codigo", "construir-con-ia", "construir-codigo"], await textosDeOficios(def.oficios!, dir))[AGENTE_DE_RETRABAJO]!;
   assert.equal(AGENTE_DE_RETRABAJO, "fabrica-retrabajo");
-  assert.match(agente.prompt, /# Snow White/);
-  assert.match(agente.prompt, /# Rapunzel/);
+  assert.match(agente.prompt, /# Arreglo de raíz/);
+  assert.match(agente.prompt, /# Pruebas/);
   assert.deepEqual(agente.skills, ["construir-codigo", "construir-con-ia"]);
   assert.deepEqual(agente.tools, ["Read", "Write", "Edit", "Grep", "Glob", "Bash"]);
   assert.ok(!("model" in agente));
@@ -402,6 +400,51 @@ test("el retrabajo: Snow White y Rapunzel enteras, las habilidades de construcci
   assert.ok(!("skills" in agenteDeRetrabajo(def, [], new Map())[AGENTE_DE_RETRABAJO]!));
   assert.deepEqual(agenteDeRetrabajo(null, [], new Map()), {});
 
-  const defs = await definicionesDisponibles(null, plugin, false);
+  const defs = await definicionesDisponibles(null, plugin);
   assert.ok(!defs.some((d) => d.nombre === "fabrica:retrabajo" || d.nombre === AGENTE_DE_RETRABAJO));
+});
+
+test("los oficios vienen con la fábrica: uno por cada nombre que usan sus plantillas, planos", async () => {
+  const { readdirSync, readFileSync } = await import("node:fs");
+  const { carpetaDeOficios } = await import("../motor/agentes.ts");
+  const raiz = path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "..", "..", "..");
+  const oficios = path.join(raiz, "fabrica", "oficios");
+  const archivos = readdirSync(oficios).filter((n) => n.endsWith(".md")).map((n) => n.slice(0, -3)).sort();
+  // Cada oficio que nombra una plantilla o un agente existe, y no sobra ninguno.
+  const nombrados = new Set<string>(Object.values(OFICIOS).flat());
+  for (const d of ["agents", path.join("plantillas", "agentes"), path.join("plantillas", "cerebro", "construir-con-ia")])
+    for (const n of readdirSync(path.join(raiz, "fabrica", d)).filter((x) => x.endsWith(".md")))
+      for (const clave of ["oficios", "incluye"])
+        for (const o of oficiosDe(new RegExp(`^${clave}:\\s*(.*)$`, "m").exec(readFileSync(path.join(raiz, "fabrica", d, n), "utf8"))?.[1])) nombrados.add(o);
+  assert.deepEqual([...nombrados].sort(), archivos);
+  // Planos: un título y sus reglas, sin frontmatter.
+  for (const n of archivos) assert.match(readFileSync(path.join(oficios, `${n}.md`), "utf8").replace(/\r\n?/g, "\n"), /^# .+\n[\s\S]*\n## Reglas/, n);
+  assert.equal(path.basename(carpetaDeOficios()), "oficios");
+});
+
+test("los agentes por defecto traen su oficio escrito tal cual, y lo declaran para que no se sume otra vez", async () => {
+  const { readFileSync } = await import("node:fs");
+  const { agenteDesde } = await import("../motor/agentes.ts");
+  const raiz = path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "..", "..", "..");
+  // El oficio sin su título, con sus `##` bajados a `###`, salvo dentro de un bloque de código.
+  const cuerpo = (oficio: string) => {
+    let cerca: string | null = null;
+    return readFileSync(path.join(raiz, "fabrica", "oficios", `${oficio}.md`), "utf8")
+      .replace(/\r\n?/g, "\n")
+      .replace(/^# .*\n+/, "")
+      .split("\n")
+      .map((l) => {
+        const marca = /^(`{3,})/.exec(l)?.[1];
+        if (marca && (cerca === null || marca.length >= cerca.length)) cerca = cerca === null ? marca : null;
+        return cerca === null && !marca && l.startsWith("## ") ? `#${l}` : l;
+      })
+      .join("\n")
+      .trim();
+  };
+  for (const [agente, oficio] of [["constructor", "implementacion"], ["revisor-codigo", "revision-de-codigo"], ["revisor-seguridad", "casos-de-abuso"]] as const) {
+    const archivo = path.join(raiz, "fabrica", "agents", `${agente}.md`);
+    const def = agenteDesde(readFileSync(archivo, "utf8"), archivo)!;
+    assert.deepEqual(def.incluye, [oficio], agente);
+    assert.ok(def.prompt.replace(/\r\n?/g, "\n").includes(cuerpo(oficio)), `${agente} no trae el oficio ${oficio} tal cual`);
+  }
 });

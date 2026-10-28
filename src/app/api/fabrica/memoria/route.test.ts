@@ -32,7 +32,7 @@ type Memoria = {
     texto: string;
     usos: { nombre: string; etapas: string[]; existe: boolean; tareas: number; ultima: string | null }[];
     sinUsar: { nombre: string; origen: string }[];
-    costos: { nombre: string; nikkes: string[]; bytes: number | null }[];
+    costos: { nombre: string; oficios: string[]; bytes: number | null }[];
   } | null;
 };
 type Respuesta = { nota?: string; error?: string; avisos?: string[]; memoria: Memoria; hallazgos?: { ruta: string; linea: number; texto: string }[] };
@@ -317,9 +317,9 @@ test("las especialidades de la spec se proponen en la memoria de una línea, y a
   assert.match(readFileSync(path.join(l.raiz, "factory", "habilidades.md"), "utf8"), /^- \[construccion\] construir-codigo: /m);
   for (const etapa of ["revision", "otra", 3]) assert.equal((await hacer({ accion: "proponer-especialidades", en: l.id, etapa })).estado, 400, String(etapa));
 
-  // La pestaña dice lo que pesa cada una: sus Nikkes (y sus bytes, si la carpeta de nikke está en este equipo).
+  // La pestaña dice lo que pesa cada una: sus oficios y sus bytes.
   const habilidades = (await ver(`?en=${l.id}`)).memoria.habilidades!;
-  assert.deepEqual(habilidades.costos.find((c) => c.nombre === "construir-interfaz")?.nikkes, ["ade-convenciones", "modernia-recien-llegada", "liberalio-ruido"]);
+  assert.deepEqual(habilidades.costos.find((c) => c.nombre === "construir-interfaz")?.oficios, ["convenciones", "mirada-sin-contexto", "ruido-y-registros"]);
   assert.equal(habilidades.costos.length, 8);
   assert.ok(nadaSalio());
 });
@@ -376,7 +376,7 @@ test("construir con IA: se propone en La planta como la ley, aprobada queda entr
 
   const vista = await ver(`?en=${l.id}`);
   assert.ok(vista.memoria.habilidades!.sinUsar.some((s) => s.nombre === "construir-con-ia" && s.origen === "suya"));
-  assert.deepEqual(vista.memoria.habilidades!.costos.find((c) => c.nombre === "construir-con-ia")?.nikkes, ["noah-robustez", "drake-contrato", "behemoth-drenaje"]);
+  assert.deepEqual(vista.memoria.habilidades!.costos.find((c) => c.nombre === "construir-con-ia")?.oficios, ["robustez", "contratos", "consumo-de-recursos"]);
   const usada = await hacer({ accion: "asignar", en: l.id, nombre: "construir-con-ia", etapas: ["construccion"], cuando: "Cuando la tarea llame a un modelo de IA, le dé herramientas a un agente o arme su contexto." });
   assert.equal(usada.estado, 200, usada.error);
   assert.match(readFileSync(path.join(l.raiz, "factory", "habilidades.md"), "utf8"), /^- \[construccion\] construir-con-ia: /m);

@@ -30,13 +30,11 @@ pidió**. No arreglas, no sugieres mejoras de estilo: apruebas o rechazas.
 5. Contrasta con **la memoria** que te pasan: si el cambio usa algo que una ficha prohíbe (`NO:`) o
    va contra una decisión vigente, es **rechazada**, con la regla o la decisión en el motivo.
 6. Si traes **habilidades de tu etapa** (como `aprobar-entrega`), se aplican si su «cuándo» vale
-   para esta tarea. Si traen Nikkes:
+   para esta tarea. Si traen oficios:
    - **tus reglas mandan sobre las suyas:** no corres la construcción ni las pruebas, no arreglas
      nada y no editas el archivo de la tarea;
-   - **sus herramientas propias (`mcp__nikke__*`) no se usan:** tu veredicto va con
-     `mcp__fabrica__aprobar`, y nada más lo registra;
-   - **su voz va solo al abrir y al cerrar tu respuesta final.** El motivo del veredicto va
-     técnico y neutro.
+   - **tu veredicto va con `mcp__fabrica__aprobar`**, y nada más lo registra. El motivo del
+     veredicto va técnico y neutro.
 
 ## Veredicto
 

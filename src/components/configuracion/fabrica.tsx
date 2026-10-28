@@ -18,8 +18,7 @@ import { SusProcesos } from "./procesos";
  * La configuración de la fábrica de software, en el modo trabajo. La fábrica
  * vive en la aplicación: qué proyecto mira, crearle una factory/ básica, los
  * modelos de cada rol y convertir un documento de requerimientos en tareas.
- * Todo pasa por `/api/fabrica/ajustes`, y nada cambia sin un clic suyo. El mod
- * nikke no se ofrece: solo se avisa si está encendido, y se puede apagar.
+ * Todo pasa por `/api/fabrica/ajustes`, y nada cambia sin un clic suyo.
  */
 
 /** `claudeCode`: si este equipo tiene la ruta de Claude Code para lanzar las corridas. `enEsteEquipo`: si tiene las de Codex y Antigravity. */
@@ -29,8 +28,8 @@ type Respuesta = Estado & { error?: string; personalizado?: { creado: boolean; n
 
 const FUENTE = { configuracion: "elegido aquí", ninguno: "sin elegir" } as const;
 const PRINCIPAL = `${BOTON} bg-realce`;
-type Parte = "rama" | "proyecto" | "comandos" | "reglas" | "agentes" | "gasto" | "nikke" | "modelos" | "requerimientos" | "telefono";
-const PARTE: Record<string, Parte> = { rama_trabajo: "rama", proyecto: "proyecto", inicializar: "proyecto", crear_memoria: "proyecto", comandos: "comandos", probar_comandos: "comandos", agente_de_rol: "agentes", personalizar_agente: "agentes", agente_propio: "agentes", paralelo: "agentes", reglas: "reglas", notas: "reglas", topes: "gasto", limpiar_integrados: "proyecto", sin_nikke: "nikke", modelo: "modelos", modelo_de_rol: "modelos", agente_externo: "modelos", requerimientos: "requerimientos", probar_telefono: "telefono", llamar_sola: "telefono" };
+type Parte = "rama" | "proyecto" | "comandos" | "reglas" | "agentes" | "gasto" | "modelos" | "requerimientos" | "telefono";
+const PARTE: Record<string, Parte> = { rama_trabajo: "rama", proyecto: "proyecto", inicializar: "proyecto", crear_memoria: "proyecto", comandos: "comandos", probar_comandos: "comandos", agente_de_rol: "agentes", personalizar_agente: "agentes", agente_propio: "agentes", paralelo: "agentes", reglas: "reglas", notas: "reglas", topes: "gasto", limpiar_integrados: "proyecto", modelo: "modelos", modelo_de_rol: "modelos", agente_externo: "modelos", requerimientos: "requerimientos", probar_telefono: "telefono", llamar_sola: "telefono" };
 
 export function SeccionDeLaFabrica() {
   const actual = parteDeLaFabrica(useParteDeLaDireccion());
@@ -136,24 +135,6 @@ export function SeccionDeLaFabrica() {
       {avisoEn("comandos")}
       {ajustes.reglas && <ReglasDelProyecto key={`reglas-${ajustes.raiz}`} reglas={ajustes.reglas} ocupada={ocupada} ajustar={ajustar} />}
       {avisoEn("reglas")}
-      {/* Aquí el mod nikke no se ofrece: la fábrica es para que trabaje sola, y sus guardas la detendrían esperando
-          una firma. Si quedó encendido, se avisa y se puede apagar; encenderlo, no. */}
-      {ajustes.corridaConNikke && (
-        <div className="border-t border-relieve pt-4">
-          <Fila
-            nombre="El mod nikke"
-            que="en las corridas"
-            estado="Está encendido"
-            alerta
-            detalle="Sus guardas detienen la corrida cuando piden tu firma, y en una corrida sin interfaz nadie firma: la fábrica no puede trabajar sola. Quedó encendido de antes. Igual se apaga solo antes de cada corrida."
-          >
-            <button type="button" disabled={ocupada} onClick={() => void ajustar({ ajuste: "sin_nikke" }, "Las corridas van sin el mod nikke.")} className={PRINCIPAL}>
-              Apagarlo
-            </button>
-          </Fila>
-        </div>
-      )}
-      {avisoEn("nikke")}
       </div>
       <div hidden={actual !== "agentes"} className="flex flex-col gap-4">
       {ajustes.agentes && <Agentes agentes={ajustes.agentes} conGit={ajustes.proyecto.tieneGit} ocupada={ocupada} ajustar={ajustar} />}
@@ -828,7 +809,7 @@ function Explorador({ desde, ocupada, alElegir }: { desde: string | null; ocupad
 /**
  * Qué agente hace cada etapa en este proyecto y cuántas tareas trabaja a la vez: se guarda en su
  * factory/config.md. Se elige entre los de la fábrica, los tuyos, los del proyecto y los de tus
- * plugins. Los de nikke viajan con la corrida sin sus guardas.
+ * plugins. Los de un mod que la corrida no carga viajan con ella sin sus guardas.
  */
 function Agentes({ agentes, conGit, ocupada, ajustar }: { agentes: NonNullable<AjustesDeLaFabrica["agentes"]>; conGit: boolean; ocupada: boolean; ajustar: Ajustar }) {
   const origenes = [...new Set(agentes.disponibles.map((a) => a.origen))];
@@ -841,7 +822,7 @@ function Agentes({ agentes, conGit, ocupada, ajustar }: { agentes: NonNullable<A
         <p className="text-[15px] leading-tight">
           <span className="font-extrabold">Los agentes</span> <span className="text-tenue">· quién hace cada etapa, y cuántas tareas a la vez</span>
         </p>
-        <p className="mt-1 text-sm text-tenue">Se guarda en factory/config.md de este proyecto. Los de nikke viajan con cada corrida sin sus guardas, que la frenarían esperando tu firma.</p>
+        <p className="mt-1 text-sm text-tenue">Se guarda en factory/config.md de este proyecto. Los de un mod de CLAUDE_CODE_PLUGIN_DIRS viajan con cada corrida sin sus guardas, que la frenarían esperando tu firma.</p>
         <p className="mt-1 text-sm text-tenue">
           Con «Personalizar», la etapa usa tu propia copia del agente de la fábrica, en .claude/agents/ del proyecto, y la editas aquí. La aplicación no hace commit.
         </p>

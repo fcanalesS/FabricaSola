@@ -25,7 +25,6 @@ import {
   fijarParalelo,
   fijarTopes,
   fijarAgenteExterno,
-  fijarCorridaConNikke,
   fijarLlamarSola,
   fijarModelo,
   fijarModeloDeRol,
@@ -80,7 +79,6 @@ async function ajustes() {
     raiz: r ?? "",
     fuente: r ? "configuracion" : "ninguno",
     proyecto: r ? await revisarProyecto(r) : { existe: false, esCarpeta: false, tieneFabrica: false, tieneGit: false },
-    corridaConNikke: !!(await leerAjustes()).corridaConNikke,
     modelo: await modeloDeLaCorrida(),
     modelosPorRol: await modelosPorRol(),
     externos: await agentesExternos(),
@@ -134,7 +132,7 @@ async function crearProcesoDeLaActiva(cual: ProcesoDePlantilla = "publicar") {
 }
 
 /** Los agentes de las corridas de este equipo: los que se pueden elegir, sin prompts ni rutas. */
-const agentesDeLasCorridas = async (r: string | null) => definicionesDisponibles(r, carpetaDelPlugin(), !!(await leerAjustes()).corridaConNikke);
+const agentesDeLasCorridas = async (r: string | null) => definicionesDisponibles(r, carpetaDelPlugin());
 
 /** El agente de cada etapa del proyecto, cuántas tareas a la vez, y entre qué agentes se elige. `null` sin fábrica. */
 async function agentesConLista(r: string | null) {
@@ -267,8 +265,7 @@ export async function atenderEnLaFabrica(ruta: string, cuerpo: unknown, metodo: 
         } else if (c?.modeloDeRol && typeof c.modeloDeRol === "object") {
           const x = c.modeloDeRol as Record<string, unknown>;
           await fijarModeloDeRol(String(x.rol ?? ""), String(x.modelo ?? ""));
-        } else if (c && typeof c.corridaConNikke === "boolean" && !("raiz" in c)) await fijarCorridaConNikke(c.corridaConNikke);
-        else if (c && typeof c.llamarSola === "boolean") await fijarLlamarSola(c.llamarSola);
+        } else if (c && typeof c.llamarSola === "boolean") await fijarLlamarSola(c.llamarSola);
         else if (c && typeof c.ramaTrabajo === "string") await fijarRamaDeTrabajo(c.ramaTrabajo);
         else if (c && (c.raiz === null || (typeof c.raiz === "string" && c.raiz.trim()))) await elegirProyecto(c.raiz as string | null);
         else return mal("Falta la ruta del proyecto.", 400);

@@ -4,7 +4,7 @@ import path from "node:path";
 import { catalogoNuevo, CEREBRO, habilidadDesde, habilidadesPorEtapa, huellaDe, leerCatalogo, revisarCatalogo, RUTA_DE_ARCHIVO_DE_HABILIDAD, type Etapa, type EtapaConEspecialidades, type HabilidadDeEtapa, type HabilidadDisponible, type OrigenDeHabilidad, type ProblemaDelCatalogo } from "./formato.ts";
 import { ESPECIALIDADES, type PlantillaDeEspecialidad } from "./especialidades.ts";
 import { CARPETA_DE_HABILIDADES, CATALOGO, type ArchivoDelRepositorio } from "./propuestas.ts";
-import { carpetaDeNikke } from "../motor/agentes.ts";
+import { carpetaDeOficios } from "../motor/agentes.ts";
 
 /**
  * Las habilidades en el disco: el catálogo de cada línea
@@ -155,17 +155,16 @@ export async function plantillasDeEspecialidades(dir = carpetaDeEspecialidades()
   );
 }
 
-/** Lo que pesa una especialidad en el prompt de su agente: sus Nikkes y cuánto suman sus archivos. */
-export type CostoDeEspecialidad = { nombre: string; nikkes: string[]; bytes: number | null };
+/** Lo que pesa una especialidad en el prompt de su agente: sus oficios y cuánto suman sus archivos. */
+export type CostoDeEspecialidad = { nombre: string; oficios: string[]; bytes: number | null };
 
 /**
  * Lo que pesa cada especialidad y cada habilidad del cerebro, para mostrarlo antes de proponerla:
- * sus Nikkes (del `nikkes:` de su plantilla) y lo que suman sus archivos en la carpeta de nikke.
- * `bytes` es `null` si esa carpeta no está en este equipo. Solo se mira el tamaño: los archivos no
- * se leen.
+ * sus oficios (del `oficios:` de su plantilla) y lo que suman sus archivos en `fabrica/oficios/`.
+ * `bytes` es `null` si no hay carpeta de oficios. Solo se mira el tamaño: los archivos no se leen.
  */
-export async function costoDeEspecialidades(dirDePlantillas = carpetaDeEspecialidades(), dirDeNikke?: string | null, dirDelCerebro = carpetaDelCerebro()): Promise<CostoDeEspecialidad[]> {
-  const nikke = dirDeNikke === undefined ? await carpetaDeNikke() : dirDeNikke;
+export async function costoDeEspecialidades(dirDePlantillas = carpetaDeEspecialidades(), dirDeOficios: string | null = carpetaDeOficios(), dirDelCerebro = carpetaDelCerebro()): Promise<CostoDeEspecialidad[]> {
+  const carpeta = dirDeOficios;
   const plantillas = [
     ...(await plantillasDeEspecialidades(dirDePlantillas)),
     // Una del cerebro cuya plantilla falta no se muestra: no hay qué proponer.
@@ -173,13 +172,13 @@ export async function costoDeEspecialidades(dirDePlantillas = carpetaDeEspeciali
   ];
   const out: CostoDeEspecialidad[] = [];
   for (const p of plantillas) {
-    const nikkes = habilidadDesde(p.nombre, p.skill, "proyecto")?.nikkes ?? [];
+    const oficios = habilidadDesde(p.nombre, p.skill, "proyecto")?.oficios ?? [];
     let bytes: number | null = null;
-    if (nikke) {
-      const tamanos = await Promise.all(nikkes.map((n) => fs.stat(path.join(nikke, `${n}.md`)).then((s) => s.size, () => 0)));
+    if (carpeta) {
+      const tamanos = await Promise.all(oficios.map((n) => fs.stat(path.join(carpeta, `${n}.md`)).then((s) => s.size, () => 0)));
       bytes = tamanos.reduce((a, b) => a + b, 0);
     }
-    out.push({ nombre: p.nombre, nikkes, bytes });
+    out.push({ nombre: p.nombre, oficios, bytes });
   }
   return out;
 }

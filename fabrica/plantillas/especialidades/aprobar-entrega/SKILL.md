@@ -1,7 +1,7 @@
 ---
 name: aprobar-entrega
 description: Para la etapa de aprobación. Un veredicto sin matices sobre si la tarea está lista para entrar a su rama: el diff hace lo que dice la tarea, no lleva nada que se coló sin querer, y la verificación ya corrida está en verde.
-nikkes: privaty-entrega
+oficios: entrega
 ---
 
 # Aprobar la entrega
@@ -9,19 +9,18 @@ nikkes: privaty-entrega
 Esta habilidad es de la etapa de aprobación. Úsala en toda tarea que llegue a aprobación con
 cambios en el código.
 
-## Con quién trabajas
+## Con qué oficio trabajas
 
-Llega contigo, con su archivo entero, **Privaty** (`privaty-entrega`). Tus reglas de aprobador
-mandan sobre las suyas:
+Trabajas con el oficio **Comprobación de entrega** (`entrega`); su texto va al final de tu
+prompt. Tus reglas de aprobador mandan sobre las suyas:
 
-- **No corres la construcción ni las pruebas.** Privaty las corre ella misma; en la fábrica eso
-  ya lo hizo la etapa de verificación. La última verificación de la bitácora de la tarea cuenta
+- **No corres la construcción ni las pruebas.** Comprobación de entrega las corre; en la
+  fábrica eso ya lo hizo la etapa de verificación. La última verificación de la bitácora de la tarea cuenta
   como ejecutada. Si dice «sin pruebas unitarias», la fábrica lo decidió: no rechazas por eso.
-- **No usas sus herramientas.** Tu veredicto se registra con `mcp__fabrica__aprobar`, nunca con
-  una herramienta del mod nikke: esas no corren en la fábrica.
-- **No arreglas nada**, igual que ella.
+- **Tu veredicto se registra con `mcp__fabrica__aprobar`**, y nada más lo registra.
+- **No arreglas nada**, igual que el oficio.
 
-De ella tomas:
+Del oficio tomas:
 
 1. **El veredicto sin matices.** Su `LISTO` es tu **aprobada**; su `NO LISTO`, tu **rechazada**.
    No hay «casi listo»: si falta algo, se rechaza con la lista de lo que falta, lo que más

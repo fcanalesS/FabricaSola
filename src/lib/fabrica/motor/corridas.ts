@@ -22,9 +22,9 @@ import { vaultDeLaPlanta } from "../memoria/vault.ts";
 import { SIN_COMANDOS, sinComandos } from "../verificacion.ts";
 import { habilidadesDeLaCorrida } from "../habilidades/disco.ts";
 import { habilidadesConHuella } from "../habilidades/formato.ts";
-import { AGENTE_DE_ANUNCIO, AGENTE_DE_RETRABAJO, agenteDeAnuncio, agenteDeRetrabajo, agenteDesde, agentesConHabilidades, agentesParaInyectar, archivoDelAgenteDeAnuncio, archivoDelAgenteDeRetrabajo, carpetasDePlugins, definicionesDisponibles, textosDeNikkes } from "./agentes.ts";
+import { AGENTE_DE_ANUNCIO, AGENTE_DE_RETRABAJO, agenteDeAnuncio, agenteDeRetrabajo, agenteDesde, agentesConHabilidades, agentesParaInyectar, archivoDelAgenteDeAnuncio, archivoDelAgenteDeRetrabajo, carpetasDePlugins, definicionesDisponibles, textosDeOficios } from "./agentes.ts";
 import { configDesde } from "./formato.ts";
-import { agentesDelProyecto, agentesDeEsteEquipo, anotarPorRetomar, carpetaDeLaFabrica, esModeloDeClaude, esRamaProtegida, fijarCorridaConNikke, instantanea, leerAjustes, liberarTomadasPor, modeloDeLaCorrida, raiz, ramaActual, tomarPorRetomar } from "./proyecto.ts";
+import { agentesDelProyecto, agentesDeEsteEquipo, anotarPorRetomar, carpetaDeLaFabrica, esModeloDeClaude, esRamaProtegida, instantanea, leerAjustes, liberarTomadasPor, modeloDeLaCorrida, raiz, ramaActual, tomarPorRetomar } from "./proyecto.ts";
 import { destinoDeTelemetria, entornoDeTelemetria, VARIABLES_CON_CONTENIDO } from "./telemetria.ts";
 import { claudeCodeDeEsteEquipo, SIN_CLAUDE_CODE } from "./claude-code.ts";
 
@@ -207,7 +207,7 @@ function describirHerramienta(nombre: string, input: Record<string, unknown>): s
     case "mcp__fabrica__decidir":
       return `decide qué hace falta en ${input.etapa} de ${input.tarea}`;
     case "mcp__fabrica__anuncio":
-      return `Label escribe lo que se lee de ${input.tarea}`;
+      return `El agente de las notas escribe lo que se lee de ${input.tarea}`;
     case "mcp__fabrica__revisar_con_codex":
       return `Codex revisa ${input.tarea}`;
     case "mcp__fabrica__spec_con_antigravity":
@@ -278,9 +278,9 @@ function procesar(c: Corrida, linea: string): "ok" | "error" | undefined {
       if (caidosAhora.length) c.mcp = { caidos: [...new Set([...(c.mcp?.caidos ?? []), ...caidosAhora])], usados: c.mcp?.usados ?? [] };
       if (yaEmpezo) return;
       agregar(c, "info", `Sesión de Claude Code iniciada en ${j.cwd ?? c.proyecto}${j.model ? ` · ${j.model}` : ""}`);
-      // Lo que cargó de verdad: si nikke aparece aquí, sus guardas están activas en esta corrida.
+      // Lo que cargó de verdad: los plugins instalados y el de la fábrica, nunca un mod de CLAUDE_CODE_PLUGIN_DIRS.
       const plugins = ((j.plugins as { name?: string }[] | undefined) ?? []).map((p) => p.name).filter((n): n is string => !!n && !n.startsWith("cc-plugin-"));
-      if (plugins.length) agregar(c, plugins.includes("nikke") ? "error" : "info", `Plugins cargados: ${plugins.join(", ")}${plugins.includes("nikke") ? " (nikke está activo: sus guardas pueden frenar)" : ""}`);
+      if (plugins.length) agregar(c, "info", `Plugins cargados: ${plugins.join(", ")}`);
     }
     else if (j.subtype === "post_turn_summary" && j.status_detail) c.resumen = String(j.status_detail);
     return;
@@ -324,19 +324,15 @@ function procesar(c: Corrida, linea: string): "ok" | "error" | undefined {
 export const carpetaDelPlugin = () => path.join(/*turbopackIgnore: true*/ process.cwd(), "fabrica");
 
 /**
- * Las carpetas de CLAUDE_CODE_PLUGIN_DIRS para la corrida. Sin nikke por defecto: sus guardas
- * piden la firma del dueño, y en una corrida sin interfaz nadie puede darla, así que solo frenan.
- * Tampoco otra copia del plugin `fabrica`: la de la aplicación va con --plugin-dir. Se pasa con
- * --settings (ver iniciarCorrida), y las sesiones normales de Claude Code no cambian.
+ * Las carpetas de CLAUDE_CODE_PLUGIN_DIRS que la corrida quita: todas. Un mod de esas carpetas
+ * puede traer guardas que piden la firma de la persona, y en una corrida sin interfaz nadie puede
+ * darla, así que solo frenarían; y otra copia del plugin `fabrica` chocaría con la de la
+ * aplicación, que va con --plugin-dir. Los agentes que se elijan de esos mods viajan con
+ * `--agents`. Se pasa con --settings (ver iniciarCorrida), y las sesiones normales de Claude Code
+ * no cambian.
  */
-async function pluginsDeCorrida(conNikke: boolean): Promise<{ dirs: string[]; quitados: string[] }> {
-  const dirs: string[] = [];
-  const quitados: string[] = [];
-  for (const { dir, nombre } of await carpetasDePlugins()) {
-    if ((!conNikke && nombre === "nikke") || nombre === "fabrica") quitados.push(dir);
-    else dirs.push(dir);
-  }
-  return { dirs, quitados };
+async function pluginsDeCorrida(): Promise<{ quitados: string[] }> {
+  return { quitados: (await carpetasDePlugins()).map((p) => p.dir) };
 }
 
 // ---- Seguimiento: todo sale de los archivos, así sobrevive a un reinicio del servidor ----------
@@ -650,28 +646,28 @@ export async function iniciarCorrida(opciones: { tareas?: string[]; modelo?: str
   const modoPermisos = process.env.COMPANIA_FABRICA_MODO_PERMISOS?.trim();
   if (modoPermisos) args.push("--permission-mode", modoPermisos);
 
-  const conNikke = !!(await leerAjustes()).corridaConNikke;
-  const plugins = await pluginsDeCorrida(conNikke);
+  const plugins = await pluginsDeCorrida();
   const id = new Date().toISOString().replace(/[-:]/g, "").replace(/\..+/, "");
-  // Los agentes elegidos de un plugin que la corrida no carga (nikke) viajan aparte, sin sus guardas.
+  // Los agentes elegidos de un mod que la corrida no carga viajan aparte, sin sus guardas.
   const porRol = (await agentesDelProyecto())?.porRol;
-  const defs = await definicionesDisponibles(proyecto, carpetaDelPlugin(), conNikke);
+  const defs = await definicionesDisponibles(proyecto, carpetaDelPlugin());
   // Con un catálogo de habilidades, cada etapa que tiene alguna lleva su agente con ellas cargadas
   // (`fabrica-hab-<rol>`, que el plugin prueba primero). Sin catálogo, como siempre.
   const porEtapa = porRol ? await habilidadesDeLaCorrida(proyecto).catch(() => null) : null;
-  // Las Nikkes de esas habilidades van enteras al agente de su etapa (fabrica/docs/Plan-Spec.md, decisión 8).
-  const nikkes = porEtapa ? await textosDeNikkes(Object.values(porEtapa).flatMap((l) => l.flatMap((h) => h.nikkes ?? []))) : new Map<string, string>();
-  const inyectados = { ...agentesParaInyectar(porRol ?? {}, defs), ...(porRol && porEtapa ? agentesConHabilidades(porRol, defs, porEtapa, nikkes) : {}) };
-  // Label viaja en cada corrida: escribe lo que se lee de cada tarea aprobada, el texto del PR de una
-  // sencilla o lo que él prueba en una grande (fabrica/docs/Plan-Integracion.md, etapa 4). El agente
-  // de salida ya no corre en cada tarea: vuelve cuando llegue producción con la CI/CD de cada línea.
-  const archivoDeLabel = archivoDelAgenteDeAnuncio(carpetaDelPlugin());
-  const defDeLabel = agenteDesde(await fs.readFile(archivoDeLabel, "utf8").catch(() => ""), archivoDeLabel);
-  Object.assign(inyectados, agenteDeAnuncio(defDeLabel, await textosDeNikkes(defDeLabel?.nikkes ?? [])));
-  // El retrabajo, con Snow White y Rapunzel y las habilidades de construcción de la línea (etapa 6).
+  // Los oficios de esas habilidades van al agente de su etapa, de fabrica/oficios/.
+  const oficios = porEtapa ? await textosDeOficios(Object.values(porEtapa).flatMap((l) => l.flatMap((h) => h.oficios ?? []))) : new Map<string, string>();
+  const inyectados = { ...agentesParaInyectar(porRol ?? {}, defs), ...(porRol && porEtapa ? agentesConHabilidades(porRol, defs, porEtapa, oficios) : {}) };
+  // El agente de las notas viaja en cada corrida: escribe lo que se lee de cada tarea aprobada, el
+  // texto del PR de una sencilla o lo que él prueba en una grande (fabrica/docs/Plan-Integracion.md,
+  // etapa 4). El agente de salida ya no corre en cada tarea: vuelve cuando llegue producción con la
+  // CI/CD de cada línea.
+  const archivoDeNotas = archivoDelAgenteDeAnuncio(carpetaDelPlugin());
+  const defDeNotas = agenteDesde(await fs.readFile(archivoDeNotas, "utf8").catch(() => ""), archivoDeNotas);
+  Object.assign(inyectados, agenteDeAnuncio(defDeNotas, await textosDeOficios(defDeNotas?.oficios ?? [])));
+  // El retrabajo, con sus oficios (Arreglo de raíz y Pruebas) y las habilidades de construcción de la línea (etapa 6).
   const archivoDeRetrabajo = archivoDelAgenteDeRetrabajo(carpetaDelPlugin());
   const defDeRetrabajo = agenteDesde(await fs.readFile(archivoDeRetrabajo, "utf8").catch(() => ""), archivoDeRetrabajo);
-  Object.assign(inyectados, agenteDeRetrabajo(defDeRetrabajo, (porEtapa?.construccion ?? []).map((h) => h.nombre), await textosDeNikkes(defDeRetrabajo?.nikkes ?? [])));
+  Object.assign(inyectados, agenteDeRetrabajo(defDeRetrabajo, (porEtapa?.construccion ?? []).map((h) => h.nombre), await textosDeOficios(defDeRetrabajo?.oficios ?? [])));
   if (Object.keys(inyectados).length) {
     await fs.mkdir(dirLogs(), { recursive: true });
     const archivo = path.join(dirLogs(), `${id}.agentes.json`);
@@ -687,10 +683,10 @@ export async function iniciarCorrida(opciones: { tareas?: string[]; modelo?: str
   const conHuella = porEtapa ? habilidadesConHuella(porEtapa) : null;
   const env: NodeJS.ProcessEnv = {
     ...entornoDeLaCorrida(process.env),
-    CLAUDE_CODE_PLUGIN_DIRS: plugins.dirs.join(path.delimiter),
+    CLAUDE_CODE_PLUGIN_DIRS: "",
     FABRICA_MEMORIA_PLANTA: vaultDeLaPlanta(),
     ...(conHuella ? { FABRICA_HABILIDADES: JSON.stringify(conHuella) } : {}),
-    // El mod le dice al orquestador que lance a Label después de clasificar cada tarea aprobada.
+    // El mod le dice al orquestador que lance al de las notas después de clasificar cada tarea aprobada.
     ...(inyectados[AGENTE_DE_ANUNCIO as keyof typeof inyectados] ? { FABRICA_ANUNCIO: "1" } : {}),
     // Y que lance el de retrabajo cuando una tarea vuelve por un BLOQUEANTE o por la verificación.
     ...(inyectados[AGENTE_DE_RETRABAJO as keyof typeof inyectados] ? { FABRICA_RETRABAJO: "1" } : {}),
@@ -698,7 +694,7 @@ export async function iniciarCorrida(opciones: { tareas?: string[]; modelo?: str
   };
   if (destino) for (const k of VARIABLES_CON_CONTENIDO) delete env[k];
   // La variable sola no alcanza: Claude Code aplica el `env` de ~/.claude/settings.json encima del
-  // del proceso, y nikke volvería. --settings tiene más prioridad que el settings.json del usuario.
+  // del proceso, y los mods volverían. --settings tiene más prioridad que el settings.json del usuario.
   // Lo mismo con la telemetría, y con los hooks de función, que el plugin necesita. Y la copia
   // instalada del plugin, si la hay, va apagada: la de la aplicación es la que corre.
   const encima = { CLAUDE_CODE_PLUGIN_DIRS: env.CLAUDE_CODE_PLUGIN_DIRS ?? "", CLAUDE_CODE_ENABLE_FUNCTION_HOOKS: "1", ...telemetria };
@@ -712,7 +708,7 @@ export async function iniciarCorrida(opciones: { tareas?: string[]; modelo?: str
     comando:
       // Los ajustes que van con --settings son largos: en la línea del comando se resumen.
       `${bin} ${args.map((a) => (a.startsWith("{") ? "'{…}'" : /\s/.test(a) ? `"${a}"` : a)).join(" ")}` +
-      (plugins.quitados.length ? `\nSin el mod nikke ni otra copia del plugin: sus guardas no cargan en esta corrida.` : "") +
+      (plugins.quitados.length ? `\nSin los mods de CLAUDE_CODE_PLUGIN_DIRS: sus guardas no cargan en esta corrida.` : "") +
       (Object.keys(inyectados).length ? `\nAgentes que viajan con la corrida: ${Object.keys(inyectados).join(", ")}.` : "") +
       (destino ? `\nCon telemetría hacia ${destino}: al terminar queda su informe.` : ""),
     pluginDirs: env.CLAUDE_CODE_PLUGIN_DIRS,
@@ -749,8 +745,7 @@ export async function iniciarCorrida(opciones: { tareas?: string[]; modelo?: str
 /**
  * Que la fábrica siga con unas tareas después de un veredicto o una respuesta suya: si no hay corrida en marcha, la
  * lanza para ellas; si hay una, las deja anotadas y el vigía las lanza cuando esa termine (la que
- * corre también puede tomarlas antes, al releer el estado). Antes de lanzar, el mod nikke se apaga,
- * como en cualquier corrida desde la aplicación.
+ * corre también puede tomarlas antes, al releer el estado).
  */
 export async function continuarTareas(tareas: string[], origen: string | null): Promise<{ encolada: boolean; corrida: Corrida | null }> {
   const validas = tareas.filter((t) => /^F-\d+$/.test(t));
@@ -759,7 +754,6 @@ export async function continuarTareas(tareas: string[], origen: string | null): 
     await anotarPorRetomar(validas, origen);
     return { encolada: true, corrida: await corridaActual() };
   }
-  if ((await leerAjustes()).corridaConNikke) await fijarCorridaConNikke(false);
   return { encolada: false, corrida: await iniciarCorrida({ tareas: validas, origen }) };
 }
 
@@ -776,7 +770,6 @@ export async function lanzarLoPorRetomar(): Promise<string[]> {
   const i = await instantanea();
   const siguen = anotado.tareas.filter((id) => i?.tareas.some((t) => t.id === id && (t.estado === "aprobacion" || (t.estado === "necesita-humano" && t.respuesta))));
   if (!siguen.length) return [];
-  if ((await leerAjustes()).corridaConNikke) await fijarCorridaConNikke(false);
   await iniciarCorrida({ tareas: siguen, origen: anotado.origen });
   return siguen;
 }

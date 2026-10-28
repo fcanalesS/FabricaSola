@@ -985,13 +985,13 @@ process.exit(2);
 
 const FUSIONAR = proceso("fusionar", ["- [push] y PR contra main", "- [ci] la integración continua del commit · tope 1m", "- [fusion] el PR en main · squash"], "rama: desarrollo\n");
 
-/** Una tarea hecha e integrada en el commit de la línea, con su clase y lo que escribió Label. */
+/** Una tarea hecha e integrada en el commit de la línea, con su clase y lo que escribió el agente de las notas. */
 function tareaIntegrada(raiz: string, commit: string, id: string, extra: string, paraElPR = "") {
   mkdirSync(path.join(raiz, "factory", "tareas"), { recursive: true });
   writeFileSync(path.join(raiz, "factory", "tareas", `${id}-x.md`), `---\nid: ${id}\ntitulo: Color del botón\nestado: hecho\nintegrada: ${commit}\n${extra}---\n\n## Pedido\n\nAlgo.\n${paraElPR ? `\n## Para el PR\n\n${paraElPR}\n` : ""}`);
 }
 
-test("la fusión: con la CI en verde y todo sencillo, fusiona el PR con el commit atado; el cuerpo trae lo de Label", async () => {
+test("la fusión: con la CI en verde y todo sencillo, fusiona el PR con el commit atado; el cuerpo trae lo del agente de las notas", async () => {
   const l = await lineaConProcesos({ fusionar: FUSIONAR });
   conRemoto(l.raiz);
   tareaIntegrada(l.raiz, l.commit, "F-001", "integracion_clase: sencilla\n", "Cambia el color del botón Guardar (`src/boton.tsx:12`).");

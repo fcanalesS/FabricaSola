@@ -5,20 +5,21 @@ juicio sobre una tarea: si cumple lo que pidió la spec, con los hallazgos de lo
 resueltos y la verificación en verde. Este plan le da tres cosas, **solo con Claude**:
 
 1. **Opus por defecto**, elegible por línea como la spec y la construcción.
-2. **Privaty** (`privaty-entrega`), con su archivo entero, como especialidad de la etapa de
-   aprobación.
+2. **El oficio Comprobación de entrega** (`entrega`), con su texto entero, como especialidad de
+   la etapa de aprobación.
 3. **La decisión de salida a producción**: primero, reglas del código; después, un agente con
-   **Viper** (`viper-salida`) y **Marian** (`marian-compatibilidad`) que **solo puede
-   endurecer**, es decir, pedir tu clic donde el proceso no lo pedía.
+   los oficios **Plan de reversión** (`plan-de-reversion`) y **Compatibilidad hacia atrás**
+   (`compatibilidad`) que **solo puede endurecer**, es decir, pedir tu clic donde el proceso no
+   lo pedía.
 
 **Lo decidió él el 27 de octubre de 2026:**
 - el aprobador, en la familia Claude, con Opus;
 - tres revisores (código, seguridad, e interfaz con la UI y la UX juntas), como en el constructor;
 - el retrabajo tiene tope de vueltas: «hasta que todo esté bien» sin tope gasta sin terminar;
-- la salida a producción: reglas del código primero, y un agente con Viper y Marian que solo
-  endurece;
-- **las herramientas del mod nikke no se ejecutan dentro de una corrida.** Esperan una firma
-  suya y frenarían la fábrica.
+- la salida a producción: reglas del código primero, y un agente con los oficios Plan de
+  reversión y Compatibilidad hacia atrás que solo endurece;
+- **nada de otro mod pide una firma dentro de una corrida.** Lo que espera una firma suya
+  frenaría la fábrica; por eso las corridas no cargan ningún mod de `CLAUDE_CODE_PLUGIN_DIRS`.
 
 **De dónde sale.** Él pasó una definición en tres puntos. Así queda cada uno:
 
@@ -56,11 +57,11 @@ resueltos y la verificación en verde. Este plan le da tres cosas, **solo con Cl
 | Las fichas del brain en el aprobador | Sí | Entran enteras a cada agente |
 | El modelo de la aprobación por línea | Existe (`modelo_aprobacion`), por defecto el de la corrida | `ROLES_CON_MODELO` |
 | Elegirlo desde Una línea | **No** | — |
-| Privaty en el aprobador | **No** | — |
+| Comprobación de entrega en el aprobador | **No** | — |
 | Especialidades en la etapa de aprobación | **No** | Hoy solo spec y construcción |
 | Que una tarea crítica pida su clic aunque el proceso no lo pida | **No** | — |
 | Marcar el núcleo del negocio | **No** | — |
-| Que las herramientas del mod nikke no corran en una corrida | Sin guardia: hoy no corren porque la corrida no carga nikke, salvo con «correr con nikke» encendido | — |
+| Que nada de otro mod pida una firma en una corrida | Sí: la corrida no carga ningún mod de `CLAUDE_CODE_PLUGIN_DIRS` | — |
 
 ## Decisiones de este plan
 
@@ -72,22 +73,22 @@ Las cinco primeras son suyas. Las demás son mis recomendaciones.
 2. **Tres revisores** (decisión suya).
 3. **Tope de vueltas** (decisión suya). El que ya existe, a la vista.
 4. **Salida: reglas del código primero, y un agente que solo endurece** (decisión suya).
-5. **Las herramientas del mod nikke no corren en una corrida** (decisión suya). Las Nikkes traen
-   herramientas propias (`mcp__nikke__entrega_veredicto`, `mcp__nikke__salida_plan`) que piden
-   una firma y esperarían a alguien.
-   - Sus reglas, su método y su lore llegan igual; sus herramientas, no.
-   - El mod de la fábrica las frena al instante si un agente de una corrida las llama, con un
-     mensaje que le dice que escriba su entrega en texto. Así nada queda esperando, también con
-     «correr con nikke» encendido.
-6. **Privaty entra como especialidad de la etapa de aprobación** (`aprobar-entrega`), por línea,
-   como las del constructor: se ve lo que pesa y él la enciende.
-   - **Se resuelve un choque:** Privaty corre la construcción y las pruebas ella misma. En la
-     fábrica eso lo hace la verificación, y el aprobador no vuelve a correrlas: la última
-     verificación de la bitácora cuenta como ejecutada.
-   - Toma de ella: el veredicto sin matices (`LISTO` o `NO LISTO` es aprobada o rechazada), lo
-     accidental en el diff, y que el diff haga lo que dice la tarea.
-7. **Cinderella no entra.** Juzgar la calidad del diseño es subjetivo, y rechazar por eso manda
-   al constructor sin nada en la spec que le diga qué cambiar.
+5. **Nada de otro mod pide una firma en una corrida** (decisión suya). Una guarda que espera una
+   firma dejaría a la corrida esperando a alguien.
+   - Las corridas no cargan ningún mod de `CLAUDE_CODE_PLUGIN_DIRS`.
+   - Si él elige para una etapa el agente de uno de esos mods, ese agente viaja con `--agents`,
+     sin las guardas de su mod.
+   - Los oficios son texto: llegan enteros y no traen herramientas propias. La entrega va en
+     texto, y los veredictos se registran con las herramientas de la fábrica.
+6. **Comprobación de entrega entra como especialidad de la etapa de aprobación**
+   (`aprobar-entrega`), por línea, como las del constructor: se ve lo que pesa y él la enciende.
+   - **Se resuelve un choque:** el oficio Comprobación de entrega corre la construcción y las
+     pruebas. En la fábrica eso lo hace la verificación, y el aprobador no vuelve a correrlas:
+     la última verificación de la bitácora cuenta como ejecutada.
+   - Toma de ese oficio: el veredicto sin matices (`LISTO` o `NO LISTO` es aprobada o
+     rechazada), lo accidental en el diff, y que el diff haga lo que dice la tarea.
+7. **La calidad del diseño no entra.** Juzgarla es subjetivo, y rechazar por eso manda al
+   constructor sin nada en la spec que le diga qué cambiar.
 8. **El núcleo del negocio lo marca él, en la ficha de la línea**, con reglas del tema `nucleo`:
    `- [nucleo] db/servidor/** — el esquema de la base`. Es el formato de siempre, y la ficha
    solo la escribe él.
@@ -103,8 +104,7 @@ Las cinco primeras son suyas. Las demás son mis recomendaciones.
 ## Orden y por qué
 
 1. **El modelo del aprobador y el tope a la vista.** Casi todo existe.
-2. **Privaty en el aprobador, y la guardia de las herramientas de nikke.** La guardia va primero
-   que cualquier Nikke nueva en una corrida.
+2. **Comprobación de entrega en el aprobador.**
 3. **Las reglas de la salida.** El código, sin modelo: sirve aunque nunca se encienda el agente.
 4. **El agente de salida.** Usa lo de la etapa 3.
 
@@ -143,39 +143,33 @@ Las cinco primeras son suyas. Las demás son mis recomendaciones.
   - las 135 del mod;
   - en el navegador, las fichas en DoveCentral.NET10, solo mirando.
 
-## 2. Privaty en el aprobador, y la guardia de nikke
+## 2. Comprobación de entrega en el aprobador
 
 ### Criterios de aceptación
 1. Las especialidades tienen la etapa `aprobacion` además de `spec` y `construccion`.
 2. La plantilla `fabrica/plantillas/especialidades/aprobar-entrega/SKILL.md`, con
-   `nikkes: privaty-entrega`:
-   - qué toma de Privaty (decisión 6) y el choque resuelto con la verificación;
+   `oficios: entrega`:
+   - qué toma de Comprobación de entrega (decisión 6) y el choque resuelto con la verificación;
    - no corre la construcción ni las pruebas;
-   - su veredicto se registra con `mcp__fabrica__aprobar`, nunca con una herramienta de nikke.
+   - su veredicto se registra con `mcp__fabrica__aprobar`.
 3. En Memoria › Habilidades, «Especialidades del aprobador», con lo que pesa y «Proponerla».
 4. `fabrica/agents/aprobador.md` suma la regla de las habilidades de su etapa, como el
    constructor.
-5. **La guardia:** el mod de la fábrica frena cualquier herramienta `mcp__nikke__*` que llame un
-   subagente de una corrida, al instante y con un mensaje. El hilo principal, fuera de una
-   corrida, no cambia.
-6. Las especialidades que traen Nikkes con herramientas propias dicen, en su texto, que esas
-   herramientas no se usan y que la entrega va en texto.
+5. Ningún agente de una corrida queda esperando una firma: la corrida no carga ningún mod de
+   `CLAUDE_CODE_PLUGIN_DIRS` (decisión 5).
 
 ### Pruebas
-- La plantilla se lee con su Nikke y se propone en la etapa de aprobación.
-- El aprobador con la especialidad lleva el archivo de Privaty.
-- En el mod: un subagente que llama `mcp__nikke__entrega_veredicto` queda frenado; el hilo
-  principal no.
+- La plantilla se lee con su oficio y se propone en la etapa de aprobación.
+- El aprobador con la especialidad lleva el texto de Comprobación de entrega.
 
 ### Cómo quedó (27 de octubre de 2026)
-- **La guardia** (`frenaNikke`, en `fabrica/hooks/tareas.ts`): el mod mira cada llamada a una
-  herramienta y frena al instante cualquier `mcp__nikke__*` que venga de un subagente, con
-  «Escribe tu entrega en texto». El hilo principal pasa, y las demás herramientas no se tocan.
-  Registrarla para todas las llamadas es el mismo patrón que usa el mod nikke.
-- **La regla común de las Nikkes** (`conSusNikkes`) dice ahora, para todas las etapas, que sus
-  herramientas propias no se usan y que lo que entregarían con ellas va en la entrega. Así lo
-  cubren también Velvet (en `spec-datos-y-contexto` y `construir-seguridad`) y las que vengan.
-- **La plantilla** `fabrica/plantillas/especialidades/aprobar-entrega/SKILL.md`, con Privaty:
+- **Sin firmas en una corrida:** las corridas no cargan ningún mod de `CLAUDE_CODE_PLUGIN_DIRS`.
+  Un agente de uno de esos mods, si él lo elige para una etapa, viaja con `--agents`, sin las
+  guardas de su mod. No hace falta un freno a sus herramientas.
+- **La regla común de los oficios** (`conSusOficios`) dice, para todas las etapas, que mandan los
+  límites del agente y que lo que escribe en la tarea va técnico y neutro.
+- **La plantilla** `fabrica/plantillas/especialidades/aprobar-entrega/SKILL.md`, con el oficio
+  Comprobación de entrega:
   - no corre la construcción ni las pruebas (vale la verificación de la bitácora);
   - registra con `mcp__fabrica__aprobar`;
   - LISTO es aprobada y NO LISTO es rechazada;
@@ -183,17 +177,13 @@ Las cinco primeras son suyas. Las demás son mis recomendaciones.
     bien;
   - una clave expuesta sin resolver es rechazada sin discusión.
 - **La etapa de aprobación tiene especialidades** (`ETAPAS_CON_ESPECIALIDADES`). En Memoria ›
-  Habilidades está «Especialidades del aprobador», con lo que pesa: Privaty, 7 KB, unos 2 mil
-  tokens por aprobación.
-- **`fabrica/agents/aprobador.md`** suma la regla 6: las habilidades de su etapa, sus reglas
-  sobre las de las Nikkes, sus herramientas que no se usan y la voz solo en la respuesta final.
+  Habilidades está «Especialidades del aprobador», con lo que pesa por aprobación.
+- **`fabrica/agents/aprobador.md`** suma la regla 6: las habilidades de su etapa, y sus reglas
+  sobre las de los oficios.
 - **Verificado:**
   - las pruebas: la plantilla, su propuesta y aprobación en la etapa de aprobación, el
-    aprobador que lleva a Privaty con la regla y sin herramientas de nikke;
-  - la guardia en las pruebas del mod (137);
+    aprobador que lleva Comprobación de entrega con la regla;
   - en el navegador, la sección en DoveCentral.NET10, solo mirando.
-- **Sin verificar:** la guardia dentro de una corrida real con «correr con nikke» encendido
-  (gasta, y hoy está apagado).
 
 ## 3. Las reglas de la salida
 
@@ -260,39 +250,38 @@ ruptura de contrato, algo que no se puede deshacer) también pida su clic.
 
 ### Criterios de aceptación
 1. Un agente nuevo de la fábrica, `fabrica/agents/salida.md`, con Sonnet, solo lectura, con
-   `nikkes: viper-salida, marian-compatibilidad` en su frontmatter. La corrida le pasa sus
-   archivos enteros, como a los agentes con habilidades.
+   `oficios: plan-de-reversion, compatibilidad` en su frontmatter. La corrida le pasa sus
+   textos enteros, como a los agentes con habilidades.
 2. Se lanza después de que el aprobador aprueba, **solo** si:
    - la tarea no quedó ya marcada por las reglas;
    - la línea tiene algún proceso con producción sin su clic en este equipo (la aplicación se
      lo dice a la corrida al lanzarla).
-3. Toma de Viper: lo que no se puede deshacer, dónde iría un interruptor y la señal de
-   retirada. Toma de Marian: qué se rompe para quien ya depende del código (columnas, contratos,
-   valores por defecto, configuración).
+3. Toma de Plan de reversión: lo que no se puede deshacer, dónde iría un interruptor y la señal
+   de retirada. Toma de Compatibilidad hacia atrás: qué se rompe para quien ya depende del
+   código (columnas, contratos, valores por defecto, configuración).
 4. Registra su decisión con una herramienta del mod (`mcp__fabrica__salida`) que solo acepta
    **`tu-clic`** (con motivo y plan de vuelta) o **`sin-objecion`**. Con `sin-objecion` no
    cambia nada: el proceso decide como siempre.
 5. El plan de vuelta queda en la tarea (`## Plan de vuelta`), y el paso de producción lo muestra
    junto a su clic.
-6. No usa las herramientas del mod nikke (decisión 5).
 
 ### Pruebas
 - En una línea sin procesos sin clic, el agente no se lanza.
 - Con una tarea ya marcada por las reglas, tampoco.
 - `mcp__fabrica__salida` con `tu-clic` marca la tarea; con `sin-objecion` no la desmarca si las
   reglas la marcaron; con otra cosa, se rechaza.
-- El agente lleva los archivos de Viper y de Marian.
+- El agente lleva los textos de Plan de reversión y de Compatibilidad hacia atrás.
 
 ### Cómo quedó (27 de octubre de 2026)
 - **El agente** está en `fabrica/plantillas/agentes/salida.md`, no en `fabrica/agents/`: desde
   ahí aparecería entre los agentes que se eligen para una etapa. Usa Sonnet, solo lee, y trae
-  `nikkes: viper-salida, marian-compatibilidad`. Su método:
-  - lo que no vuelve (Viper);
-  - lo que se rompe para quien ya depende (Marian);
+  `oficios: plan-de-reversion, compatibilidad`. Su método:
+  - lo que no vuelve (Plan de reversión);
+  - lo que se rompe para quien ya depende (Compatibilidad hacia atrás);
   - el corazón del negocio aunque la ficha no lo marque;
   - en la duda, `tu-clic`.
 - **Cuándo viaja:** la aplicación lo arma al lanzar la corrida (`agenteDeSalida`, en
-  `motor/agentes.ts`, con los archivos enteros de sus Nikkes) **solo** si la línea tiene algún
+  `motor/agentes.ts`, con los textos enteros de sus oficios) **solo** si la línea tiene algún
   proceso con su clic quitado. Entonces lo pasa como `fabrica-salida` y pone
   `FABRICA_SALIDA=1`. `mcp__fabrica__estado` trae `salida: "fabrica-salida"` (o `null`), y
   `correr.md` dice que se lance después de una aprobación, sin frenar la tarea.
@@ -313,7 +302,7 @@ ruptura de contrato, algo que no se puede deshacer) también pida su clic.
 - **Verificado:**
   - las pruebas del mod (142): la decisión, que `sin-objecion` no desmarque, que exija motivo y
     plan, la tarea aprobada, y la guardia de los campos;
-  - las de la aplicación: el agente con Viper y Marian y su herramienta, que no aparezca entre
+  - las de la aplicación: el agente con sus dos oficios y su herramienta, que no aparezca entre
     los que se eligen, la nota, la tarjeta, y el paso de producción con git de verdad (una tarea
     marcada espera su clic y después no vuelve a contar);
   - no se vio en el navegador: DoveCentral.NET10 no tiene tareas que mostrar.
@@ -327,5 +316,5 @@ ruptura de contrato, algo que no se puede deshacer) también pida su clic.
 - **Cambiar el modelo del aprobador en una tarea.**
 - **Que un agente quite su clic para producción.** Eso sigue siendo suyo, por proceso, y con las
   condiciones del código.
-- **Usar las herramientas del mod nikke en la fábrica.**
+- **Cargar un mod de `CLAUDE_CODE_PLUGIN_DIRS` en una corrida.**
 - **Al construirse**, `compania/CLAUDE.md` suma una regla con lo que él decidió aquí.

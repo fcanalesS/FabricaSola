@@ -79,8 +79,8 @@ comprobar **punto por punto** si se hizo.
    ella, ni una sección vacía ni «no aplica». Las que apliquen agregan su sección después de
    «Fuera de alcance» y antes de «Criterios de aceptación», y lo que se puede comprobar de esa
    sección va a los criterios, dentro del mismo tope de diez. En «Riesgos y notas» di cuáles
-   aplicaste («Con spec-guardarrailes y spec-contratos-y-recursos»). Si traen Nikkes, su voz va
-   solo al abrir y al cerrar tu resumen final: la spec del archivo va técnica y neutra.
+   aplicaste («Con spec-guardarrailes y spec-contratos-y-recursos»). Si traen oficios, sus reglas
+   no mandan sobre las tuyas, y la spec del archivo va técnica y neutra.
 
 5. Si para especificar **decidiste algo que otras tareas deberían repetir** (qué librería se usa
    para algo, dónde va un tipo de archivo, una convención que el proyecto no tenía escrita),
