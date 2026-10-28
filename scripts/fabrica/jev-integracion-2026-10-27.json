@@ -1,0 +1,441 @@
+{
+  "medido": "2026-10-27T16:54:42.527Z",
+  "actual": 0.7,
+  "filas": [
+    {
+      "titulo": "Cambia el color del botón Guardar",
+      "archivos": [
+        [
+          "src/components/BotonGuardar.tsx",
+          2,
+          2
+        ]
+      ],
+      "superficial": true,
+      "p": 0.88
+    },
+    {
+      "titulo": "Corrige una falta de ortografía en el título de la página de inicio",
+      "archivos": [
+        [
+          "src/app/page.tsx",
+          1,
+          1
+        ]
+      ],
+      "superficial": true,
+      "p": 0.94
+    },
+    {
+      "titulo": "Agrega el ícono de ayuda junto al campo RUT",
+      "archivos": [
+        [
+          "src/components/CampoRut.tsx",
+          4,
+          0
+        ]
+      ],
+      "superficial": true,
+      "p": 0.87
+    },
+    {
+      "titulo": "Ordena las columnas de la tabla de ventas como pidió el cliente",
+      "archivos": [
+        [
+          "src/Vistas/Ventas.xaml",
+          12,
+          12
+        ]
+      ],
+      "superficial": true,
+      "p": 0.85
+    },
+    {
+      "titulo": "Cambia el texto del mensaje de bienvenida",
+      "archivos": [
+        [
+          "Views/Home/Index.cshtml",
+          1,
+          1
+        ]
+      ],
+      "superficial": true,
+      "p": 0.93
+    },
+    {
+      "titulo": "Agranda el logo en la cabecera",
+      "archivos": [
+        [
+          "src/components/Cabecera.vue",
+          2,
+          2
+        ]
+      ],
+      "superficial": true,
+      "p": 0.88
+    },
+    {
+      "titulo": "Traduce las etiquetas del formulario de contacto al inglés",
+      "archivos": [
+        [
+          "src/i18n/en.json",
+          18,
+          0
+        ]
+      ],
+      "superficial": true,
+      "p": 0.91
+    },
+    {
+      "titulo": "Usa el gris de la marca en el pie de página",
+      "archivos": [
+        [
+          "src/components/Pie.tsx",
+          3,
+          3
+        ]
+      ],
+      "superficial": true,
+      "p": 0.89
+    },
+    {
+      "titulo": "Cambia la etiqueta «Enviar» por «Guardar cambios»",
+      "archivos": [
+        [
+          "src/Vistas/Formulario.xaml",
+          1,
+          1
+        ]
+      ],
+      "superficial": true,
+      "p": 0.95
+    },
+    {
+      "titulo": "Alinea a la derecha los montos en el resumen",
+      "archivos": [
+        [
+          "src/components/Resumen.tsx",
+          3,
+          3
+        ]
+      ],
+      "superficial": true,
+      "p": 0.88
+    },
+    {
+      "titulo": "Agrega más espacio entre las tarjetas del panel",
+      "archivos": [
+        [
+          "src/app/panel/page.tsx",
+          2,
+          2
+        ]
+      ],
+      "superficial": true,
+      "p": 0.86
+    },
+    {
+      "titulo": "Cambia el texto de ayuda del buscador",
+      "archivos": [
+        [
+          "src/components/Buscador.tsx",
+          1,
+          1
+        ]
+      ],
+      "superficial": true,
+      "p": 0.94
+    },
+    {
+      "titulo": "Valida que el RUT tenga dígito verificador antes de guardar",
+      "archivos": [
+        [
+          "src/components/CampoRut.tsx",
+          25,
+          3
+        ],
+        [
+          "src/lib/rut.ts",
+          40,
+          0
+        ]
+      ],
+      "superficial": false,
+      "p": 0.03
+    },
+    {
+      "titulo": "El total de la boleta debe incluir el IVA",
+      "archivos": [
+        [
+          "src/Ventas/Boleta.cs",
+          12,
+          4
+        ]
+      ],
+      "superficial": false,
+      "p": 0.04
+    },
+    {
+      "titulo": "Muestra solo las ventas del usuario que inició sesión",
+      "archivos": [
+        [
+          "src/app/ventas/page.tsx",
+          8,
+          2
+        ],
+        [
+          "src/lib/ventas.ts",
+          6,
+          1
+        ]
+      ],
+      "superficial": false,
+      "p": 0.04
+    },
+    {
+      "titulo": "Agrega paginación a la lista de clientes",
+      "archivos": [
+        [
+          "src/components/ListaClientes.tsx",
+          60,
+          10
+        ],
+        [
+          "src/app/api/clientes/route.ts",
+          20,
+          5
+        ]
+      ],
+      "superficial": false,
+      "p": 0.04
+    },
+    {
+      "titulo": "El botón Pagar llama al nuevo servicio de pagos",
+      "archivos": [
+        [
+          "src/components/BotonPagar.tsx",
+          15,
+          3
+        ]
+      ],
+      "superficial": false,
+      "p": 0.03
+    },
+    {
+      "titulo": "Redirige al login si la sesión venció",
+      "archivos": [
+        [
+          "src/middleware.ts",
+          18,
+          0
+        ]
+      ],
+      "superficial": false,
+      "p": 0.03
+    },
+    {
+      "titulo": "Guarda el borrador del formulario cada minuto",
+      "archivos": [
+        [
+          "src/components/Formulario.tsx",
+          35,
+          2
+        ]
+      ],
+      "superficial": false,
+      "p": 0.04
+    },
+    {
+      "titulo": "Cambia el orden en que se descuentan las promociones",
+      "archivos": [
+        [
+          "src/Ventas/Promociones.cs",
+          9,
+          9
+        ]
+      ],
+      "superficial": false,
+      "p": 0.11
+    },
+    {
+      "titulo": "Agrega el campo teléfono al alta de clientes",
+      "archivos": [
+        [
+          "src/Vistas/AltaCliente.xaml",
+          10,
+          0
+        ],
+        [
+          "src/Vistas/AltaCliente.xaml.cs",
+          14,
+          2
+        ],
+        [
+          "src/Datos/Clientes.cs",
+          8,
+          1
+        ]
+      ],
+      "superficial": false,
+      "p": 0.07
+    },
+    {
+      "titulo": "Oculta el botón Eliminar a los que no son administradores",
+      "archivos": [
+        [
+          "src/components/Fila.tsx",
+          4,
+          1
+        ]
+      ],
+      "superficial": false,
+      "p": 0.09
+    },
+    {
+      "titulo": "Cambia el tiempo de espera de la conexión a 30 segundos",
+      "archivos": [
+        [
+          "src/config/conexion.ts",
+          1,
+          1
+        ]
+      ],
+      "superficial": false,
+      "p": 0.07
+    },
+    {
+      "titulo": "Arregla el cálculo de la fecha de vencimiento",
+      "archivos": [
+        [
+          "src/lib/fechas.ts",
+          6,
+          4
+        ]
+      ],
+      "superficial": false,
+      "p": 0.04
+    },
+    {
+      "titulo": "Ajusta el texto del botón Confirmar",
+      "archivos": [
+        [
+          "src/components/Confirmar.tsx",
+          3,
+          1
+        ],
+        [
+          "src/lib/pedidos.ts",
+          22,
+          8
+        ]
+      ],
+      "superficial": false,
+      "trampa": true,
+      "p": 0.14
+    },
+    {
+      "titulo": "Pequeño cambio visual en el carrito",
+      "archivos": [
+        [
+          "src/components/Carrito.tsx",
+          45,
+          30
+        ],
+        [
+          "src/lib/carrito.ts",
+          30,
+          12
+        ]
+      ],
+      "superficial": false,
+      "trampa": true,
+      "p": 0.23
+    },
+    {
+      "titulo": "Cambia el color de la tabla de precios",
+      "archivos": [
+        [
+          "src/components/TablaPrecios.tsx",
+          4,
+          4
+        ],
+        [
+          "src/lib/precios.ts",
+          15,
+          6
+        ]
+      ],
+      "superficial": false,
+      "trampa": true,
+      "p": 0.48
+    }
+  ],
+  "porUmbral": [
+    {
+      "umbral": 0.5,
+      "aciertos": 27,
+      "entraSinDeber": 0,
+      "esperaDeMas": 0
+    },
+    {
+      "umbral": 0.55,
+      "aciertos": 27,
+      "entraSinDeber": 0,
+      "esperaDeMas": 0
+    },
+    {
+      "umbral": 0.6,
+      "aciertos": 27,
+      "entraSinDeber": 0,
+      "esperaDeMas": 0
+    },
+    {
+      "umbral": 0.65,
+      "aciertos": 27,
+      "entraSinDeber": 0,
+      "esperaDeMas": 0
+    },
+    {
+      "umbral": 0.7,
+      "aciertos": 27,
+      "entraSinDeber": 0,
+      "esperaDeMas": 0
+    },
+    {
+      "umbral": 0.75,
+      "aciertos": 27,
+      "entraSinDeber": 0,
+      "esperaDeMas": 0
+    },
+    {
+      "umbral": 0.8,
+      "aciertos": 27,
+      "entraSinDeber": 0,
+      "esperaDeMas": 0
+    },
+    {
+      "umbral": 0.85,
+      "aciertos": 27,
+      "entraSinDeber": 0,
+      "esperaDeMas": 0
+    },
+    {
+      "umbral": 0.9,
+      "aciertos": 20,
+      "entraSinDeber": 0,
+      "esperaDeMas": 7
+    },
+    {
+      "umbral": 0.95,
+      "aciertos": 16,
+      "entraSinDeber": 0,
+      "esperaDeMas": 11
+    }
+  ],
+  "mejor": {
+    "umbral": 0.85,
+    "aciertos": 27,
+    "entraSinDeber": 0,
+    "esperaDeMas": 0
+  }
+}

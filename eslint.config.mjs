@@ -1,0 +1,22 @@
+import { defineConfig, globalIgnores } from "eslint/config";
+import nextVitals from "eslint-config-next/core-web-vitals";
+import nextTs from "eslint-config-next/typescript";
+
+const eslintConfig = defineConfig([
+  ...nextVitals,
+  ...nextTs,
+  // Override default ignores of eslint-config-next.
+  globalIgnores([
+    // Default ignores of eslint-config-next:
+    ".next/**",
+    "out/**",
+    "build/**",
+    "next-env.d.ts",
+    // El modelo generado y el Core de Cubism: no son código de la aplicación.
+    "public/live2d/**",
+    // El plugin de la fábrica: lo carga Claude Code, con sus propios tipos, no la aplicación.
+    "fabrica/**",
+  ]),
+]);
+
+export default eslintConfig;

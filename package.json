@@ -1,0 +1,29 @@
+{
+  "name": "factoria",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev -H 127.0.0.1",
+    "build": "next build",
+    "start": "next start -H 127.0.0.1",
+    "lint": "eslint",
+    "test": "node --test \"src/**/*.test.ts\"",
+    "fabrica:e2e": "node --env-file-if-exists=.env.local scripts/fabrica/e2e.mjs",
+    "fabrica:corrida-real": "node --env-file-if-exists=.env.local scripts/fabrica/corrida-real.mjs"
+  },
+  "dependencies": {
+    "next": "16.3.6",
+    "react": "19.2.8",
+    "react-dom": "19.2.8"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.3.6",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}

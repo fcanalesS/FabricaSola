@@ -1,0 +1,43 @@
+# Las dependencias.
+/node_modules
+
+# Next.js.
+/.next/
+/out/
+/build
+*.tsbuildinfo
+next-env.d.ts
+
+# Las variables de cada equipo. La lista, sin valores, sí entra.
+.env*
+!.env.example
+
+# Los datos de la fábrica en este equipo: ajustes, corridas, registros, el vault de la planta y su
+# base. Quedan solo aquí.
+/datos/
+
+# Por si acaso: claves, permisos, certificados y bases de datos, estén donde estén.
+*.pem
+*.key
+*.p8
+*.p12
+*.pfx
+client_secret*.json
+credentials*.json
+token*.json
+*.db
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite3
+
+# Registros de npm.
+npm-debug.log*
+
+# Ajustes de cada equipo.
+.claude/settings.local.json
+.claude/launch.json
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db

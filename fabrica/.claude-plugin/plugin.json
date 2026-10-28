@@ -1,0 +1,7 @@
+{
+  "name": "fabrica",
+  "version": "0.1.0",
+  "description": "Fábrica de software: tareas en Markdown, orquestador spec → construcción → revisión → verificación → aprobación, tablero en vivo y puente para un orquestador externo.",
+  "author": { "name": "fcanales" },
+  "types": "./types/index.d.ts"
+}
