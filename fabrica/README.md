@@ -481,8 +481,12 @@ sin el del plugin (`centi-implementacion`), y el mod lo busca también así.
 **Personalizar uno de fábrica:** `/fabrica:agentes copiar <rol>` copia su `.md` a
 `.claude/agents/fabrica-<nombre>.md` del proyecto (o a `~/.claude/agents/` con `usuario`) y deja
 el rol apuntando a la copia. La del proyecto viaja con el repositorio, así que todo el equipo usa
-los mismos. La pestaña **Agentes** del orquestador web hace lo mismo y además los edita.
-`/fabrica:agentes restaurar <rol>` vuelve el rol a `auto` (la copia no se borra).
+los mismos. En la aplicación, Configuración › Agentes y modelos hace lo mismo con
+**Personalizar** (siempre en el proyecto) y además la edita: su descripción y sus instrucciones.
+Su nombre, sus herramientas y su modelo los pone la fábrica, y la aplicación no hace commit.
+`/fabrica:agentes restaurar <rol>` vuelve el rol a `auto` (la copia no se borra), como «Volver al
+de la fábrica» en la aplicación. Claude Code lee los agentes al empezar la sesión: un cambio vale
+desde la próxima corrida.
 
 ## El modelo de cada rol
 

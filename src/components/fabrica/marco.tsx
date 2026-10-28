@@ -13,9 +13,11 @@ import { NOMBRE_DEL_PROGRAMA } from "@/lib/nombre";
 
 export type ParteDeLaFabrica = "planta" | "lineas" | "tareas" | "bandeja" | "peticion" | "fuentes" | "memoria" | "equipo" | "configuracion";
 
-type Item = { id: ParteDeLaFabrica; nombre: string; ruta: string; icono: React.ReactNode };
+/** `inicio` es la portada: no es una parte de la fábrica, así que nunca es la actual. */
+type Item = { id: ParteDeLaFabrica | "inicio"; nombre: string; ruta: string; icono: React.ReactNode };
 
 const ICONO = {
+  inicio: <path d="M3 11l9-7 9 7M5 9.5V20h5v-6h4v6h5V9.5" />,
   planta: <path d="M3 21V10l6 4V10l6 4V6l6 4v11zM3 21h18" />,
   lineas: <path d="M3 6h18M3 12h18M3 18h18" />,
   tareas: <path d="M4 4h5v16H4zM10.5 4h5v11h-5zM17 4h4v7h-4z" />,
@@ -31,6 +33,7 @@ const GRUPOS: { titulo: string; items: Item[] }[] = [
   {
     titulo: "Fábrica",
     items: [
+      { id: "inicio", nombre: "Inicio", ruta: "/", icono: ICONO.inicio },
       { id: "planta", nombre: "La planta", ruta: "/fabrica", icono: ICONO.planta },
       { id: "lineas", nombre: "Líneas", ruta: "/fabrica/lineas", icono: ICONO.lineas },
       { id: "tareas", nombre: "Tareas", ruta: "/fabrica/tareas", icono: ICONO.tareas },
@@ -96,13 +99,13 @@ export async function MarcoDeLaFabrica({
       <div className="flex min-h-dvh flex-col lg:flex-row">
         <nav aria-label="Secciones de la fábrica" className="flex flex-col gap-1 bg-ficha px-3 py-4 lg:sticky lg:top-0 lg:h-dvh lg:w-60 lg:flex-none lg:overflow-y-auto lg:px-4 lg:py-7">
           <div className="flex items-center justify-between gap-3 px-2 pb-2 lg:pb-4">
-            <span className="flex items-center gap-2.5">
+            <Link href="/" title="Volver al inicio" className="flex items-center gap-2.5 rounded-xl hover:opacity-85">
               <svg width="30" height="30" viewBox="0 0 34 34" aria-hidden="true">
                 <rect width="34" height="34" rx="10" className="fill-acento" />
                 <path d="M17 6 L19.4 14.6 L28 17 L19.4 19.4 L17 28 L14.6 19.4 L6 17 L14.6 14.6 Z" className="fill-papel" />
               </svg>
               <span className="text-[15px] leading-tight font-extrabold">{NOMBRE_DEL_PROGRAMA}</span>
-            </span>
+            </Link>
           </div>
           <div className="flex flex-wrap gap-x-4 gap-y-1 lg:flex-col lg:flex-nowrap">
             {GRUPOS.map((g) => (

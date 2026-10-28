@@ -1,5 +1,6 @@
 import type { NextRequest } from "next/server";
-import { ajustarLaFabrica, ajustePedido, leerAjustesDeLaFabrica } from "@/lib/fabrica/cliente";
+import { ajustarLaFabrica, ajustePedido, leerAgentePropio, leerAjustesDeLaFabrica } from "@/lib/fabrica/cliente";
+import { esRolDeAgente } from "@/lib/fabrica/modelos";
 import { claudeCode } from "@/lib/fabrica/motor/corridas";
 import { agentesDeEsteEquipo } from "@/lib/fabrica/motor/proyecto";
 
@@ -15,10 +16,21 @@ import { agentesDeEsteEquipo } from "@/lib/fabrica/motor/proyecto";
  * `claude` del PATH): sin él se configura, pero no se corre.
  * `enEsteEquipo`, si tiene las de Codex y Antigravity: sin la suya, ese
  * agente no se puede encender. Las rutas no se muestran.
+ *
+ * El agente propio de una etapa es una copia del de la fábrica en `.claude/agents/` del proyecto:
+ * se crea con un clic (`personalizar_agente`) y se guarda lo que él escribe (`agente_propio`). La
+ * aplicación no hace commit.
  */
 
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  // Con `?agente=<etapa>`, el agente propio de esa etapa, para editarlo.
+  const rol = new URL(request.url).searchParams.get("agente");
+  if (rol !== null) {
+    if (!esRolDeAgente(rol)) return Response.json({ error: "etapa_desconocida" }, { status: 400 });
+    const leido = await leerAgentePropio(rol);
+    return "motivo" in leido ? Response.json({ error: leido.motivo }, { status: 409 }) : Response.json(leido);
+  }
   return Response.json({ ...(await leerAjustesDeLaFabrica()), ...deEsteEquipo() });
 }
 

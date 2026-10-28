@@ -58,6 +58,11 @@ carpeta (copia `.env.example`), y reinicia.
   y producción espera tu clic.
 - **Corre una línea a la vez.** Correr otra espera a que termine la que está corriendo.
 - **Una tarea ambigua se detiene y pregunta.** Es a propósito: contesta en su tarjeta y sigue.
+- **Cada etapa la hace un agente, y puedes usar el tuyo.** En Configuración › Agentes y modelos,
+  **Personalizar** copia el agente de la fábrica de esa etapa a `.claude/agents/` de tu proyecto
+  y lo edita ahí mismo. Parte siempre del de la fábrica, porque cada etapa tiene que dejar algo
+  que la siguiente lee (la spec, los hallazgos, el veredicto). Vale desde la próxima corrida, y
+  la aplicación no hace commit. **Volver al de la fábrica** no borra tu copia.
 - **Lo de este equipo queda en `datos/`** (tus líneas, las corridas, los registros), fuera del
   repositorio. Las tareas y la memoria de cada proyecto quedan en su `factory/`, en su repositorio.
 

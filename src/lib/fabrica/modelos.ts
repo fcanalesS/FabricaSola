@@ -29,6 +29,36 @@ export type RolDeAgente = keyof typeof ROLES_DE_AGENTE;
 export const esRolDeAgente = (x: unknown): x is RolDeAgente => typeof x === "string" && x in ROLES_DE_AGENTE;
 /** Un nombre de agente: `nombre` o `plugin:nombre`, en minúsculas, dígitos y guiones. La misma regla del plugin. */
 export const esNombreDeAgente = (x: unknown): x is string => typeof x === "string" && /^[a-z0-9][a-z0-9-]*(:[a-z0-9][a-z0-9-]*)?$/.test(x);
+
+/** El archivo del agente de la fábrica de una etapa, sin `.md` (en `fabrica/agents/`). */
+export const archivoDelRol = (rol: RolDeAgente) => ROLES_DE_AGENTE[rol].defecto.slice("fabrica:".length);
+/**
+ * El nombre del agente propio de una etapa: una copia del de la fábrica en `.claude/agents/` del
+ * proyecto, que se edita desde la configuración. Es el mismo que pone `/fabrica:agentes copiar`
+ * (fabrica/hooks/tareas.ts, `nombreDeCopia`): las dos formas llegan al mismo archivo.
+ */
+export const nombreDeCopia = (rol: RolDeAgente) => `fabrica-${archivoDelRol(rol)}`;
+
+/** Los topes de lo que se escribe en un agente propio. */
+export const AGENTE_PROPIO = { descripcionMax: 500, instruccionesMax: 64 * 1024 } as const;
+
+/**
+ * Lo escrito en un agente propio, revisado: la descripción en una línea y las instrucciones sin
+ * caracteres de control. Su nombre, sus herramientas y su modelo no se escriben aquí: los pone su
+ * etapa. Es lógica pura.
+ */
+export function revisarAgentePropio(dato: unknown): { descripcion: string; instrucciones: string } | { error: string } {
+  const d = (dato && typeof dato === "object" ? dato : {}) as Record<string, unknown>;
+  const descripcion = typeof d.descripcion === "string" ? d.descripcion.replace(/\s+/g, " ").trim() : "";
+  const instrucciones = typeof d.instrucciones === "string" ? d.instrucciones.replace(/\r\n?/g, "\n").trim() : "";
+  if (!descripcion) return { error: "Falta la descripción: con ella el orquestador sabe qué hace este agente." };
+  if (descripcion.length > AGENTE_PROPIO.descripcionMax) return { error: `La descripción va hasta ${AGENTE_PROPIO.descripcionMax} caracteres.` };
+  if (/\p{Cc}/u.test(descripcion)) return { error: "La descripción trae caracteres de control." };
+  if (!instrucciones) return { error: "Faltan las instrucciones." };
+  if (new TextEncoder().encode(instrucciones).length > AGENTE_PROPIO.instruccionesMax) return { error: "Las instrucciones van hasta 64 KB." };
+  if (/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/.test(instrucciones)) return { error: "Las instrucciones traen caracteres de control." };
+  return { descripcion, instrucciones };
+}
 /** Si vale como modelo de un rol: uno de Claude, o `inherit`. */
 export const esModeloDeRol = (v: unknown): v is ModeloDeRol => v === "inherit" || (typeof v === "string" && (MODELOS_DE_CLAUDE as readonly string[]).includes(v));
 /**

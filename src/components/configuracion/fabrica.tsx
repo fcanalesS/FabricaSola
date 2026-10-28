@@ -5,7 +5,7 @@ import { useEffect, useId, useMemo, useRef, useState, useSyncExternalStore } fro
 import { Interruptor } from "@/components/laboratorio/piezas";
 import { fijarAvisos, puedeAvisar, quiereAvisos } from "@/lib/fabrica/avisos-del-navegador";
 import type { AjustesDeLaFabrica, RamaALaVista, RendimientoALaVista, TelefonoDeLaFabrica } from "@/lib/fabrica/cliente";
-import { MODELOS_DE_CLAUDE, PARALELO, ROLES_CON_MODELO, ROLES_DE_AGENTE, type ModeloDeRol, type RolConModelo, type RolDeAgente } from "@/lib/fabrica/modelos";
+import { AGENTE_PROPIO, MODELOS_DE_CLAUDE, nombreDeCopia, PARALELO, revisarAgentePropio, ROLES_CON_MODELO, ROLES_DE_AGENTE, type ModeloDeRol, type RolConModelo, type RolDeAgente } from "@/lib/fabrica/modelos";
 import { PROMPT_DE_TAREAS } from "@/lib/fabrica/prompt-de-tareas";
 import { tareasPropuestas, tituloDelDocumento } from "@/lib/fabrica/requerimientos";
 import { CLAVES_DE_REGLA, NOTAS_MAX, REGLAS, revisarReglas, type ClaveDeRegla, type DefinicionDeRegla, type Reglas } from "@/lib/fabrica/reglas";
@@ -25,12 +25,12 @@ import { SusProcesos } from "./procesos";
 /** `claudeCode`: si este equipo tiene la ruta de Claude Code para lanzar las corridas. `enEsteEquipo`: si tiene las de Codex y Antigravity. */
 type Estado = { ajustes?: AjustesDeLaFabrica; telefono?: TelefonoDeLaFabrica | null; motivo?: "no_responde"; claudeCode?: boolean; enEsteEquipo?: EnEsteEquipo };
 type EnEsteEquipo = { codex: boolean; antigravity: boolean };
-type Respuesta = Estado & { error?: string; creadas?: { id: string; titulo: string }[]; documento?: string; avisos?: string[]; pruebas?: PruebaDeComando[]; limpieza?: { limpiadas: string[]; saltadas: { rama: string; motivo: string }[] }; memoria?: { creada: boolean; propuestas: number }; proceso?: { creado: boolean; archivo: string }; quitada?: { nombre: string; eraLaActiva: boolean } };
+type Respuesta = Estado & { error?: string; personalizado?: { creado: boolean; nombre: string }; creadas?: { id: string; titulo: string }[]; documento?: string; avisos?: string[]; pruebas?: PruebaDeComando[]; limpieza?: { limpiadas: string[]; saltadas: { rama: string; motivo: string }[] }; memoria?: { creada: boolean; propuestas: number }; proceso?: { creado: boolean; archivo: string }; quitada?: { nombre: string; eraLaActiva: boolean } };
 
 const FUENTE = { configuracion: "elegido aquí", ninguno: "sin elegir" } as const;
 const PRINCIPAL = `${BOTON} bg-realce`;
 type Parte = "rama" | "proyecto" | "comandos" | "reglas" | "agentes" | "gasto" | "nikke" | "modelos" | "requerimientos" | "telefono";
-const PARTE: Record<string, Parte> = { rama_trabajo: "rama", proyecto: "proyecto", inicializar: "proyecto", crear_memoria: "proyecto", comandos: "comandos", probar_comandos: "comandos", agente_de_rol: "agentes", paralelo: "agentes", reglas: "reglas", notas: "reglas", topes: "gasto", limpiar_integrados: "proyecto", sin_nikke: "nikke", modelo: "modelos", modelo_de_rol: "modelos", agente_externo: "modelos", requerimientos: "requerimientos", probar_telefono: "telefono", llamar_sola: "telefono" };
+const PARTE: Record<string, Parte> = { rama_trabajo: "rama", proyecto: "proyecto", inicializar: "proyecto", crear_memoria: "proyecto", comandos: "comandos", probar_comandos: "comandos", agente_de_rol: "agentes", personalizar_agente: "agentes", agente_propio: "agentes", paralelo: "agentes", reglas: "reglas", notas: "reglas", topes: "gasto", limpiar_integrados: "proyecto", sin_nikke: "nikke", modelo: "modelos", modelo_de_rol: "modelos", agente_externo: "modelos", requerimientos: "requerimientos", probar_telefono: "telefono", llamar_sola: "telefono" };
 
 export function SeccionDeLaFabrica() {
   const actual = parteDeLaFabrica(useParteDeLaDireccion());
@@ -833,6 +833,8 @@ function Explorador({ desde, ocupada, alElegir }: { desde: string | null; ocupad
 function Agentes({ agentes, conGit, ocupada, ajustar }: { agentes: NonNullable<AjustesDeLaFabrica["agentes"]>; conGit: boolean; ocupada: boolean; ajustar: Ajustar }) {
   const origenes = [...new Set(agentes.disponibles.map((a) => a.origen))];
   const descripcion = (nombre: string) => agentes.disponibles.find((a) => a.nombre === nombre)?.descripcion ?? "";
+  // La etapa cuyo agente propio se está editando: una a la vez.
+  const [editando, setEditando] = useState<RolDeAgente | null>(null);
   return (
     <div className="flex flex-col gap-3 border-t border-relieve pt-4">
       <div>
@@ -840,6 +842,9 @@ function Agentes({ agentes, conGit, ocupada, ajustar }: { agentes: NonNullable<A
           <span className="font-extrabold">Los agentes</span> <span className="text-tenue">· quién hace cada etapa, y cuántas tareas a la vez</span>
         </p>
         <p className="mt-1 text-sm text-tenue">Se guarda en factory/config.md de este proyecto. Los de nikke viajan con cada corrida sin sus guardas, que la frenarían esperando tu firma.</p>
+        <p className="mt-1 text-sm text-tenue">
+          Con «Personalizar», la etapa usa tu propia copia del agente de la fábrica, en .claude/agents/ del proyecto, y la editas aquí. La aplicación no hace commit.
+        </p>
       </div>
       <label className="flex flex-wrap items-center gap-2 text-sm">
         <span className="min-w-0 flex-1 basis-40 font-bold">
@@ -888,11 +893,152 @@ function Agentes({ agentes, conGit, ocupada, ajustar }: { agentes: NonNullable<A
               </select>
             </label>
             {descripcion(elegido) && <p className="line-clamp-2 text-[13px] text-tenue">{descripcion(elegido)}</p>}
+            <div className="flex flex-wrap items-center gap-2">
+              {valor === nombreDeCopia(rol) ? (
+                <>
+                  <button type="button" disabled={ocupada} aria-expanded={editando === rol} onClick={() => setEditando(editando === rol ? null : rol)} className={BOTON}>
+                    {editando === rol ? "Cerrar" : "Editar"}
+                  </button>
+                  <button
+                    type="button"
+                    disabled={ocupada}
+                    onClick={() => {
+                      setEditando(null);
+                      void ajustar({ ajuste: "agente_de_rol", rol, valor: "auto" }, `${nombre}: vuelve el de la fábrica, desde la próxima corrida. Tu copia sigue en .claude/agents/${nombreDeCopia(rol)}.md.`);
+                    }}
+                    className={BOTON}
+                  >
+                    Volver al de la fábrica
+                  </button>
+                </>
+              ) : (
+                <button
+                  type="button"
+                  disabled={ocupada}
+                  onClick={async () => {
+                    const d = await ajustar({ ajuste: "personalizar_agente", rol }, (d) =>
+                      d.personalizado?.creado
+                        ? `${nombre}: tu copia quedó en .claude/agents/${nombreDeCopia(rol)}.md, y es la de esta etapa desde la próxima corrida.`
+                        : `${nombre}: ya tenías una copia en .claude/agents/${nombreDeCopia(rol)}.md. No se tocó, y vuelve a ser la de esta etapa.`,
+                    );
+                    if (d) setEditando(rol);
+                  }}
+                  className={BOTON}
+                >
+                  Personalizar
+                </button>
+              )}
+            </div>
+            {editando === rol && valor === nombreDeCopia(rol) && <EditorDeAgente key={rol} rol={rol} nombre={nombre} ocupada={ocupada} ajustar={ajustar} />}
           </div>
         );
       })}
       <Rendimiento />
     </div>
+  );
+}
+
+/** Lo que la fábrica espera de cada etapa: si se quita de las instrucciones, la corrida se traba. */
+const LO_QUE_ESPERA: Record<RolDeAgente, string> = {
+  spec: "escribir la sección ## Spec de la tarea, o contestar PEDIDO AMBIGUO con sus preguntas",
+  construccion: "construir lo que dice la ## Spec, solo dentro del worktree de la tarea",
+  revision_codigo: "escribir sus hallazgos como BLOQUEANTE o MENOR, con ruta:línea",
+  revision_seguridad: "escribir sus hallazgos como BLOQUEANTE o MENOR, con ruta:línea",
+  ui: "escribir sus hallazgos como BLOQUEANTE o MENOR, con ruta:línea",
+  aprobacion: "registrar su veredicto con mcp__fabrica__aprobar",
+};
+
+/**
+ * El agente propio de una etapa, para editarlo: su descripción y sus instrucciones. Se lee al
+ * abrirlo, de .claude/agents/ del proyecto. Su nombre, sus herramientas y su modelo no se editan:
+ * los pone la fábrica.
+ */
+function EditorDeAgente({ rol, nombre, ocupada, ajustar }: { rol: RolDeAgente; nombre: string; ocupada: boolean; ajustar: Ajustar }) {
+  const [leido, setLeido] = useState<{ descripcion: string; instrucciones: string } | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [descripcion, setDescripcion] = useState("");
+  const [instrucciones, setInstrucciones] = useState("");
+  const idDescripcion = useId();
+  const idInstrucciones = useId();
+
+  useEffect(() => {
+    let vigente = true;
+    fetch(`/api/fabrica/ajustes?agente=${rol}`)
+      .then(async (r) => {
+        const d = (await r.json().catch(() => null)) as { agente?: { descripcion: string; instrucciones: string } | null; error?: string } | null;
+        if (!vigente) return;
+        if (!r.ok || !d) return setError(d?.error ? `No se pudo leer: ${d.error}` : "No se pudo leer tu copia.");
+        if (!d.agente) return setError(`No encontré .claude/agents/${nombreDeCopia(rol)}.md: vuelve a personalizar esta etapa.`);
+        setLeido(d.agente);
+        setDescripcion(d.agente.descripcion);
+        setInstrucciones(d.agente.instrucciones);
+      })
+      .catch(() => vigente && setError("La aplicación no responde."));
+    return () => {
+      vigente = false;
+    };
+  }, [rol]);
+
+  if (error) return <p role="alert" className="rounded-2xl bg-relieve px-4 py-3 text-sm text-aviso">{error}</p>;
+  if (!leido) return <p className="text-[13px] text-tenue">Leyendo tu copia…</p>;
+
+  const revisado = revisarAgentePropio({ descripcion, instrucciones });
+  const cambiado = descripcion !== leido.descripcion || instrucciones !== leido.instrucciones;
+  return (
+    <form
+      className="flex flex-col gap-2 rounded-2xl border border-relieve p-3"
+      onSubmit={async (e) => {
+        e.preventDefault();
+        if ("error" in revisado) return;
+        const d = await ajustar({ ajuste: "agente_propio", rol, ...revisado }, `${nombre}: tu agente quedó guardado. Vale desde la próxima corrida.`);
+        if (!d) return;
+        // Queda como se guardó: en una línea la descripción, y sin espacios de más.
+        setLeido(revisado);
+        setDescripcion(revisado.descripcion);
+        setInstrucciones(revisado.instrucciones);
+      }}
+    >
+      <p className="text-[13px] text-tenue">
+        Está en .claude/agents/{nombreDeCopia(rol)}.md de este proyecto: con un commit, viaja con el repositorio. Su nombre, sus herramientas y su modelo los pone la fábrica. Esta etapa tiene que {LO_QUE_ESPERA[rol]}: si
+        lo quitas de las instrucciones, la corrida se traba.
+      </p>
+      <label htmlFor={idDescripcion} className="text-sm font-bold">
+        Descripción <span className="font-normal text-tenue">· lo que lee el orquestador para saber qué hace</span>
+      </label>
+      <input id={idDescripcion} value={descripcion} onChange={(e) => setDescripcion(e.target.value)} maxLength={AGENTE_PROPIO.descripcionMax} className={`${CAMPO} w-full`} />
+      <label htmlFor={idInstrucciones} className="text-sm font-bold">
+        Instrucciones
+      </label>
+      <textarea
+        id={idInstrucciones}
+        value={instrucciones}
+        onChange={(e) => setInstrucciones(e.target.value)}
+        rows={16}
+        spellCheck={false}
+        className="min-h-48 w-full resize-y rounded-2xl bg-relieve px-3.5 py-2.5 font-mono text-[13px] leading-relaxed outline-none focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-papel"
+      />
+      {cambiado && "error" in revisado && (
+        <p role="alert" className="text-[13px] text-aviso">
+          {revisado.error}
+        </p>
+      )}
+      <div className="flex flex-wrap items-center justify-end gap-2">
+        <button
+          type="button"
+          disabled={ocupada || !cambiado}
+          onClick={() => {
+            setDescripcion(leido.descripcion);
+            setInstrucciones(leido.instrucciones);
+          }}
+          className={BOTON}
+        >
+          Deshacer los cambios
+        </button>
+        <button type="submit" disabled={ocupada || !cambiado || "error" in revisado} className={PRINCIPAL}>
+          Guardar el agente
+        </button>
+      </div>
+    </form>
   );
 }
 

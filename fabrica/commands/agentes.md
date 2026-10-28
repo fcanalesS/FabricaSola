@@ -22,7 +22,7 @@ exista es el que usará `/fabrica:correr`), y muestra una tabla:
 usuario" si es un nombre sin prefijo (una copia en `.claude/agents/`).
 
 Debajo, en dos líneas: cómo personalizar uno (`/fabrica:agentes copiar <rol>`) y que también se
-pueden editar desde la pestaña **Agentes** del orquestador web.
+pueden crear y editar en la aplicación, en Configuración › Agentes y modelos («Personalizar»).
 
 ## `copiar <rol> [usuario]`
 

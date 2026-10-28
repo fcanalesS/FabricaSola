@@ -16,6 +16,9 @@ import {
   comandosDelProyecto,
   elegirProyecto,
   fijarAgenteDeRol,
+  agentePropio,
+  guardarAgentePropio,
+  personalizarAgente,
   fijarComandos,
   fijarNotas,
   fijarReglas,
@@ -237,6 +240,9 @@ export async function atenderEnLaFabrica(ruta: string, cuerpo: unknown, metodo: 
         return bien(await escribirVeredicto(c.tarea, c.veredicto, typeof c.motivo === "string" ? c.motivo : "", typeof c.por === "string" && c.por.trim() ? c.por.trim() : "aplicacion"));
       case "GET /api/ajustes":
         return bien(await ajustes());
+      case "GET /api/agentes/propio":
+        // Su agente propio de una etapa, para editarlo: lo escribió él, en su repositorio.
+        return bien({ agente: await agentePropio(url.searchParams.get("rol") ?? "") });
       case "PUT /api/ajustes":
         if (c && "modelo" in c) await fijarModelo(typeof c.modelo === "string" ? c.modelo : null);
         else if (c?.comandos && typeof c.comandos === "object") await fijarComandos(c.comandos);
@@ -246,6 +252,9 @@ export async function atenderEnLaFabrica(ruta: string, cuerpo: unknown, metodo: 
           const x = c.agenteDeRol as Record<string, unknown>;
           const r = await raiz();
           await fijarAgenteDeRol(String(x.rol ?? ""), String(x.valor ?? ""), async (nombre) => (await agentesDeLasCorridas(r)).some((a) => a.nombre === nombre));
+        } else if (c?.agentePropio && typeof c.agentePropio === "object") {
+          const x = c.agentePropio as Record<string, unknown>;
+          await guardarAgentePropio(String(x.rol ?? ""), x);
         } else if (c && typeof c.paraleloMax === "number") await fijarParalelo(c.paraleloMax);
         else if (c?.topes && typeof c.topes === "object") {
           const t = c.topes as Record<string, unknown>;
@@ -286,13 +295,17 @@ export async function atenderEnLaFabrica(ruta: string, cuerpo: unknown, metodo: 
           const quitada = await quitarLinea(c.linea);
           return bien({ ...(await ajustes()), quitada: { id: quitada.linea.id, nombre: quitada.linea.nombre, eraLaActiva: quitada.eraLaActiva } });
         }
+        if (c?.accion === "personalizar_agente") {
+          const personalizado = await personalizarAgente(String(c.rol ?? ""), carpetaDelPlugin());
+          return bien({ ...(await ajustes()), personalizado });
+        }
         if (c?.accion === "probar_comandos") return bien({ ...(await ajustes()), pruebas: await probarComandos() });
         if (c?.accion === "limpiar_ramas") {
           const elegidas = Array.isArray(c.sinIntegrar) ? c.sinIntegrar.filter((x): x is string => typeof x === "string" && /^fabrica\/[A-Za-z0-9._-]+$/.test(x)).slice(0, 500) : [];
           const limpieza = await limpiarRamas(elegidas);
           return bien({ ...(await ajustes()), limpieza });
         }
-        return mal('accion es "inicializar", "crear_memoria", "crear_proceso", "probar_comandos", "limpiar_ramas" o "quitar_linea".', 400);
+        return mal('accion es "inicializar", "crear_memoria", "crear_proceso", "personalizar_agente", "probar_comandos", "limpiar_ramas" o "quitar_linea".', 400);
       case "GET /api/telefono":
         return bien(await estadoTelefono());
       case "POST /api/telefono":

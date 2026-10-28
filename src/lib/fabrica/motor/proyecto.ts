@@ -2,7 +2,7 @@ import { promises as fs } from "node:fs";
 import path from "node:path";
 import { carpetaDeDatos } from "../../datos.ts";
 import { cerrarProceso } from "../../servicios/procesos.ts";
-import { esModeloDeRol, esNombreDeAgente, esRolDeAgente, modeloDeRolDesde, PARALELO, ROLES_DE_AGENTE, type ModeloDeRol, type RolDeAgente } from "../modelos.ts";
+import { archivoDelRol, esModeloDeRol, esNombreDeAgente, esRolDeAgente, modeloDeRolDesde, nombreDeCopia, PARALELO, revisarAgentePropio, ROLES_DE_AGENTE, type ModeloDeRol, type RolDeAgente } from "../modelos.ts";
 import { detenidasDesde, eligeModeloDeConstruccion, eligeModeloDeSpec } from "../planta/lectura.ts";
 import { reglasDesde, revisarNotas, revisarReglas, type Reglas } from "../reglas.ts";
 import { NOMBRES_DE_COMANDO, revisarComandos, type ComandosDelProyecto, type PruebaDeComando } from "../verificacion.ts";
@@ -383,6 +383,76 @@ export async function fijarAgenteDeRol(rol: string, valor: string, existe: (nomb
   if (!esRolDeAgente(rol)) throw new Error(`Etapa desconocida: «${rol}».`);
   if (valor !== "auto" && !(esNombreDeAgente(valor) && (await existe(valor)))) throw new Error(`No hay un agente «${valor}» en este equipo.`);
   await fijarEnConfig(ROLES_DE_AGENTE[rol].clave, valor);
+}
+
+// ---- El agente propio de una etapa ----------------------------------------------------------------
+// Una copia del agente de la fábrica en `.claude/agents/` del proyecto: viaja con su repositorio, y
+// una corrida, que arranca en su raíz, la carga como cualquier agente del proyecto. Se crea con un
+// clic y se edita en la configuración: su descripción y sus instrucciones. Su nombre, sus
+// herramientas y su modelo quedan como los puso la fábrica. La aplicación escribe el archivo y no
+// hace commit, igual que con la memoria y las habilidades.
+
+/** Dónde vive el agente propio de una etapa en un proyecto. */
+const rutaDelPropio = (r: string, rol: RolDeAgente) => path.join(r, ".claude", "agents", `${nombreDeCopia(rol)}.md`);
+
+/** Que la ruta, si existe, sea un archivo común: no se escribe a través de un enlace hacia otro lado. */
+async function noEsEnlace(ruta: string) {
+  const s = await fs.lstat(ruta).catch(() => null);
+  if (s && !s.isFile()) throw new Error(`${path.basename(ruta)} no es un archivo común: no se toca.`);
+}
+
+/** El agente propio de una etapa en la línea activa. `null` si todavía no lo hay. */
+export async function agentePropio(rol: string): Promise<{ nombre: string; descripcion: string; instrucciones: string } | null> {
+  if (!esRolDeAgente(rol)) throw new Error(`Etapa desconocida: «${rol}».`);
+  const ruta = rutaDelPropio(await raizElegida(), rol);
+  await noEsEnlace(ruta);
+  const texto = await leer(ruta);
+  if (texto === undefined) return null;
+  const { datos, cuerpo } = partir(texto);
+  return { nombre: nombreDeCopia(rol), descripcion: (datos.description ?? "").trim(), instrucciones: cuerpo.trim() };
+}
+
+/**
+ * Crea el agente propio de una etapa, como copia del de la fábrica (`carpetaDelPlugin`), y lo pone
+ * en esa etapa. Si ya existe no lo pisa: solo lo vuelve a elegir.
+ */
+export async function personalizarAgente(rol: string, carpetaDelPlugin: string): Promise<{ creado: boolean; nombre: string }> {
+  if (!esRolDeAgente(rol)) throw new Error(`Etapa desconocida: «${rol}».`);
+  const r = await raizElegida();
+  if ((await leer(rutas(r).config)) === undefined) throw new Error("Este proyecto no tiene factory/config.md.");
+  const destino = rutaDelPropio(r, rol);
+  const nombre = nombreDeCopia(rol);
+  await noEsEnlace(destino);
+  let creado = false;
+  if ((await leer(destino)) === undefined) {
+    const original = await leer(path.join(carpetaDelPlugin, "agents", `${archivoDelRol(rol)}.md`));
+    if (original === undefined) throw new Error(`No encuentro el agente de la fábrica ${archivoDelRol(rol)}.md.`);
+    const { datos, cuerpo } = partir(original);
+    await fs.mkdir(path.dirname(destino), { recursive: true });
+    // `wx`: si apareció entre medio, no se pisa.
+    creado = await fs.writeFile(destino, unir({ ...datos, name: nombre }, cuerpo), { flag: "wx" }).then(
+      () => true,
+      (e: NodeJS.ErrnoException) => {
+        if (e.code === "EEXIST") return false;
+        throw e;
+      },
+    );
+  }
+  await fijarEnConfig(ROLES_DE_AGENTE[rol].clave, nombre);
+  return { creado, nombre };
+}
+
+/** Guarda lo escrito en el agente propio de una etapa, revisado. Su nombre, sus herramientas y su modelo no cambian. */
+export async function guardarAgentePropio(rol: string, dato: unknown) {
+  if (!esRolDeAgente(rol)) throw new Error(`Etapa desconocida: «${rol}».`);
+  const revisado = revisarAgentePropio(dato);
+  if ("error" in revisado) throw new Error(revisado.error);
+  const ruta = rutaDelPropio(await raizElegida(), rol);
+  await noEsEnlace(ruta);
+  const texto = await leer(ruta);
+  if (texto === undefined) throw new Error("Esta etapa todavía no tiene un agente propio: primero personalízala.");
+  const { datos } = partir(texto);
+  await fs.writeFile(ruta, unir({ ...datos, name: nombreDeCopia(rol), description: revisado.descripcion }, `\n${revisado.instrucciones}\n`));
 }
 
 /** Cuántas tareas trabaja la fábrica a la vez en este proyecto. Sin git, igual va de a una. */

@@ -1,6 +1,6 @@
 import { laEntradaUsaLaLinea } from "../entrada/acciones.ts";
 import { baseDeDatos } from "../datos.ts";
-import { esNombreDeAgente, esRolDeAgente, MODELOS_DE_CLAUDE, PARALELO, ROLES_CON_MODELO, ROLES_DE_AGENTE, type ModeloDeClaude, type ModeloDeRol, type RolConModelo, type RolDeAgente } from "./modelos.ts";
+import { esNombreDeAgente, esRolDeAgente, MODELOS_DE_CLAUDE, revisarAgentePropio, PARALELO, ROLES_CON_MODELO, ROLES_DE_AGENTE, type ModeloDeClaude, type ModeloDeRol, type RolConModelo, type RolDeAgente } from "./modelos.ts";
 import { atenderEnLaFabrica, type Respuesta } from "./motor/rutas.ts";
 import { CLAVES_DE_REGLA, reglasDesde, revisarNotas, revisarReglas, NOTAS_MAX, type Reglas } from "./reglas.ts";
 import { NOMBRES_DE_COMANDO, revisarComandos, sinComandos, type ComandosDelProyecto, type PruebaDeComando } from "./verificacion.ts";
@@ -322,6 +322,15 @@ async function alOrquestador(ruta: string, cuerpo?: unknown, opciones: { metodo?
   } catch {
     return null;
   }
+}
+
+/** El agente propio de una etapa, para editarlo. `null` si todavía no lo hay; `motivo` si la fábrica no pudo leerlo. */
+export async function leerAgentePropio(rol: RolDeAgente): Promise<{ agente: { nombre: string; descripcion: string; instrucciones: string } | null } | { motivo: string }> {
+  const r = await alOrquestador(`/api/agentes/propio?rol=${encodeURIComponent(rol)}`);
+  if (r?.estado !== 200) return { motivo: r === null ? "La fábrica no responde." : texto((r.datos as { error?: unknown } | null)?.error, 300) || `La fábrica contestó ${r.estado}.` };
+  const a = (r.datos as { agente?: Record<string, unknown> | null } | null)?.agente;
+  if (!a || typeof a !== "object") return { agente: null };
+  return { agente: { nombre: esNombreDeAgente(a.nombre) ? a.nombre : "", descripcion: typeof a.descripcion === "string" ? a.descripcion : "", instrucciones: typeof a.instrucciones === "string" ? a.instrucciones : "" } };
 }
 
 /** Lo que hay en la fábrica ahora. `sin_proyecto` si todavía no se eligió uno; `no_responde` si no se pudo leer. */
@@ -1016,6 +1025,10 @@ export type Ajuste =
   | { ajuste: "probar_comandos" }
   /** El agente de una etapa: `auto` o uno de los que se pueden elegir. */
   | { ajuste: "agente_de_rol"; rol: RolDeAgente; valor: string }
+  /** Crear el agente propio de una etapa, como copia del de la fábrica, y ponerlo en ella. No pisa uno que exista. */
+  | { ajuste: "personalizar_agente"; rol: RolDeAgente }
+  /** Guardar lo escrito en el agente propio de una etapa. */
+  | { ajuste: "agente_propio"; rol: RolDeAgente; descripcion: string; instrucciones: string }
   /** Cuántas tareas trabaja la fábrica a la vez en este proyecto. */
   | { ajuste: "paralelo"; valor: number }
   /** Los topes de gasto, en USD; `null` quita uno. */
@@ -1075,6 +1088,13 @@ export function ajustePedido(dato: unknown): Ajuste | null {
       return { ajuste: "probar_comandos" };
     case "agente_de_rol":
       return esRolDeAgente(d.rol) && (d.valor === "auto" || esNombreDeAgente(d.valor)) ? { ajuste: "agente_de_rol", rol: d.rol, valor: d.valor as string } : null;
+    case "personalizar_agente":
+      return esRolDeAgente(d.rol) ? { ajuste: "personalizar_agente", rol: d.rol } : null;
+    case "agente_propio": {
+      if (!esRolDeAgente(d.rol)) return null;
+      const r = revisarAgentePropio(d);
+      return "error" in r ? null : { ajuste: "agente_propio", rol: d.rol, ...r };
+    }
     case "rama_trabajo":
       return typeof d.valor === "string" && /^[\w./-]{0,200}$/.test(d.valor.trim()) && !d.valor.trim().startsWith("fabrica/") ? { ajuste: "rama_trabajo", valor: d.valor.trim() } : null;
     case "limpiar_ramas": {
@@ -1118,7 +1138,7 @@ export function pruebasDe(dato: unknown): PruebaDeComando[] {
  * los comandos, cómo salió cada uno. Si la fábrica dice que no, vuelve su motivo.
  */
 export async function ajustarLaFabrica(a: Ajuste): Promise<
-  | { hecho: true; creadas?: { id: string; titulo: string }[]; documento?: string; avisos?: string[]; pruebas?: PruebaDeComando[]; limpieza?: { limpiadas: string[]; saltadas: { rama: string; motivo: string }[] }; memoria?: { creada: boolean; propuestas: number }; proceso?: { creado: boolean; archivo: string }; quitada?: { nombre: string; eraLaActiva: boolean } }
+  | { hecho: true; personalizado?: { creado: boolean; nombre: string }; creadas?: { id: string; titulo: string }[]; documento?: string; avisos?: string[]; pruebas?: PruebaDeComando[]; limpieza?: { limpiadas: string[]; saltadas: { rama: string; motivo: string }[] }; memoria?: { creada: boolean; propuestas: number }; proceso?: { creado: boolean; archivo: string }; quitada?: { nombre: string; eraLaActiva: boolean } }
   | { hecho: false; motivo: string }
 > {
   let r: { estado: number; datos: unknown } | null;
@@ -1131,6 +1151,12 @@ export async function ajustarLaFabrica(a: Ajuste): Promise<
       break;
     case "agente_de_rol":
       r = await alOrquestador("/api/ajustes", { agenteDeRol: { rol: a.rol, valor: a.valor } }, { metodo: "PUT" });
+      break;
+    case "personalizar_agente":
+      r = await alOrquestador("/api/ajustes", { accion: "personalizar_agente", rol: a.rol });
+      break;
+    case "agente_propio":
+      r = await alOrquestador("/api/ajustes", { agentePropio: { rol: a.rol, descripcion: a.descripcion, instrucciones: a.instrucciones } }, { metodo: "PUT" });
       break;
     case "paralelo":
       r = await alOrquestador("/api/ajustes", { paraleloMax: a.valor }, { metodo: "PUT" });
@@ -1198,6 +1224,10 @@ export async function ajustarLaFabrica(a: Ajuste): Promise<
     return { hecho: true, avisos: (Array.isArray(i.avisos) ? i.avisos : []).map((x) => texto(x, 400)).filter(Boolean).slice(0, 10) };
   }
   if (a.ajuste === "probar_comandos") return { hecho: true, pruebas: pruebasDe(d.pruebas) };
+  if (a.ajuste === "personalizar_agente") {
+    const p = (d.personalizado && typeof d.personalizado === "object" ? d.personalizado : {}) as Record<string, unknown>;
+    return { hecho: true, personalizado: { creado: p.creado === true, nombre: esNombreDeAgente(p.nombre) ? p.nombre : "" } };
+  }
   if (a.ajuste === "quitar_linea") {
     const q = (d.quitada && typeof d.quitada === "object" ? d.quitada : {}) as Record<string, unknown>;
     return { hecho: true, quitada: { nombre: texto(q.nombre, 120), eraLaActiva: q.eraLaActiva === true } };
