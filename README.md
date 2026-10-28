@@ -24,6 +24,7 @@ con lo que permite cada una.
 npm install
 npm run dev     # http://127.0.0.1:3000
 npm test        # las pruebas, con el corredor de Node: sin red y sin claves de verdad
+npm run test:vacio   # las mismas, como en un equipo sin ninguna variable (tampoco Jev)
 ```
 
 Las corridas usan el `claude` del PATH de la terminal desde donde levantas la aplicación. Si
@@ -53,10 +54,8 @@ Antigravity, con qué agregar si falta.
 
 ## Lo que falta
 
-1. **Nada se cae:** avisar antes de correr un proceso qué pasos no van a poder, pantallas de error
-   propias, y las pruebas también con el entorno vacío.
-2. **El plugin solo,** instalable desde el repositorio.
-3. **Instalarla:** este README para quien la reciba, y una prueba de punta a punta en un equipo sin
+1. **El plugin solo,** instalable desde el repositorio.
+2. **Instalarla:** este README para quien la reciba, y una prueba de punta a punta en un equipo sin
    ninguna variable.
 
 Los documentos de `fabrica/docs/` son los planes con que se construyó la fábrica en la aplicación

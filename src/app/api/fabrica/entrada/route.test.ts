@@ -3,7 +3,7 @@ import { mkdirSync, mkdtempSync, readdirSync, readFileSync, writeFileSync } from
 import os from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, test } from "node:test";
-import { pedir, red } from "../../../../pruebas/entorno.ts";
+import { conElEntornoVacio, pedir, red } from "../../../../pruebas/entorno.ts";
 
 const { GET, POST } = await import("./route.ts");
 const { elegirProyecto } = await import("../../../../lib/fabrica/motor/proyecto.ts");
@@ -178,7 +178,7 @@ test("el lector solo lee: GET, con el token en la cabecera y nunca en la direcci
   assert.equal((await hacer({ accion: "traer", id })).entrada.bandeja.elementos.length, 1);
 });
 
-test("un issue suyo pasa citado y sin preguntarle a Jev; uno de otra persona se revisa, y si trae instrucciones o nadie lo revisa, no pasa", async () => {
+test("un issue suyo pasa citado y sin preguntarle a Jev; uno de otra persona se revisa, y si trae instrucciones o nadie lo revisa, no pasa", { skip: conElEntornoVacio && "prueba lo que contesta Jev: sin su clave, nadie lo revisa y no pasa" }, async () => {
   const a = await lineaNueva("pos");
   const id = await conFuente(a.id, "etiqueta");
   github([ISSUE_SUYO, ISSUE_AJENO]);

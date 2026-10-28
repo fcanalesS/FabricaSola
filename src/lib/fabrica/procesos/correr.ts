@@ -34,6 +34,7 @@ import {
   juzgarEvaluacion,
   leerResultadoDeEvaluacion,
   lineaDeRegistro,
+  loQueNoVaAPoder,
   puntajesDe,
   RESULTADO_MAXIMO_BYTES,
   ultimaEvaluacion,
@@ -200,10 +201,36 @@ async function preparar(lineaId: string, procesoId: string, env: Record<string, 
     }
   }
   if (faltan.length) throw new Error(`Falta en .env.local ${[...new Set(faltan)].join(", ")}. Agrégala a mano y reinicia la aplicación.`);
+  // Solo, no arranca lo que no va a poder: queda registrado con su motivo. A mano corre igual, porque
+  // la pantalla ya lo avisó (un push sin `gh` empuja igual, aunque el PR no se abra).
+  if (origen !== "a-mano") {
+    const no = loQueNoVaAPoder(proceso.pasos, { linea: lineaId, remoto: await remotoDe(raiz), entorno: env });
+    if (no.length) throw new Error(`no va a poder correr en este equipo. ${no.join(" ")}`);
+  }
 
   const registro = await fs.readdir(registroDeLaRaiz(raiz)).catch(() => [] as string[]);
   const textos = await Promise.all(registro.filter((n) => n.endsWith(".md")).map((n) => fs.readFile(path.join(registroDeLaRaiz(raiz), n), "utf8")));
   return { raiz, linea: lineaId, proceso, huella: huellaDelProceso(texto), commit, marcas: { commit, anterior: anteriorEnElRegistro(textos, procesoId), rama: proceso.rama }, claves };
+}
+
+/** La dirección del remoto de la línea, o `null` si no tiene. */
+async function remotoDe(raiz: string): Promise<string | null> {
+  const r = await git(["remote", "get-url", REMOTO], raiz);
+  return r.codigo === 0 && r.stdout.trim() ? r.stdout.trim() : null;
+}
+
+/** De cada proceso de la línea, lo que no va a poder correr en este equipo: para avisarlo antes. */
+export async function avisosDeLosProcesos(lineaId: string, env: Record<string, string | undefined> = process.env): Promise<Record<string, string[]>> {
+  const raiz = lineaPorId(await lineasDeLaFabrica(), lineaId).raiz;
+  const procesos = (await procesosDe(raiz)).procesos.filter((p) => p.id);
+  if (!procesos.length) return {};
+  const remoto = await remotoDe(raiz);
+  const out: Record<string, string[]> = {};
+  for (const p of procesos) {
+    const no = loQueNoVaAPoder(p.pasos, { linea: lineaId, remoto, entorno: env });
+    if (no.length) out[p.id] = no;
+  }
+  return out;
 }
 
 // ---- Correr --------------------------------------------------------------------------------------

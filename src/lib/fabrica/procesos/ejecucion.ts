@@ -208,6 +208,40 @@ export const herramientaDePR = (urlDelRemoto: string): "gh" | "glab" => (/gitlab
 /** La variable de `.env.local` con la ruta exacta de esa herramienta. Sin ella, el PR no se abre. */
 export const variableDeHerramienta = (h: "gh" | "glab") => (h === "gh" ? "COMPANIA_GH_BIN" : "COMPANIA_GLAB_BIN");
 
+/**
+ * Lo que no va a poder correr en este equipo, antes de correrlo: una clave que falta, un remoto
+ * que no está, o `gh`/`glab` sin su ruta para el PR, la integración continua o la fusión. Con
+ * esto la pantalla avisa, el proceso no se enciende para arrancar solo, y el vigía no lo lanza:
+ * lo registra con este motivo. Solo nombres de variables, nunca valores. Es lógica pura.
+ * `remoto`: la dirección de `origin`, o `null` si la línea no lo tiene.
+ */
+export function loQueNoVaAPoder(
+  pasos: readonly { linea: number; tipo: string; claves: readonly string[]; prContra: string | null }[],
+  o: { linea: string; remoto: string | null; entorno: Record<string, string | undefined> },
+): string[] {
+  const out: string[] = [];
+  const h = o.remoto === null ? null : herramientaDePR(o.remoto.trim());
+  const sinHerramienta = h && !o.entorno[variableDeHerramienta(h)]?.trim() ? variableDeHerramienta(h) : null;
+  for (const p of pasos) {
+    const en = `Línea ${p.linea} (${p.tipo})`;
+    if (p.tipo === "comando" || p.tipo === "evaluacion") {
+      const faltan = p.claves.map((c) => variableDeClave(o.linea, c)).filter((v) => !o.entorno[v]);
+      if (faltan.length) out.push(`${en}: falta ${faltan.join(", ")} en .env.local.`);
+      continue;
+    }
+    if (p.tipo !== "push" && p.tipo !== "ci" && p.tipo !== "fusion") continue;
+    if (o.remoto === null) {
+      out.push(`${en}: la línea no tiene un remoto «${REMOTO}».`);
+      continue;
+    }
+    if (!sinHerramienta) continue;
+    if (p.tipo === "push" && p.prContra) out.push(`${en}: empuja, pero el PR no se abre: falta ${sinHerramienta} en .env.local, con la ruta de ${h}.`);
+    if (p.tipo === "ci") out.push(`${en}: no puede leer la integración continua: falta ${sinHerramienta} en .env.local, con la ruta de ${h}.`);
+    if (p.tipo === "fusion") out.push(`${en}: no puede fusionar: falta ${sinHerramienta} en .env.local, con la ruta de ${h}.`);
+  }
+  return out;
+}
+
 /** Lo que se le pide a `gh` o a `glab` para abrir el PR. El título y el cuerpo los arma el código, sin nada de un issue. */
 export function argumentosDelPR(h: "gh" | "glab", o: { rama: string; base: string; titulo: string; cuerpo: string; cuerpoEn?: string }): string[] {
   // Un cuerpo de varias líneas va en un archivo: lanzado con `cmd /c` (un .cmd), un argumento se corta en el primer salto de línea.

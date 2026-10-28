@@ -185,3 +185,27 @@ test("producción sin su clic: con paso aprobacion, todo se deshace, hay salud d
   const malo = proceso(["- [comando] docker build . · deshacer: —", "- [aprobacion] producción", "- [comando] ./d.sh prod · deshacer: ./d.sh atras"]);
   assert.deepEqual(porQueNoSinClic(malo, "h1", [llego]), ["La línea 7 no se puede deshacer (deshacer: —).", "Después de producción no hay una comprobación de salud: sin ella no se sabe si salió bien, ni hay cuándo deshacer."]);
 });
+
+test("lo que no va a poder correr en este equipo: claves, remoto y la herramienta del servicio, solo por su nombre", async () => {
+  const { loQueNoVaAPoder } = await import("./ejecucion.ts");
+  const pasos = [
+    { linea: 3, tipo: "comando", claves: ["TOKEN", "OTRA"], prContra: null },
+    { linea: 4, tipo: "push", claves: [], prContra: null },
+    { linea: 5, tipo: "push", claves: [], prContra: "main" },
+    { linea: 6, tipo: "ci", claves: [], prContra: null },
+    { linea: 7, tipo: "fusion", claves: [], prContra: null },
+    { linea: 8, tipo: "salud", claves: [], prContra: null },
+    { linea: 9, tipo: "evaluacion", claves: ["CLAVE"], prContra: null },
+  ];
+  const entorno = { COMPANIA_PROCESO_MI_POS_TOKEN: "secreto", COMPANIA_PROCESO_MI_POS_CLAVE: "otro-secreto" };
+  assert.deepEqual(loQueNoVaAPoder(pasos, { linea: "mi-pos", remoto: "git@gitlab.empresa.cl:equipo/pos.git", entorno }), [
+    "Línea 3 (comando): falta COMPANIA_PROCESO_MI_POS_OTRA en .env.local.",
+    "Línea 5 (push): empuja, pero el PR no se abre: falta COMPANIA_GLAB_BIN en .env.local, con la ruta de glab.",
+    "Línea 6 (ci): no puede leer la integración continua: falta COMPANIA_GLAB_BIN en .env.local, con la ruta de glab.",
+    "Línea 7 (fusion): no puede fusionar: falta COMPANIA_GLAB_BIN en .env.local, con la ruta de glab.",
+  ]);
+  // Sin remoto, ningún paso que lo necesita; con la herramienta, nada más que la clave.
+  assert.deepEqual(loQueNoVaAPoder(pasos.slice(1, 4), { linea: "x", remoto: null, entorno: {} }).length, 3);
+  assert.deepEqual(loQueNoVaAPoder(pasos, { linea: "mi-pos", remoto: "https://github.com/a/b.git", entorno: { ...entorno, COMPANIA_PROCESO_MI_POS_OTRA: "x", COMPANIA_GH_BIN: "/bin/gh" } }), []);
+  assert.doesNotMatch(JSON.stringify(loQueNoVaAPoder(pasos, { linea: "mi-pos", remoto: null, entorno })), /secreto/);
+});

@@ -4,7 +4,7 @@ import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, 
 import os from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, test } from "node:test";
-import { pedir, red } from "../../../../pruebas/entorno.ts";
+import { conElEntornoVacio, pedir, red } from "../../../../pruebas/entorno.ts";
 
 const { GET, POST } = await import("./route.ts");
 const { elegirProyecto, carpetaDeLaFabrica } = await import("../../../../lib/fabrica/motor/proyecto.ts");
@@ -400,7 +400,7 @@ test("sin la ruta de gh, el paso ci falla y dice qué falta; si no aparece ningu
   assert.match(e.pasos[1]!.nota, /No apareció ninguna integración continua para el commit/);
 });
 
-test("si la integración continua no pasa y el paso lo pide, queda un pedido en la Bandeja, uno solo, que se revisa antes de pasar", async () => {
+test("si la integración continua no pasa y el paso lo pide, queda un pedido en la Bandeja, uno solo, que se revisa antes de pasar", { skip: conElEntornoVacio && "prueba lo que contesta Jev: sin su clave, nadie lo revisa y no pasa" }, async () => {
   const l = await lineaConProcesos({ ci: CON_CI(" · si falla: tarea") });
   conRemoto(l.raiz);
   const gh = ghDeMentira([[{ name: "pruebas", status: "completed", conclusion: "failure" }]]);
@@ -431,6 +431,53 @@ test("si la integración continua no pasa y el paso lo pide, queda un pedido en 
   red.aJev.length = 0;
   await pasarALinea(baseDeDatos(), pedido.id, { linea: l.id, titulo: "Arreglar las pruebas" }).catch(() => null);
   assert.equal(red.aJev.length, 1);
+});
+
+test("antes de correr dice qué no va a poder en este equipo; con algo que falta no se enciende solo, y si ya estaba encendido, el vigía lo registra sin lanzarlo", async () => {
+  const alIntegrar = CON_CI().replace("cuando: a-mano", "cuando: al-integrar");
+  const l = await lineaConProcesos({ ci: alIntegrar, clave: proceso("clave", ["- [comando] node scripts/eco.mjs · deshacer: — · clave: TOKEN"]) });
+  type ConAvisos = Respuesta & { avisos?: Record<string, string[]>; solos?: string[] };
+  const verAvisos = async (): Promise<ConAvisos> => (await (await pedir(GET, undefined, "http://127.0.0.1:3000/api/fabrica/procesos")).json()) as ConAvisos;
+  const variable = `COMPANIA_PROCESO_${l.id.toUpperCase().replace(/-/g, "_")}_TOKEN`;
+
+  // Sin remoto, el push y el ci no van a poder; sin la clave, el comando tampoco. Solo nombres.
+  let v = await verAvisos();
+  assert.deepEqual(v.avisos, {
+    ci: ["Línea 8 (push): la línea no tiene un remoto «origin».", "Línea 9 (ci): la línea no tiene un remoto «origin»."],
+    clave: [`Línea 7 (comando): falta ${variable} en .env.local.`],
+  });
+  // Con remoto, falta gh para el PR y la integración continua.
+  conRemoto(l.raiz);
+  v = await verAvisos();
+  assert.deepEqual(v.avisos!.ci, [
+    "Línea 8 (push): empuja, pero el PR no se abre: falta COMPANIA_GH_BIN en .env.local, con la ruta de gh.",
+    "Línea 9 (ci): no puede leer la integración continua: falta COMPANIA_GH_BIN en .env.local, con la ruta de gh.",
+  ]);
+
+  // Así no se enciende para arrancar solo.
+  const no = await hacer({ accion: "solo", proceso: "ci", valor: true });
+  assert.equal(no.estado, 409);
+  assert.match(no.error!, /^No puede arrancar solo: Línea 8 \(push\)/);
+
+  // Con gh, no hay avisos y se enciende. Si después falta, el vigía no lo lanza: lo registra con su motivo.
+  const gh = ghDeMentira([]);
+  await conGh(gh, async () => {
+    assert.equal((await verAvisos()).avisos!.ci, undefined);
+    assert.deepEqual(((await (await pedir(POST, { accion: "solo", proceso: "ci", valor: true })).json()) as ConAvisos).solos, ["ci"]);
+    assert.equal(await arrancarAlIntegrar(), null);
+  });
+  mkdirSync(path.join(l.raiz, "factory", "tareas"), { recursive: true });
+  writeFileSync(path.join(l.raiz, "factory", "tareas", "F-001-algo.md"), `---\nid: F-001\ntitulo: Algo\nestado: hecho\nintegrada: ${"a".repeat(40)}\n---\n`);
+  assert.ok(await arrancarAlIntegrar());
+  const e = (await ver()).ejecucion!;
+  assert.deepEqual([e.estado, e.origen, e.pasos.length], ["fallo", "al-integrar", 0]);
+  assert.match(e.motivo!, /^No arrancó solo al integrar: no va a poder correr en este equipo\. Línea 8 \(push\): empuja, pero el PR no se abre/);
+  // gh no se llamó: ni para el PR ni para leer la integración continua.
+  assert.throws(() => gh.pedido(), /ENOENT/);
+  assert.deepEqual(gh.lecturas(), []);
+  // Apagarlo se puede siempre.
+  assert.deepEqual(((await (await pedir(POST, { accion: "solo", proceso: "ci", valor: false })).json()) as ConAvisos).solos, []);
+  assert.ok(nadaAUnModelo());
 });
 
 test("un proceso al-integrar arranca solo si él lo encendió, con la primera tarea que se integra después", async () => {

@@ -30,7 +30,14 @@ que llevarlo al otro.
 - **Un guardia va pegado a lo que protege, no en quien llama.**
 - **Las rutas se prueban sin red** (`src/pruebas/`): cada archivo de pruebas corre en una carpeta
   recién hecha, con claves de mentira y una red de mentira que falla ante cualquier dirección que
-  no conozca. Una ruta nueva, o un guardia nuevo en una ruta, lleva su prueba.
+  no conozca. Una ruta nueva, o un guardia nuevo en una ruta, lleva su prueba. Tienen que pasar
+  también con `npm run test:vacio`: lo que prueba cómo contesta Jev se salta con
+  `conElEntornoVacio`.
+- **Nada se cae por lo que falta.** Lo opcional se mira antes de usarlo y dice qué agregar: un
+  proceso avisa qué pasos no van a poder (`loQueNoVaAPoder`), no se enciende solo con algo
+  faltando, y el vigía lo registra en vez de lanzarlo. Una página que falla muestra `error.tsx`.
+- **Una página que lee datos llama a `connection()`**: sin eso, `next build` la deja fija con lo
+  que había al compilar.
 - Las reglas de la fábrica (la Entrada solo lee, nada pasa a una línea sin su clic, la memoria de
   la fábrica la escribe la persona, los procesos los corre el código, la fusión, producción con su
   clic, los tokens solo se nombran) son las mismas que en la aplicación de origen: están en los
@@ -41,6 +48,7 @@ que llevarlo al otro.
 ```bash
 npm run dev               # Next 16, solo en 127.0.0.1
 npm test                  # lógica pura y rutas, con `node --test`; sin red
+npm run test:vacio        # las mismas sin ninguna variable, tampoco la clave de Jev de mentira
 npm run fabrica:e2e       # la fábrica de punta a punta con git de verdad en un repo desechable. Gasta: pregunta antes
 npm run fabrica:corrida-real   # una corrida de verdad con sus agentes. Con -- --correr gasta: pregunta antes
 npx tsc --noEmit

@@ -26,7 +26,8 @@ export type ProcesoALaVista = {
   cuando: string;
   rama: string;
   borrador: boolean;
-  pasos: { linea: number; tipo: string; texto: string }[];
+  /** `claves`: los nombres de las que recibe; `prContra`, si su push abre un PR. Para avisar antes de correr. */
+  pasos: { linea: number; tipo: string; texto: string; claves: string[]; prContra: string | null }[];
   /** Las líneas de los comandos que dicen que no se deshacen. */
   sinDeshacer: number[];
   problemas: ProblemaDelProceso[];
@@ -61,7 +62,7 @@ export async function procesosDe(raiz: string): Promise<ProcesosDeLaLinea> {
       cuando: p.cuando,
       rama: p.rama,
       borrador: p.borrador,
-      pasos: p.pasos.map((x) => ({ linea: x.linea, tipo: x.tipo, texto: x.texto })),
+      pasos: p.pasos.map((x) => ({ linea: x.linea, tipo: x.tipo, texto: x.texto, claves: x.claves, prContra: x.prContra })),
       sinDeshacer: pasosSinDeshacer(p),
       problemas: revisarProceso(texto, archivo),
     });

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { connection } from "next/server";
 import Link from "next/link";
 import { MarcoDeLaFabrica } from "@/components/fabrica/marco";
 import { Planta } from "@/components/fabrica/planta";
@@ -9,6 +10,8 @@ export const metadata: Metadata = { title: "La planta" };
 
 /** La planta: todas las líneas de la fábrica a la vez. Se lee en cada visita y después cada pocos segundos. */
 export default async function Pagina() {
+  // Se lee en cada visita: sin esto, el build la deja fija con lo que había al compilar.
+  await connection();
   const planta = await leerLaPlanta();
   return (
     <MarcoDeLaFabrica

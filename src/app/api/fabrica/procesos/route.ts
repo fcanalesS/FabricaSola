@@ -1,7 +1,7 @@
 import type { NextRequest } from "next/server";
 import { lineaPorId } from "@/lib/fabrica/motor/lineas";
 import { fijarProcesoSinClic, fijarProcesoSolo, leerAjustes, lineasDeLaFabrica, procesosSinClicDe, procesosSolosDe } from "@/lib/fabrica/motor/proyecto";
-import { correrProceso, detenerProceso, olvidarAlIntegrar, porQueNoSinClicEn, puntajesDelProceso, responderAprobacion, ultimaEjecucion } from "@/lib/fabrica/procesos/correr";
+import { avisosDeLosProcesos, correrProceso, detenerProceso, olvidarAlIntegrar, porQueNoSinClicEn, puntajesDelProceso, responderAprobacion, ultimaEjecucion } from "@/lib/fabrica/procesos/correr";
 import { procesosDe } from "@/lib/fabrica/procesos/disco";
 
 /**
@@ -17,7 +17,9 @@ import { procesosDe } from "@/lib/fabrica/procesos/disco";
  * integrar una tarea; `cada-dia` o `cada-semana`, cada tanto), y quitar su
  * clic para producción en un proceso, solo si cumple las condiciones
  * (`porQueNoSinClic`). Nada de esto va a un modelo. Antes de empezar se
- * revisa todo, y lo que no está vuelve como motivo. En casa no existe.
+ * revisa todo, y lo que no está vuelve como motivo. De cada proceso se dice
+ * antes qué pasos no van a poder en este equipo (`avisos`: una clave, el
+ * remoto, `gh` o `glab`); con alguno, no se enciende para arrancar solo.
  */
 
 const ID = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
@@ -32,7 +34,7 @@ async function lineaActiva(): Promise<string | null> {
  * para producción y, de cada uno con un paso aprobacion, por qué no podría pasar sin su clic.
  */
 async function vista(linea: string | null) {
-  if (!linea) return { ejecucion: null, solos: [], sinClic: [], condiciones: {}, puntajes: {} };
+  if (!linea) return { ejecucion: null, solos: [], sinClic: [], condiciones: {}, puntajes: {}, avisos: {} };
   const raiz = lineaPorId(await lineasDeLaFabrica(), linea).raiz;
   const procesos = (await procesosDe(raiz)).procesos.filter((p) => p.id);
   const condiciones: Record<string, string[]> = {};
@@ -40,7 +42,7 @@ async function vista(linea: string | null) {
   // De cada uno con una evaluación, sus últimos puntajes: solo números.
   const puntajes: Record<string, Awaited<ReturnType<typeof puntajesDelProceso>>> = {};
   for (const p of procesos.filter((x) => x.pasos.some((s) => s.tipo === "evaluacion"))) puntajes[p.id] = await puntajesDelProceso(linea, p.id);
-  return { ejecucion: await ultimaEjecucion(linea), solos: await procesosSolosDe(linea), sinClic: await procesosSinClicDe(linea), condiciones, puntajes };
+  return { ejecucion: await ultimaEjecucion(linea), solos: await procesosSolosDe(linea), sinClic: await procesosSinClicDe(linea), condiciones, puntajes, avisos: await avisosDeLosProcesos(linea) };
 }
 
 export async function GET() {
@@ -86,6 +88,8 @@ export async function POST(request: NextRequest) {
         const p = (await procesosDe(lineaPorId(await lineasDeLaFabrica(), linea).raiz)).procesos.find((x) => x.id === proceso);
         if (!p) return Response.json({ error: `No hay ningún proceso ${proceso} en esta línea.`, ...(await vista(linea)) }, { status: 409 });
         if (!["al-integrar", "cada-dia", "cada-semana"].includes(p.cuando)) return Response.json({ error: `${proceso} dice «cuando: ${p.cuando}»: solo arranca solo uno que dice «cuando: al-integrar», «cada-dia» o «cada-semana».`, ...(await vista(linea)) }, { status: 409 });
+        const no = (await avisosDeLosProcesos(linea))[proceso];
+        if (no?.length) return Response.json({ error: `No puede arrancar solo: ${no.join(" ")}`, ...(await vista(linea)) }, { status: 409 });
         if (p.cuando === "al-integrar") await olvidarAlIntegrar(linea);
       }
       await fijarProcesoSolo(linea, proceso, d.valor);

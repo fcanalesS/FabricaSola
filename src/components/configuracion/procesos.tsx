@@ -31,7 +31,7 @@ const ESTADO_DEL_PASO: Record<string, string> = {
 const ESTADO_DE_LA_EJECUCION: Record<string, string> = { corriendo: "corriendo", esperando: "espera tu clic", termino: "terminó", llego: "llegó hasta donde corre", fallo: "falló", detenida: "detenida" };
 const MALOS = new Set(["fallo", "no-se-deshizo"]);
 
-type Contestado = { ejecucion?: Ejecucion | null; solos?: string[]; sinClic?: string[]; condiciones?: Record<string, string[]>; puntajes?: Record<string, PuntajeALaVista[]>; error?: string };
+type Contestado = { ejecucion?: Ejecucion | null; solos?: string[]; sinClic?: string[]; condiciones?: Record<string, string[]>; puntajes?: Record<string, PuntajeALaVista[]>; avisos?: Record<string, string[]>; error?: string };
 
 async function pedir(cuerpo?: Record<string, unknown>): Promise<Contestado & { ok: boolean }> {
   try {
@@ -53,6 +53,8 @@ export function SusProcesos({ procesos, ocupada, crear }: { procesos: NonNullabl
   const [condiciones, setCondiciones] = useState<Record<string, string[]>>({});
   // De cada proceso con una evaluación, sus últimos puntajes.
   const [puntajes, setPuntajes] = useState<Record<string, PuntajeALaVista[]>>({});
+  // De cada proceso, lo que no va a poder correr en este equipo.
+  const [avisos, setAvisos] = useState<Record<string, string[]>>({});
   const [error, setError] = useState<string | null>(null);
   const [pidiendo, setPidiendo] = useState(false);
   // Mientras espera su clic también sigue en marcha: no se corre otro y se mira seguido.
@@ -75,6 +77,7 @@ export function SusProcesos({ procesos, ocupada, crear }: { procesos: NonNullabl
       setSinClic(r.sinClic ?? []);
       setCondiciones(r.condiciones ?? {});
       setPuntajes(r.puntajes ?? {});
+      setAvisos(r.avisos ?? {});
     });
   }, []);
   // Mientras corre, se mira cada dos segundos.
@@ -93,6 +96,7 @@ export function SusProcesos({ procesos, ocupada, crear }: { procesos: NonNullabl
     if (r.sinClic) setSinClic(r.sinClic);
     if (r.condiciones) setCondiciones(r.condiciones);
     if (r.puntajes) setPuntajes(r.puntajes);
+    if (r.avisos) setAvisos(r.avisos);
     if (!r.ok) setError(r.error ?? "No se pudo.");
     setPidiendo(false);
   }
@@ -177,6 +181,17 @@ export function SusProcesos({ procesos, ocupada, crear }: { procesos: NonNullabl
                       </li>
                     ))}
                   </ol>
+                  {(avisos[p.id]?.length ?? 0) > 0 && (
+                    <div className="text-sm">
+                      <p className="font-bold text-aviso">En este equipo no va a poder:</p>
+                      <ul className="mt-1 flex list-disc flex-col gap-1 pl-5">
+                        {avisos[p.id]!.map((a) => (
+                          <li key={a}>{a}</li>
+                        ))}
+                      </ul>
+                      <p className="mt-1 text-tenue">Agrega lo que falta y reinicia la aplicación. Mientras falte, no se enciende para arrancar solo.</p>
+                    </div>
+                  )}
                   {p.pasos.some((s) => s.tipo === "evaluacion") && <Puntajes lista={puntajes[p.id] ?? []} />}
                   {p.sinDeshacer.length > 0 && <p className="text-xs text-tenue">Con pasos que no se deshacen, producción nunca podrá salir sola en este proceso: siempre va a esperar tu clic.</p>}
                   <div className="flex flex-wrap items-center gap-2">
@@ -195,7 +210,7 @@ export function SusProcesos({ procesos, ocupada, crear }: { procesos: NonNullabl
                   )}
                   {(p.cuando === "al-integrar" || p.cuando === "cada-dia" || p.cuando === "cada-semana") && (
                     <label className="flex min-h-10 cursor-pointer items-center gap-2.5 text-sm">
-                      <input type="checkbox" className="size-4" checked={solos.includes(p.id)} disabled={ocupada || pidiendo} onChange={(ev) => void hacer({ accion: "solo", proceso: p.id, valor: ev.target.checked })} />
+                      <input type="checkbox" className="size-4" checked={solos.includes(p.id)} disabled={ocupada || pidiendo || (!solos.includes(p.id) && (avisos[p.id]?.length ?? 0) > 0)} onChange={(ev) => void hacer({ accion: "solo", proceso: p.id, valor: ev.target.checked })} />
                       <span>
                         <span className="font-bold">Que arranque solo</span>{" "}
                         {p.cuando === "al-integrar"

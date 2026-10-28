@@ -8,6 +8,7 @@
     "start": "next start -H 127.0.0.1",
     "lint": "eslint",
     "test": "node --test \"src/**/*.test.ts\"",
+    "test:vacio": "node scripts/pruebas-vacias.mjs",
     "fabrica:e2e": "node --env-file-if-exists=.env.local scripts/fabrica/e2e.mjs",
     "fabrica:corrida-real": "node --env-file-if-exists=.env.local scripts/fabrica/corrida-real.mjs"
   },
