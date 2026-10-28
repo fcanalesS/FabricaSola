@@ -1,22 +1,44 @@
 import Link from "next/link";
 import { connection } from "next/server";
 import { AlDia } from "@/components/portada/al-dia";
+import { ModeloLive2D } from "@/components/portada/modelo-live2d";
 import { claudeCodeDeEsteEquipo } from "@/lib/fabrica/motor/claude-code";
 import { leerLaPlanta } from "@/lib/fabrica/planta/disco";
 import { NOMBRE_DEL_PROGRAMA } from "@/lib/nombre";
+import { modeloDeLaPortada } from "@/lib/portada/modelo";
 
 /**
- * La portada: la planta en una mirada, sobre un fondo con anillos de pantalla. Es la de la aplicación
- * de origen, más sencilla y sin personaje: al centro, un anillo con cómo está la fábrica (gira despacio
- * mientras corre una línea) y por dónde seguir; arriba, si este equipo puede correr; abajo, lo que te
- * espera. Se lee en cada visita y cada pocos segundos.
+ * La portada: la planta en una mirada, sobre un fondo con anillos de pantalla. Arriba, si este equipo
+ * puede correr; un anillo que gira despacio mientras corre una línea; cómo está la fábrica, por dónde
+ * seguir y lo que te espera. Se lee en cada visita y cada pocos segundos.
+ *
+ * Sin modelo, la vista simple: el estado va dentro del anillo. Con un modelo Live2D en
+ * public/live2d/ (lo pone quien la usa, a su elección), el anillo lo lleva dentro y el estado va a su
+ * lado (debajo, en una pantalla angosta).
  */
 
 const BOTON = "flex min-h-11 items-center justify-center rounded-full px-5 text-sm font-extrabold";
 
+/** El anillo de la portada: gira despacio mientras corre una línea. */
+function Anillo({ gira, clase, children }: { gira: boolean; clase: string; children: React.ReactNode }) {
+  return (
+    <div className={`relative flex aspect-square items-center justify-center ${clase}`}>
+      <svg aria-hidden="true" viewBox="0 0 400 400" className={`absolute inset-0 h-full w-full ${gira ? "motion-safe:animate-[spin_40s_linear_infinite]" : ""}`}>
+        <circle cx="200" cy="200" r="190" fill="none" stroke="var(--color-hud)" strokeWidth="1.5" opacity=".4" />
+        <circle cx="200" cy="200" r="190" fill="none" stroke="var(--color-hud)" strokeWidth="6" strokeDasharray="150 1044" transform="rotate(-70 200 200)" opacity=".85" />
+        <circle cx="200" cy="200" r="190" fill="none" stroke="var(--color-hud)" strokeWidth="6" strokeDasharray="70 1124" transform="rotate(110 200 200)" opacity=".85" />
+        <circle cx="200" cy="200" r="190" fill="none" stroke="var(--color-acento)" strokeWidth="4" strokeDasharray="30 1164" transform="rotate(30 200 200)" />
+        <circle cx="200" cy="200" r="172" fill="none" stroke="var(--color-hud)" strokeWidth="8" strokeDasharray="1.2 8" opacity=".3" />
+        <circle cx="200" cy="200" r="150" fill="none" stroke="var(--color-hud)" strokeWidth="1" strokeDasharray="2 10" opacity=".45" />
+      </svg>
+      {children}
+    </div>
+  );
+}
+
 export default async function Pagina() {
   await connection();
-  const planta = await leerLaPlanta();
+  const [planta, modelo] = await Promise.all([leerLaPlanta(), modeloDeLaPortada()]);
   const n = planta.numeros;
   const corre = planta.lineas.find((l) => l.estado === "corriendo");
   const conClaude = claudeCodeDeEsteEquipo() !== null;
@@ -25,6 +47,68 @@ export default async function Pagina() {
     ? `${n.lineas} ${n.lineas === 1 ? "línea" : "líneas"} · ${n.abiertas} ${n.abiertas === 1 ? "abierta" : "abiertas"} · ${n.hechasHoy} ${n.hechasHoy === 1 ? "hecha" : "hechas"} hoy`
     : "Agrega el repositorio de un proyecto en la configuración y crea su factory/.";
   const esperan = planta.teEsperan.slice(0, 3);
+  const conModelo = modelo && "url" in modelo ? modelo : null;
+
+  const estado = (
+    <>
+      <span className="text-xs font-extrabold tracking-[.16em] text-hud uppercase">{corre ? "Corriendo" : "La planta"}</span>
+      <h1 className="text-[clamp(28px,6vw,44px)] leading-tight font-extrabold">{titular}</h1>
+      <p className="text-sm text-tenue">{detalle}</p>
+      {modelo && "falta" in modelo && (
+        <p className="text-[13px] text-tenue">
+          Hay un modelo en public/live2d/modelo/ ({modelo.nombre}), pero falta el Core de Cubism: mira public/live2d/LEEME.md.
+        </p>
+      )}
+    </>
+  );
+
+  const botones = (
+    <div className={`flex flex-wrap gap-3 ${conModelo ? "justify-center lg:justify-start" : "justify-center"}`}>
+      {planta.lineas.length ? (
+        <>
+          <Link href="/fabrica" className={`${BOTON} bg-acento text-papel`}>
+            Ir a la planta
+          </Link>
+          <Link href="/fabrica/peticion" className={`${BOTON} border border-relieve bg-fondo/80 backdrop-blur-sm`}>
+            Nueva petición
+          </Link>
+        </>
+      ) : (
+        <Link href="/configuracion" className={`${BOTON} bg-acento text-papel`}>
+          Agregar una línea
+        </Link>
+      )}
+    </div>
+  );
+
+  const teEsperan = esperan.length > 0 && (
+    <section aria-labelledby="te-esperan" className="relative mt-2 w-[min(560px,100%)]">
+      <div aria-hidden="true" className="absolute inset-0 border border-hud/60 bg-fondo/85 backdrop-blur-sm [clip-path:polygon(18px_0,100%_0,100%_calc(100%-18px),calc(100%-18px)_100%,0_100%,0_18px)]" />
+      <div className="relative flex flex-col gap-2 p-4 pl-5">
+        <h2 id="te-esperan" className="text-sm font-extrabold tracking-[.14em] text-hud uppercase">
+          Te esperan
+        </h2>
+        <ul className="flex flex-col gap-1.5">
+          {esperan.map((t) => (
+            <li key={`${t.linea}/${t.id}`}>
+              <Link href={`/fabrica/lineas/${encodeURIComponent(t.linea)}?tarea=${t.id}`} className="flex min-h-11 items-center gap-3 rounded-xl px-2 hover:bg-relieve">
+                <span className="flex-none text-sm font-extrabold">{t.id}</span>
+                <span className="min-w-0 flex-1 truncate text-sm">{t.titulo}</span>
+                <span className="flex-none text-xs text-tenue">
+                  {t.nombreDeLinea} · {t.espera === "pregunta" ? "pregunta" : "tu veredicto"}
+                </span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+        {planta.teEsperan.length > esperan.length && (
+          <Link href="/fabrica/tareas?esperan=1" className="self-start text-[13px] font-bold text-tenue underline underline-offset-2">
+            Y {planta.teEsperan.length - esperan.length} más
+          </Link>
+        )}
+      </div>
+    </section>
+  );
 
   return (
     <main className="relative min-h-dvh overflow-hidden">
@@ -60,69 +144,26 @@ export default async function Pagina() {
         </nav>
       </header>
 
-      <section aria-label="Cómo está la fábrica" className="relative flex flex-col items-center gap-6 px-4 pt-8 pb-10 lg:pt-12">
-        <div className="relative flex aspect-square w-[min(78vw,460px)] items-center justify-center">
-          <svg aria-hidden="true" viewBox="0 0 400 400" className={`absolute inset-0 h-full w-full ${corre ? "motion-safe:animate-[spin_40s_linear_infinite]" : ""}`}>
-            <circle cx="200" cy="200" r="190" fill="none" stroke="var(--color-hud)" strokeWidth="1.5" opacity=".4" />
-            <circle cx="200" cy="200" r="190" fill="none" stroke="var(--color-hud)" strokeWidth="6" strokeDasharray="150 1044" transform="rotate(-70 200 200)" opacity=".85" />
-            <circle cx="200" cy="200" r="190" fill="none" stroke="var(--color-hud)" strokeWidth="6" strokeDasharray="70 1124" transform="rotate(110 200 200)" opacity=".85" />
-            <circle cx="200" cy="200" r="190" fill="none" stroke="var(--color-acento)" strokeWidth="4" strokeDasharray="30 1164" transform="rotate(30 200 200)" />
-            <circle cx="200" cy="200" r="172" fill="none" stroke="var(--color-hud)" strokeWidth="8" strokeDasharray="1.2 8" opacity=".3" />
-            <circle cx="200" cy="200" r="150" fill="none" stroke="var(--color-hud)" strokeWidth="1" strokeDasharray="2 10" opacity=".45" />
-          </svg>
-          <div className="relative flex max-w-[70%] flex-col items-center gap-2 text-center">
-            <span className="text-xs font-extrabold tracking-[.16em] text-hud uppercase">{corre ? "Corriendo" : "La planta"}</span>
-            <h1 className="text-[clamp(28px,6vw,44px)] leading-tight font-extrabold">{titular}</h1>
-            <p className="text-sm text-tenue">{detalle}</p>
+      {conModelo ? (
+        <section aria-label="Cómo está la fábrica" className="relative mx-auto grid max-w-6xl items-center gap-6 px-4 pt-4 pb-10 lg:grid-cols-2 lg:gap-10 lg:px-8 lg:pt-6">
+          <Anillo gira={!!corre} clase="mx-auto w-[min(86vw,560px)]">
+            <ModeloLive2D url={conModelo.url} nombre={conModelo.nombre} />
+          </Anillo>
+          <div className="flex flex-col items-center gap-6 lg:items-start">
+            <div className="flex flex-col items-center gap-2 text-center lg:items-start lg:text-left">{estado}</div>
+            {botones}
+            {teEsperan}
           </div>
-        </div>
-
-        <div className="flex flex-wrap justify-center gap-3">
-          {planta.lineas.length ? (
-            <>
-              <Link href="/fabrica" className={`${BOTON} bg-acento text-papel`}>
-                Ir a la planta
-              </Link>
-              <Link href="/fabrica/peticion" className={`${BOTON} border border-relieve bg-fondo/80 backdrop-blur-sm`}>
-                Nueva petición
-              </Link>
-            </>
-          ) : (
-            <Link href="/configuracion" className={`${BOTON} bg-acento text-papel`}>
-              Agregar una línea
-            </Link>
-          )}
-        </div>
-
-        {esperan.length > 0 && (
-          <section aria-labelledby="te-esperan" className="relative mt-2 w-[min(560px,100%)]">
-            <div aria-hidden="true" className="absolute inset-0 border border-hud/60 bg-fondo/85 backdrop-blur-sm [clip-path:polygon(18px_0,100%_0,100%_calc(100%-18px),calc(100%-18px)_100%,0_100%,0_18px)]" />
-            <div className="relative flex flex-col gap-2 p-4 pl-5">
-              <h2 id="te-esperan" className="text-sm font-extrabold tracking-[.14em] text-hud uppercase">
-                Te esperan
-              </h2>
-              <ul className="flex flex-col gap-1.5">
-                {esperan.map((t) => (
-                  <li key={`${t.linea}/${t.id}`}>
-                    <Link href={`/fabrica/lineas/${encodeURIComponent(t.linea)}?tarea=${t.id}`} className="flex min-h-11 items-center gap-3 rounded-xl px-2 hover:bg-relieve">
-                      <span className="flex-none text-sm font-extrabold">{t.id}</span>
-                      <span className="min-w-0 flex-1 truncate text-sm">{t.titulo}</span>
-                      <span className="flex-none text-xs text-tenue">
-                        {t.nombreDeLinea} · {t.espera === "pregunta" ? "pregunta" : "tu veredicto"}
-                      </span>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-              {planta.teEsperan.length > esperan.length && (
-                <Link href="/fabrica/tareas?esperan=1" className="self-start text-[13px] font-bold text-tenue underline underline-offset-2">
-                  Y {planta.teEsperan.length - esperan.length} más
-                </Link>
-              )}
-            </div>
-          </section>
-        )}
-      </section>
+        </section>
+      ) : (
+        <section aria-label="Cómo está la fábrica" className="relative flex flex-col items-center gap-6 px-4 pt-8 pb-10 lg:pt-12">
+          <Anillo gira={!!corre} clase="w-[min(78vw,460px)]">
+            <div className="relative flex max-w-[70%] flex-col items-center gap-2 text-center">{estado}</div>
+          </Anillo>
+          {botones}
+          {teEsperan}
+        </section>
+      )}
     </main>
   );
 }

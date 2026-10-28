@@ -41,3 +41,10 @@ npm-debug.log*
 .vscode/
 .DS_Store
 Thumbs.db
+
+# El modelo Live2D de la portada y el Core de Cubism: cada quien pone los suyos (public/live2d/LEEME.md).
+# Solo entran las carpetas vacías y sus instrucciones.
+/public/live2d/core/*
+/public/live2d/modelo/*
+!/public/live2d/core/.gitkeep
+!/public/live2d/modelo/.gitkeep
