@@ -12,6 +12,7 @@ import { CLAVES_DE_REGLA, NOTAS_MAX, REGLAS, revisarReglas, type ClaveDeRegla, t
 import { sinComandos, type ComandosDelProyecto, type NombreDeComando, type PruebaDeComando } from "@/lib/fabrica/verificacion";
 import { PARTES_DE_LA_FABRICA, parteDeLaFabrica } from "@/lib/configuracion/secciones";
 import { BOTON, CAMPO, Fila, Partes, Seccion, useParteDeLaDireccion } from "./piezas";
+import { ModeloDeLaPortada } from "./portada";
 import { SusProcesos } from "./procesos";
 
 /**
@@ -164,6 +165,9 @@ export function SeccionDeLaFabrica() {
       {telefono && <Telefono telefono={telefono} ocupada={ocupada} ajustar={ajustar} />}
       {avisoEn("telefono")}
       <AvisosDelNavegador />
+      </div>
+      <div hidden={actual !== "portada"} className="flex flex-col gap-4">
+      <ModeloDeLaPortada />
       </div>
     </Seccion>
   );
@@ -738,7 +742,7 @@ type Listado = { ruta: string; padre: string | null; carpetas: { nombre: string;
  * elige la que se está mirando. Dice cuáles son repositorios git y cuáles ya tienen factory/. Lo
  * lista el servidor (`/api/fabrica/carpetas`): el navegador no puede dar la ruta de una carpeta.
  */
-function Explorador({ desde, ocupada, alElegir }: { desde: string | null; ocupada: boolean; alElegir: (ruta: string) => void }) {
+export function Explorador({ desde, ocupada, alElegir }: { desde: string | null; ocupada: boolean; alElegir: (ruta: string) => void }) {
   const [listado, setListado] = useState<Listado | null>(null);
   const [problema, setProblema] = useState<string | null>(null);
   const leer = (ruta: string | null) =>

@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 
 /**
- * El modelo Live2D de la portada, si alguien puso uno (public/live2d/LEEME.md). Es compañía visual:
+ * El modelo Live2D de la portada, si alguien puso uno (Configuración › Portada, o public/live2d/). Es compañía visual:
  * lo dibuja de cuerpo entero dentro de su caja, deja sonar la animación de reposo que traiga y, sin
  * el movimiento reducido del sistema, mira hacia el puntero. No habla ni tiene gestos.
  *
@@ -12,8 +12,6 @@ import { useEffect, useRef, useState } from "react";
  *  - El lienzo se crea nuevo en cada montaje: sobre uno cuyo WebGL ya se soltó, el siguiente no
  *    arranca (pasa en cada recarga en caliente).
  */
-
-const CORE = "/live2d/core/live2dcubismcore.min.js";
 
 /** Lo que se usa del modelo de la librería. */
 type Modelo = {
@@ -25,22 +23,22 @@ type Modelo = {
   destroy: (o: { children: boolean; texture: boolean; baseTexture: boolean }) => void;
 };
 
-let core: Promise<void> | null = null;
+let cargando: Promise<void> | null = null;
 
-function cargarCore(): Promise<void> {
+function cargarCore(src: string): Promise<void> {
   if ("Live2DCubismCore" in window) return Promise.resolve();
-  core ??= new Promise<void>((resolve, reject) => {
+  cargando ??= new Promise<void>((resolve, reject) => {
     const script = document.createElement("script");
-    script.src = CORE;
+    script.src = src;
     script.async = true;
     script.onload = () => resolve();
     script.onerror = () => {
-      core = null;
+      cargando = null;
       reject(new Error("no se pudo cargar el Core de Cubism"));
     };
     document.head.appendChild(script);
   });
-  return core;
+  return cargando;
 }
 
 /** Si el navegador puede dar WebGL ahora. Se prueba en un lienzo aparte, que se suelta enseguida. */
@@ -55,7 +53,8 @@ function hayWebGL(): boolean {
   }
 }
 
-export function ModeloLive2D({ url, nombre }: { url: string; nombre: string }) {
+/** `url`: el `*.model3.json`. `core`: el Core de Cubism. Las dos, desde la raíz de la página. */
+export function ModeloLive2D({ url, core, nombre }: { url: string; core: string; nombre: string }) {
   const caja = useRef<HTMLDivElement>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -66,7 +65,7 @@ export function ModeloLive2D({ url, nombre }: { url: string; nombre: string }) {
     const limpiezas: (() => void)[] = [];
 
     (async () => {
-      await cargarCore();
+      await cargarCore(core);
       const [{ Application, Ticker }, { Live2DModel }] = await Promise.all([import("pixi.js"), import("pixi-live2d-display-lipsyncpatch/cubism4")]);
       if (!vivo) return;
       if (!hayWebGL()) throw new Error("el navegador no entregó WebGL");
@@ -130,14 +129,14 @@ export function ModeloLive2D({ url, nombre }: { url: string; nombre: string }) {
       vivo = false;
       for (const limpiar of limpiezas) limpiar();
     };
-  }, [url]);
+  }, [url, core]);
 
   return (
     <div className="absolute inset-0">
       <div ref={caja} role="img" aria-label={`El modelo ${nombre}`} className="absolute inset-0" />
       {error && (
         <p role="status" className="absolute inset-x-6 bottom-[18%] rounded-2xl bg-fondo/85 px-4 py-3 text-center text-[13px] backdrop-blur-sm">
-          No se pudo dibujar {nombre}: {error}. Mira public/live2d/LEEME.md.
+          No se pudo dibujar {nombre}: {error}. Revísalo en Configuración › Portada.
         </p>
       )}
     </div>

@@ -12,9 +12,9 @@ import { modeloDeLaPortada } from "@/lib/portada/modelo";
  * puede correr; un anillo que gira despacio mientras corre una línea; cómo está la fábrica, por dónde
  * seguir y lo que te espera. Se lee en cada visita y cada pocos segundos.
  *
- * Sin modelo, la vista simple: el estado va dentro del anillo. Con un modelo Live2D en
- * public/live2d/ (lo pone quien la usa, a su elección), el anillo lo lleva dentro y el estado va a su
- * lado (debajo, en una pantalla angosta).
+ * Sin modelo, la vista simple: el estado va dentro del anillo. Con un modelo Live2D (lo indica quien
+ * la usa en Configuración › Portada, o lo copia a public/live2d/), el anillo lo lleva dentro y el
+ * estado va a su lado (debajo, en una pantalla angosta).
  */
 
 const BOTON = "flex min-h-11 items-center justify-center rounded-full px-5 text-sm font-extrabold";
@@ -56,7 +56,9 @@ export default async function Pagina() {
       <p className="text-sm text-tenue">{detalle}</p>
       {modelo && "falta" in modelo && (
         <p className="text-[13px] text-tenue">
-          Hay un modelo en public/live2d/modelo/ ({modelo.nombre}), pero falta el Core de Cubism: mira public/live2d/LEEME.md.
+          {modelo.falta === "core"
+            ? `Hay un modelo en public/live2d/modelo/ (${modelo.nombre}), pero falta el Core de Cubism: cópialo a public/live2d/core/, o indica los dos en Configuración › Portada.`
+            : `El modelo Live2D de la configuración no carga: ${modelo.motivo}. Revísalo en Configuración › Portada.`}
         </p>
       )}
     </>
@@ -147,7 +149,7 @@ export default async function Pagina() {
       {conModelo ? (
         <section aria-label="Cómo está la fábrica" className="relative mx-auto grid max-w-6xl items-center gap-6 px-4 pt-4 pb-10 lg:grid-cols-2 lg:gap-10 lg:px-8 lg:pt-6">
           <Anillo gira={!!corre} clase="mx-auto w-[min(86vw,560px)]">
-            <ModeloLive2D url={conModelo.url} nombre={conModelo.nombre} />
+            <ModeloLive2D url={conModelo.url} core={conModelo.core} nombre={conModelo.nombre} />
           </Anillo>
           <div className="flex flex-col items-center gap-6 lg:items-start">
             <div className="flex flex-col items-center gap-2 text-center lg:items-start lg:text-left">{estado}</div>

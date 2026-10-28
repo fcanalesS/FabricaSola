@@ -4,7 +4,21 @@ La portada puede mostrar un modelo Live2D que elijas, dentro de su anillo. Es op
 modelo, la portada queda con su vista simple. Nada de esto entra al repositorio: el modelo tiene
 la licencia de quien lo hizo y el Core de Cubism es de Live2D.
 
-## Qué poner y dónde
+## Lo más simple: indicarlo en Configuración
+
+En **Configuración › Portada**, indica (o busca) la carpeta de tu modelo y la del Core de Cubism,
+donde ya los tengas en este equipo, y **Usar este modelo**. No se copia nada: la aplicación los
+sirve desde ahí. Se guarda en `datos/portada.json`, y **Dejar de usarlo** no borra nada.
+
+- **El modelo:** la carpeta que trae el `*.model3.json` (o una de más arriba, hasta tres niveles),
+  o el archivo mismo si en la carpeta hay varios.
+- **El Core:** la carpeta del «Cubism SDK for Web» tal como viene, su carpeta `Core/` o el archivo
+  `live2dcubismcore.min.js`. Se descarga desde <https://www.live2d.com/en/sdk/download/web/>,
+  aceptando su licencia.
+
+Lo indicado ahí va antes que lo copiado aquí.
+
+## O copiarlo aquí
 
 ```
 public/live2d/

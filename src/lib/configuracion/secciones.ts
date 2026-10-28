@@ -12,6 +12,7 @@ export const PARTES_DE_LA_FABRICA = [
   { id: "gasto", nombre: "Gasto" },
   { id: "tareas", nombre: "Tareas" },
   { id: "avisos", nombre: "Avisos" },
+  { id: "portada", nombre: "Portada" },
 ] as const;
 export type ParteDeLaFabrica = (typeof PARTES_DE_LA_FABRICA)[number]["id"];
 

@@ -78,7 +78,7 @@ Todo es opcional, y **Este equipo** dice qué falta y qué permite. Van en `.env
 | Un token por fuente (`FACTORIA_FUENTE_<NOMBRE>_TOKEN`) | Traer issues de GitHub o GitLab a la Bandeja, en solo lectura |
 | Telnyx (`FACTORIA_TELNYX_…`, `FACTORIA_TELEFONO`) | Que la fábrica te llame cuando una tarea te espera |
 | Codex o Antigravity (`FACTORIA_CODEX_BIN`, `FACTORIA_ANTIGRAVITY_BIN`) | Que revisen el código o escriban la spec con su propia suscripción |
-| Un modelo Live2D y el Core de Cubism, en `public/live2d/` (no en `.env.local`) | Que la portada muestre el modelo que elijas dentro de su anillo. Sin modelo, queda la vista simple. Qué poner y dónde: `public/live2d/LEEME.md` |
+| Un modelo Live2D y el Core de Cubism, indicados en Configuración › Portada (no en `.env.local`) | Que la portada muestre el modelo que elijas dentro de su anillo. Sin modelo, queda la vista simple. Qué indicar: `public/live2d/LEEME.md` |
 
 Las variables se llaman `FACTORIA_…` porque el código viene de otra aplicación y sigue igual en
 las dos.
@@ -115,9 +115,9 @@ sesiones de verdad de Claude Code en un repositorio desechable: gastan.
 | Dónde | Qué es |
 | --- | --- |
 | `src/app/page.tsx` | La portada: cómo está la planta en una mirada, sobre anillos de pantalla, y por dónde seguir |
-| `public/live2d/`, `src/lib/portada/` y `src/components/portada/` | El modelo Live2D opcional de la portada: dónde se pone, cómo se encuentra y cómo se dibuja |
+| `public/live2d/`, `src/lib/portada/`, `src/app/api/portada/` y `src/components/portada/` | El modelo Live2D opcional de la portada: dónde se indica o se pone, cómo se encuentra, cómo se sirve y cómo se dibuja |
 | `src/app/fabrica/` | Las pantallas: la planta, las líneas, las tareas, la Bandeja, la nueva petición, las fuentes, la memoria y este equipo |
-| `src/app/configuracion/` | La configuración: las líneas, los agentes y sus modelos, el gasto, los procesos y los avisos |
+| `src/app/configuracion/` | La configuración: las líneas, los agentes y sus modelos, el gasto, los procesos, los avisos y el modelo de la portada |
 | `src/app/api/fabrica/` | Las rutas que usan esas pantallas |
 | `src/lib/fabrica/motor/` | El motor: lee el `factory/` de cada línea, lanza las corridas con Claude Code y lleva el vigía |
 | `src/lib/fabrica/procesos/` | Los procesos: comandos, salud, push con su PR, integración continua, fusión, producción, el vigía de vulnerabilidades y la evaluación |
