@@ -6,6 +6,9 @@
  */
 export async function register() {
   if (process.env.NEXT_RUNTIME !== "nodejs") return;
+  // Claude Code se busca en el PATH una sola vez, al arrancar (ver `lib/fabrica/motor/claude-code.ts`).
+  const { claudeCodeDeEsteEquipo } = await import("./lib/fabrica/motor/claude-code");
+  claudeCodeDeEsteEquipo();
   const { asegurarVigia } = await import("./lib/fabrica/motor/vigia");
   asegurarVigia();
   const { asegurarLector } = await import("./lib/entrada/lector");

@@ -6,8 +6,8 @@
 // en datos/corridas/<id>.jsonl, y el servidor solo lee ese archivo. Si el servidor se
 // reinicia o se cae, la corrida sigue, y al volver se retoma desde el archivo.
 //
-// Claude Code se lanza por su ruta exacta, de COMPANIA_CLAUDE_CODE_BIN: sin ella no hay corridas
-// (la regla de CLAUDE.md). Usa la sesión de Claude Code de este equipo, es decir la suscripción, y
+// Claude Code se lanza por la ruta de COMPANIA_CLAUDE_CODE_BIN o, sin ella, el `claude` del PATH
+// (`claude-code.ts`): sin ninguno no hay corridas. Usa la sesión de Claude Code de este equipo, es decir la suscripción, y
 // no la clave de la API de la aplicación: a la corrida no le llega ninguna variable COMPANIA_ ni
 // ANTHROPIC_.
 //
@@ -26,6 +26,7 @@ import { AGENTE_DE_ANUNCIO, AGENTE_DE_RETRABAJO, agenteDeAnuncio, agenteDeRetrab
 import { configDesde } from "./formato.ts";
 import { agentesDelProyecto, agentesDeEsteEquipo, anotarPorRetomar, carpetaDeLaFabrica, esModeloDeClaude, esRamaProtegida, fijarCorridaConNikke, instantanea, leerAjustes, liberarTomadasPor, modeloDeLaCorrida, raiz, ramaActual, tomarPorRetomar } from "./proyecto.ts";
 import { destinoDeTelemetria, entornoDeTelemetria, VARIABLES_CON_CONTENIDO } from "./telemetria.ts";
+import { claudeCodeDeEsteEquipo, SIN_CLAUDE_CODE } from "./claude-code.ts";
 
 export type EstadoCorrida = "corriendo" | "terminada" | "fallida" | "detenida"
 
@@ -613,13 +614,13 @@ export function entornoDeLaCorrida(base: Record<string, string | undefined>): No
   return env as NodeJS.ProcessEnv;
 }
 
-/** La ruta exacta de Claude Code en este equipo, o `null`: sin ella no hay corridas. */
-export const claudeCode = (entorno: NodeJS.ProcessEnv = process.env) => entorno.COMPANIA_CLAUDE_CODE_BIN?.trim() || null;
+/** La ruta de Claude Code en este equipo (la de la variable, o la del PATH), o `null`: sin ella no hay corridas. */
+export const claudeCode = (entorno: NodeJS.ProcessEnv = process.env) => claudeCodeDeEsteEquipo(entorno)?.ruta ?? null;
 
 export async function iniciarCorrida(opciones: { tareas?: string[]; modelo?: string; origen?: string | null }): Promise<Corrida> {
   if ((await corridaActual())?.estado === "corriendo") throw new Error("Ya hay una corrida en marcha. Espera a que termine o detenla.");
   const bin = claudeCode();
-  if (!bin) throw new Error("Falta COMPANIA_CLAUDE_CODE_BIN en .env.local: la ruta exacta de Claude Code en este equipo.");
+  if (!bin) throw new Error(SIN_CLAUDE_CODE);
   const proyecto = await raiz();
   if (!proyecto) throw new Error("Todavía no hay un proyecto elegido: elígelo en la configuración.");
   const textoConfig = await fs.readFile(path.join(proyecto, "factory", "config.md"), "utf8").catch(() => null);
@@ -721,7 +722,7 @@ export async function iniciarCorrida(opciones: { tareas?: string[]; modelo?: str
     const hijo = spawn(programa, argumentos, { cwd: proyecto, env, detached: true, windowsHide: true, stdio: ["ignore", salida.fd, salida.fd] });
     meta.pid = hijo.pid;
     hijo.on("error", (err) => {
-      meta.error = `No pude lanzar Claude Code (${bin}): ${err.message}. Revisa la ruta de COMPANIA_CLAUDE_CODE_BIN.`;
+      meta.error = `No pude lanzar Claude Code (${bin}): ${err.message}. Revisa COMPANIA_CLAUDE_CODE_BIN, o el «claude» de tu PATH.`;
       if (mem.actual?.meta.id === meta.id) agregar(mem.actual.c, "error", meta.error);
       void guardarMeta(meta).catch(() => undefined);
     });

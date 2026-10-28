@@ -19,6 +19,11 @@ que llevarlo al otro.
 - **Todo corre con la sesión de Claude Code de quien la usa.** No se usa la API de Claude ni una
   clave suya. Lo que necesite algo más (Jev, `gh`, `glab`, un token, el teléfono) queda apagado,
   con un mensaje que dice qué falta, hasta que se agregue su variable.
+- **Claude Code se busca en el PATH si falta `COMPANIA_CLAUDE_CODE_BIN`** (`src/lib/fabrica/motor/claude-code.ts`),
+  una vez al arrancar y solo en carpetas absolutas. Es la única diferencia con la aplicación de
+  origen, donde va solo por su ruta exacta: `gh`, `glab`, Codex y Antigravity siguen por la suya.
+  Las pruebas no miran el PATH de quien las corre (`fijarClaudeEnElPath(null)`, en
+  `src/pruebas/entorno.ts`).
 - **`.env.local` no se lee ni se copia.** Si hace falta saber qué hay, se pregunta por el nombre
   de la variable.
 - **`datos/` no entra al repositorio.** Es lo de cada equipo.

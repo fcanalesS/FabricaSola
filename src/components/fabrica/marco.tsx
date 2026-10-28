@@ -6,11 +6,11 @@ import { lineasDeLaFabrica } from "@/lib/fabrica/motor/proyecto";
 
 /**
  * Lo común de las páginas de la fábrica, en el servidor: el menú (la planta, las líneas, las
- * tareas, la Entrada, la memoria y la configuración) y la cabecera de cada página. En una
+ * tareas, la Entrada, la memoria, este equipo y la configuración) y la cabecera de cada página. En una
  * pantalla ancha el menú va a la izquierda; en una angosta, arriba y en fila.
  */
 
-export type ParteDeLaFabrica = "planta" | "lineas" | "tareas" | "bandeja" | "peticion" | "fuentes" | "memoria" | "configuracion";
+export type ParteDeLaFabrica = "planta" | "lineas" | "tareas" | "bandeja" | "peticion" | "fuentes" | "memoria" | "equipo" | "configuracion";
 
 type Item = { id: ParteDeLaFabrica; nombre: string; ruta: string; icono: React.ReactNode };
 
@@ -22,6 +22,7 @@ const ICONO = {
   peticion: <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8zM14 3v5h5M12 11v6M9 14h6" />,
   fuentes: <path d="M9 7V3M15 7V3M6 7h12v4a6 6 0 0 1-12 0zM12 17v4" />,
   memoria: <path d="M5 4h11l3 3v13H5zM9 4v5h6V4M8 14h8M8 17h5" />,
+  equipo: <path d="M3 5h18v11H3zM8 20h8M12 16v4" />,
   configuracion: <path d="M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6zM12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1" />,
 };
 
@@ -46,6 +47,7 @@ const GRUPOS: { titulo: string; items: Item[] }[] = [
     titulo: "Ajustes",
     items: [
       { id: "memoria", nombre: "Memoria", ruta: "/fabrica/memoria", icono: ICONO.memoria },
+      { id: "equipo", nombre: "Este equipo", ruta: "/fabrica/equipo", icono: ICONO.equipo },
       { id: "configuracion", nombre: "Configuración", ruta: "/configuracion", icono: ICONO.configuracion },
     ],
   },

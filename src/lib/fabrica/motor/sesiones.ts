@@ -3,6 +3,7 @@ import { promises as fs } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { cerrarProceso } from "../../servicios/procesos.ts";
+import { SIN_CLAUDE_CODE } from "./claude-code.ts";
 import { claudeCode, entornoDeLaCorrida, lanzadorDeClaude } from "./corridas.ts";
 
 /**
@@ -222,7 +223,7 @@ export const retomaActual = (): Retoma | null => mem.retoma;
 export async function retomarSesion(raiz: string, id: string, texto: string): Promise<Retoma> {
   if (mem.retoma?.estado === "corriendo") throw new Error("Ya hay una sesión retomándose: espera a que termine o detenla.");
   const bin = claudeCode();
-  if (!bin) throw new Error("Falta COMPANIA_CLAUDE_CODE_BIN en .env.local: la ruta exacta de Claude Code en este equipo.");
+  if (!bin) throw new Error(SIN_CLAUDE_CODE);
   const limpio = texto.trim();
   if (!limpio) throw new Error("No hay nada que escribirle.");
   if (limpio.length > 8000) throw new Error("Es muy largo para escribírselo de una vez (más de 8000 caracteres).");

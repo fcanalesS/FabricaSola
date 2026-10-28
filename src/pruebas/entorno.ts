@@ -4,6 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import type { NextRequest } from "next/server";
+import { fijarClaudeEnElPath } from "../lib/fabrica/motor/claude-code.ts";
 import { aLaFabricaDePrueba, instalarRed, red } from "./red.ts";
 
 /**
@@ -60,6 +61,9 @@ Object.assign(process.env, {
   TYPESAFE_AI_KEY: "clave-de-prueba",
 });
 instalarRed();
+// Tampoco el Claude Code de quien las corre: sin COMPANIA_CLAUDE_CODE_BIN, la prueba no lo
+// encuentra en el PATH, aunque esté. Así ninguna corrida de verdad sale de una prueba.
+fijarClaudeEnElPath(null);
 
 type Resolver = (especificador: string, contexto: { parentURL?: string }) => { url: string };
 // Los tipos de Node que usa el proyecto son anteriores a `registerHooks`.

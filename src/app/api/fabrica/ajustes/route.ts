@@ -11,8 +11,8 @@ import { agentesDeEsteEquipo } from "@/lib/fabrica/motor/proyecto";
  * guardas detendrían las corridas esperando una firma. Lo decidió él el 17 de
  * octubre de 2026. Cada cambio sale de un clic suyo. En casa no existe.
  *
- * `claudeCode` dice si este equipo tiene la ruta de Claude Code
- * (`COMPANIA_CLAUDE_CODE_BIN`): sin ella se configura, pero no se corre.
+ * `claudeCode` dice si este equipo tiene Claude Code (`COMPANIA_CLAUDE_CODE_BIN` o el
+ * `claude` del PATH): sin él se configura, pero no se corre.
  * `enEsteEquipo`, si tiene las de Codex y Antigravity: sin la suya, ese
  * agente no se puede encender. Las rutas no se muestran.
  */

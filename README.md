@@ -26,9 +26,11 @@ npm run dev     # http://127.0.0.1:3000
 npm test        # las pruebas, con el corredor de Node: sin red y sin claves de verdad
 ```
 
-Hoy, para correr hace falta `COMPANIA_CLAUDE_CODE_BIN` en `.env.local` con la ruta de Claude Code
-(en Windows, `where.exe claude`; en Mac y Linux, `command -v claude`). Sin ella se configura y se
-mira la planta, pero no se corre.
+Las corridas usan el `claude` del PATH de la terminal desde donde levantas la aplicación. Si
+quieres otro, o no está en el PATH, pon su ruta en `COMPANIA_CLAUDE_CODE_BIN`, en `.env.local`.
+**Este equipo** (en el menú) dice qué encontró, si tu sesión de Claude Code está iniciada, y qué
+más puede usar la fábrica: `gh` y `glab`, Jev, los tokens de las fuentes, el teléfono, Codex y
+Antigravity, con qué agregar si falta.
 
 ## Qué hay
 
@@ -42,6 +44,7 @@ mira la planta, pero no se corre.
 | `src/lib/fabrica/memoria/` | La memoria de la fábrica: el vault de cada línea (`factory/memoria/`, en su repositorio) y el de la planta (`datos/memoria/`) |
 | `src/lib/fabrica/habilidades/` | Las habilidades y especialidades de cada línea |
 | `src/lib/entrada/` | La Entrada: el formulario de petición, la Bandeja y las fuentes (GitHub y GitLab, en solo lectura) |
+| `src/lib/fabrica/equipo.ts` | «Este equipo»: qué piezas tiene este equipo, qué permite cada una y qué agregar |
 | `src/lib/datos.ts` | La carpeta `datos/` de este equipo y su base SQLite |
 | `src/proxy.ts` y `src/lib/servidor/` | El guardia de quién puede llamar a las rutas |
 | `src/pruebas/` | Las pruebas de las rutas: una carpeta aparte, claves de mentira y una red de mentira que anota qué le llegó a quién |
@@ -50,12 +53,10 @@ mira la planta, pero no se corre.
 
 ## Lo que falta
 
-1. **Claude Code sin configurar:** buscar `claude` en el PATH si falta `COMPANIA_CLAUDE_CODE_BIN`,
-   y una pantalla, «Lo que tiene este equipo», con cada pieza opcional, si está y qué agregar.
-2. **Nada se cae:** avisar antes de correr un proceso qué pasos no van a poder, pantallas de error
+1. **Nada se cae:** avisar antes de correr un proceso qué pasos no van a poder, pantallas de error
    propias, y las pruebas también con el entorno vacío.
-3. **El plugin solo,** instalable desde el repositorio.
-4. **Instalarla:** este README para quien la reciba, y una prueba de punta a punta en un equipo sin
+2. **El plugin solo,** instalable desde el repositorio.
+3. **Instalarla:** este README para quien la reciba, y una prueba de punta a punta en un equipo sin
    ninguna variable.
 
 Los documentos de `fabrica/docs/` son los planes con que se construyó la fábrica en la aplicación

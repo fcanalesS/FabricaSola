@@ -12,8 +12,8 @@
 // (no con la clave de la API de la aplicación). Pregunta antes de correrla.
 //
 // No toca la aplicación: ni sus líneas, ni sus ajustes, ni datos/. Arma los agentes con las mismas
-// funciones que usa la aplicación al lanzar una corrida, y lanza Claude Code por su ruta exacta
-// (COMPANIA_CLAUDE_CODE_BIN), con solo el plugin de la fábrica, sin nikke. El repo vive en la
+// funciones que usa la aplicación al lanzar una corrida, y lanza Claude Code por
+// COMPANIA_CLAUDE_CODE_BIN o, sin ella, el del PATH, con solo el plugin de la fábrica, sin nikke. El repo vive en la
 // carpeta temporal del sistema.
 
 import { execFileSync, spawnSync } from "node:child_process";
@@ -21,6 +21,7 @@ import { closeSync, cpSync, existsSync, mkdirSync, mkdtempSync, openSync, readFi
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { claudeCodeDeEsteEquipo, SIN_CLAUDE_CODE } from "../../src/lib/fabrica/motor/claude-code.ts";
 import { agenteDeAnuncio, agenteDeRetrabajo, agenteDesde, agentesConHabilidades, archivoDelAgenteDeAnuncio, archivoDelAgenteDeRetrabajo, AGENTE_DE_ANUNCIO, definicionesDisponibles, textosDeNikkes } from "../../src/lib/fabrica/motor/agentes.ts";
 import { habilidadesDeLaCorrida } from "../../src/lib/fabrica/habilidades/disco.ts";
 import { habilidadesConHuella } from "../../src/lib/fabrica/habilidades/formato.ts";
@@ -33,9 +34,9 @@ const dejar = process.argv.includes("--dejar") || !correr;
 /** Lo más que puede durar: si pasa, se corta y se dice. */
 const TOPE_MS = 90 * 60_000;
 
-const bin = process.env.COMPANIA_CLAUDE_CODE_BIN?.trim();
+const bin = claudeCodeDeEsteEquipo()?.ruta;
 if (!bin) {
-  console.error("Falta COMPANIA_CLAUDE_CODE_BIN en .env.local: la ruta exacta de Claude Code en este equipo.");
+  console.error(SIN_CLAUDE_CODE);
   process.exit(1);
 }
 

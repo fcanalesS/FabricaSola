@@ -9,7 +9,7 @@
 // Gasta: cada paso es una sesión de Claude Code en Haiku, con la suscripción de este equipo (no
 // con la clave de la API de la aplicación). Son unas diez. Pregunta antes de correrla.
 //
-// Claude Code se lanza por su ruta exacta, COMPANIA_CLAUDE_CODE_BIN de .env.local, con solo el mod
+// Claude Code se lanza por COMPANIA_CLAUDE_CODE_BIN de .env.local o, sin ella, el del PATH, con solo el mod
 // de la aplicación (sin nikke ni otra copia). Al final dice qué pasó y qué no, y sale con 1 si
 // algo falló. El repo vive en la carpeta temporal del sistema: nunca en un proyecto real.
 
@@ -18,6 +18,7 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, 
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { claudeCodeDeEsteEquipo, SIN_CLAUDE_CODE } from "../../src/lib/fabrica/motor/claude-code.ts";
 
 const APP = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const PLUGIN = path.join(APP, "fabrica");
@@ -25,9 +26,9 @@ const dejar = process.argv.includes("--dejar");
 // Solo F-001 y F-002: la integración y el conflicto, sin las dependencias ni la memoria.
 const par = process.argv.includes("--par");
 
-const bin = process.env.COMPANIA_CLAUDE_CODE_BIN?.trim();
+const bin = claudeCodeDeEsteEquipo()?.ruta;
 if (!bin) {
-  console.error("Falta COMPANIA_CLAUDE_CODE_BIN en .env.local: la ruta exacta de Claude Code en este equipo.");
+  console.error(SIN_CLAUDE_CODE);
   process.exit(1);
 }
 

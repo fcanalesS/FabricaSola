@@ -94,14 +94,14 @@ export function SeccionDeLaFabrica() {
     <Seccion titulo="La fábrica de software" bajada={bajada}>
       <Partes partes={PARTES_DE_LA_FABRICA} actual={actual} prefijo="fabrica-" etiqueta="Partes de la fábrica" />
       <div hidden={actual !== "proyecto"} className="flex flex-col gap-4">
-      {/* Las corridas se lanzan con Claude Code por su ruta exacta: sin ella se configura y se mira, pero no se corre. */}
+      {/* Sin Claude Code (ni en COMPANIA_CLAUDE_CODE_BIN ni en el PATH) se configura y se mira, pero no se corre. */}
       {estado.claudeCode === false && (
         <Fila
           nombre="Claude Code"
           que="para las corridas"
-          estado="Falta su ruta"
+          estado="No lo encontré"
           alerta
-          detalle="Pon en .env.local COMPANIA_CLAUDE_CODE_BIN con la ruta exacta de Claude Code en este equipo (en Windows la da where.exe claude; en Mac, command -v claude) y reinicia la aplicación. Corre con tu sesión de Claude Code, no con la clave de la API."
+          detalle="No está en el PATH ni en COMPANIA_CLAUDE_CODE_BIN. Instálalo y reinicia la aplicación desde una terminal donde claude funcione, o pon su ruta en esa variable, en .env.local. Corre con tu sesión de Claude Code, no con una clave de la API. Lo que tiene este equipo, en Este equipo."
         />
       )}
       {/* Con otro proyecto (o ninguno), la ruta escrita empieza de nuevo: no se queda la de una línea quitada. */}
@@ -1186,7 +1186,7 @@ function Modelos({ ajustes, ocupada, ajustar, enEsteEquipo }: { ajustes: Ajustes
           ))}
           {(!enEsteEquipo.codex || !enEsteEquipo.antigravity) && (
             <p className="text-sm text-tenue">
-              Se lanzan por su ruta exacta, como Claude Code: {[!enEsteEquipo.codex && "COMPANIA_CODEX_BIN", !enEsteEquipo.antigravity && "COMPANIA_ANTIGRAVITY_BIN"].filter(Boolean).join(" y ")} en .env.local (en Windows la da where.exe), y reinicia la aplicación.
+              Se lanzan por su ruta exacta: {[!enEsteEquipo.codex && "COMPANIA_CODEX_BIN", !enEsteEquipo.antigravity && "COMPANIA_ANTIGRAVITY_BIN"].filter(Boolean).join(" y ")} en .env.local (en Windows la da where.exe), y reinicia la aplicación.
             </p>
           )}
         </>
