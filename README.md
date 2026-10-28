@@ -104,6 +104,7 @@ sesiones de verdad de Claude Code en un repositorio desechable: gastan.
 
 | Dónde | Qué es |
 | --- | --- |
+| `src/app/page.tsx` | La portada: cómo está la planta en una mirada, sobre anillos de pantalla, y por dónde seguir |
 | `src/app/fabrica/` | Las pantallas: la planta, las líneas, las tareas, la Bandeja, la nueva petición, las fuentes, la memoria y este equipo |
 | `src/app/configuracion/` | La configuración: las líneas, los agentes y sus modelos, el gasto, los procesos y los avisos |
 | `src/app/api/fabrica/` | Las rutas que usan esas pantallas |

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
+import { NOMBRE_DEL_PROGRAMA } from "@/lib/nombre";
 import "./globals.css";
 
 // Nunito va en el repositorio (src/app/fuentes/): bajarla de Google al compilar falla en una red que lo bloquee.
@@ -10,8 +11,6 @@ const nunito = localFont({
   variable: "--font-nunito",
 });
 
-// El nombre del programa. Es el único lugar del código que lo dice.
-const NOMBRE_DEL_PROGRAMA = "La fábrica";
 
 export const metadata: Metadata = {
   // Cada página pone lo suyo, y el nombre va detrás.

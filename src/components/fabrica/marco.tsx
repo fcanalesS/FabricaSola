@@ -3,6 +3,7 @@ import { baseDeDatos } from "@/lib/datos";
 import { cuentas } from "@/lib/entrada/bandeja";
 import { vistaDeFuentes } from "@/lib/entrada/fuentes";
 import { lineasDeLaFabrica } from "@/lib/fabrica/motor/proyecto";
+import { NOMBRE_DEL_PROGRAMA } from "@/lib/nombre";
 
 /**
  * Lo común de las páginas de la fábrica, en el servidor: el menú (la planta, las líneas, las
@@ -100,7 +101,7 @@ export async function MarcoDeLaFabrica({
                 <rect width="34" height="34" rx="10" className="fill-acento" />
                 <path d="M17 6 L19.4 14.6 L28 17 L19.4 19.4 L17 28 L14.6 19.4 L6 17 L14.6 14.6 Z" className="fill-papel" />
               </svg>
-              <span className="text-[15px] leading-tight font-extrabold">La fábrica</span>
+              <span className="text-[15px] leading-tight font-extrabold">{NOMBRE_DEL_PROGRAMA}</span>
             </span>
           </div>
           <div className="flex flex-wrap gap-x-4 gap-y-1 lg:flex-col lg:flex-nowrap">
