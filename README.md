@@ -14,12 +14,13 @@ decidas tú, salvo lo que tú mismo dejes integrarse solo.
 - **Claude Code, con tu sesión iniciada.** Las corridas usan tu suscripción, no una clave de la
   API. Si `claude` no te abre una sesión en la terminal, inicia sesión con `claude auth login`.
 
-Ninguna variable de entorno hace falta para empezar.
+Ninguna variable de entorno hace falta para empezar. El repositorio es privado: para clonarlo,
+tu cuenta de GitHub necesita acceso.
 
 ## Instalarla
 
 ```bash
-git clone <la dirección de este repositorio> fabrica
+git clone https://github.com/fcanalesS/FabricaSola.git fabrica
 cd fabrica
 npm install
 npm run dev

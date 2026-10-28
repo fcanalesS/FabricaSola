@@ -603,9 +603,12 @@ en tus sesiones de Claude Code: `/fabrica:correr` a mano, `/tablero` y la línea
 2. Agrega el marketplace de este repositorio y el plugin. Desde una terminal:
 
    ```
-   claude plugin marketplace add <la carpeta de este repositorio, o su dirección en GitHub o GitLab>
+   claude plugin marketplace add fcanalesS/FabricaSola
    claude plugin install fabrica@factoria
    ```
+
+   O, con el repositorio ya clonado, `claude plugin marketplace add <su carpeta>`. El repositorio
+   es privado: desde GitHub, tu cuenta necesita acceso.
 
    En la app de escritorio, donde `/plugin` no corre: **+** junto al prompt → Plugins → Add
    marketplace → Add plugin.
