@@ -130,7 +130,7 @@ export async function hacerEnLaEntrada(a: AccionDeEntrada, db: DatabaseSync = ba
         const desde = Number.isInteger(p.desde) ? elemento(db, p.desde!) : null;
         const deUnIssue = desde && desde.fuente !== null && desde.estado === "nuevo" ? desde : null;
         const origenEntrada = deUnIssue ? origenDe(db, deUnIssue).origen : "formulario";
-        const tarea = await crearTareaEn(p.linea, { titulo: p.titulo, pedido, dependeDe: p.dependeDe, origenEntrada, modeloSpec: p.modeloSpec, modeloConstruccion: p.modeloConstruccion }, "la aplicación de compañía, desde el formulario");
+        const tarea = await crearTareaEn(p.linea, { titulo: p.titulo, pedido, dependeDe: p.dependeDe, origenEntrada, modeloSpec: p.modeloSpec, modeloConstruccion: p.modeloConstruccion }, "la aplicación, desde el formulario");
         if (deUnIssue) marcarPasado(db, deUnIssue.id, { tarea: tarea.id, linea: tarea.linea });
         return { hecho: true, nota: `Quedó en la cola de ${tarea.linea} como ${tarea.id}.`, tarea };
       }

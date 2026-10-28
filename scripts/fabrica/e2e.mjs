@@ -132,7 +132,8 @@ function sesion(nombre, llamadas) {
   ].join("\n");
   const env = Object.fromEntries(Object.entries(process.env).filter(([k]) => !/^(ANTHROPIC_|COMPANIA_|FABRICA_)/.test(k)));
   Object.assign(env, { CLAUDE_CODE_PLUGIN_DIRS: "", E2E_REGISTRO: REGISTRO, FABRICA_MEMORIA_PLANTA: barras(PLANTA) });
-  const settings = JSON.stringify({ env: { CLAUDE_CODE_PLUGIN_DIRS: "", CLAUDE_CODE_ENABLE_FUNCTION_HOOKS: "1" } });
+  // Sin otra copia del plugin: ni la de CLAUDE_CODE_PLUGIN_DIRS ni la instalada desde el marketplace.
+  const settings = JSON.stringify({ env: { CLAUDE_CODE_PLUGIN_DIRS: "", CLAUDE_CODE_ENABLE_FUNCTION_HOOKS: "1" }, enabledPlugins: { "fabrica@factoria": false } });
   const args = ["-p", prompt, "--model", "haiku", "--output-format", "text", "--plugin-dir", PLUGIN, "--settings", settings, "--allowedTools", "ToolSearch", ...HERRAMIENTAS, "Edit", "Read"];
   const [programa, argumentos] = process.platform === "win32" && /\.(cmd|bat)$/i.test(bin) ? ["cmd.exe", ["/d", "/s", "/c", bin, ...args]] : [bin, args];
   process.stdout.write(`\n· ${nombre}… `);

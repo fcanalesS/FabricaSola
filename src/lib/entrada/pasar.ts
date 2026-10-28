@@ -52,13 +52,13 @@ export async function pasarALinea(db: DatabaseSync, id: number, datos: { linea: 
   let creada: { linea: string; id: string; titulo: string };
   // Sin fuente y suyo: un borrador del formulario. Sin fuente y no suyo: lo dejó un proceso, y se revisa.
   if (e.fuente === null && e.esSuyo) {
-    creada = await crearTareaEn(datos.linea, { titulo, pedido: e.texto, dependeDe: datos.dependeDe, origenEntrada: "formulario" }, "la aplicación de compañía, desde el formulario");
+    creada = await crearTareaEn(datos.linea, { titulo, pedido: e.texto, dependeDe: datos.dependeDe, origenEntrada: "formulario" }, "la aplicación, desde el formulario");
   } else {
     if (!e.esSuyo) await revisarTextoAjeno(`${e.titulo}\n${e.texto}`);
     const { pie, origen } = origenDe(db, e);
     const pedido = `${citar(bajarTitulos(e.texto) || e.titulo)}\n\n${pie}`;
     const tituloAjeno = !e.esSuyo && sinEspacios(titulo) === sinEspacios(e.titulo);
-    creada = await crearTareaEn(datos.linea, { titulo, pedido, dependeDe: datos.dependeDe, origenEntrada: origen, tituloAjeno }, "la aplicación de compañía, desde la Bandeja");
+    creada = await crearTareaEn(datos.linea, { titulo, pedido, dependeDe: datos.dependeDe, origenEntrada: origen, tituloAjeno }, "la aplicación, desde la Bandeja");
   }
   marcarPasado(db, id, { tarea: creada.id, linea: creada.linea });
   return creada;
@@ -79,7 +79,7 @@ export async function crearTareaDelCambio(db: DatabaseSync, id: number) {
   const base = e.esSuyo ? e.titulo : e.tarea;
   const titulo = `${base} (cambio)`.length > TITULO_MAX ? `${base.slice(0, TITULO_MAX - 10).trim()} (cambio)` : `${base} (cambio)`;
   const pedido = `Lo que se agregó al issue después de que pasó a ${e.tarea}:\n\n${citar(bajarTitulos(agregado))}\n\n${pie}`;
-  const creada = await crearTareaEn(e.lineaTarea, { titulo, pedido, dependeDe: [e.tarea], origenEntrada: origen }, "la aplicación de compañía, desde la Bandeja");
+  const creada = await crearTareaEn(e.lineaTarea, { titulo, pedido, dependeDe: [e.tarea], origenEntrada: origen }, "la aplicación, desde la Bandeja");
   // Queda visto: el texto de ahora es el de referencia para el próximo cambio.
   db.prepare("update bandeja set estado = 'pasado', texto_pasado = texto where id = ?").run(id);
   return creada;

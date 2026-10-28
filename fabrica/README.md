@@ -84,8 +84,8 @@ PostgreSQL y no propone otra base de datos.
 
 Archivos Markdown, sin base de datos ni índice: se leen con `grep` y con cualquier IA. Hay uno por
 proyecto, en su repositorio (`factory/memoria/`, versionado con el código), y uno de la planta, que
-vale en todos los proyectos y vive en este equipo (`comun/fabrica/memoria/` de la aplicación de
-compañía, que lo pasa a cada corrida como `FABRICA_MEMORIA_PLANTA`). Si los dos dicen algo distinto,
+vale en todos los proyectos y vive en este equipo (`datos/memoria/` de la aplicación, que lo pasa a
+cada corrida como `FABRICA_MEMORIA_PLANTA`). Si los dos dicen algo distinto,
 manda el del proyecto.
 
 ```
@@ -112,7 +112,7 @@ grep -rl "^estado: propuesta" factory/memoria/propuestas/          # lo que espe
 
 ### Quién escribe qué
 
-- **La aplicación de compañía lo crea** (Configuración, o al crear la `factory/`), con lo que dicen
+- **La aplicación lo crea** (Configuración, o al crear la `factory/`), con lo que dicen
   los manifiestos del proyecto (base de datos con su driver, framework, versiones) **como
   propuestas**: la ficha nace vacía.
 - **Solo una persona escribe reglas.** En la pantalla Memoria de la aplicación (`/fabrica/memoria`)
@@ -153,7 +153,7 @@ Si el proyecto tiene `factory/memoria/`, la fábrica no trabaja sin consultarla:
 `factory/habilidades.md` dice qué habilidad de Claude Code (`SKILL.md`, del proyecto en
 `.claude/skills/` o de la persona) usa cada etapa, y cuándo: `- [construccion] wolff-db: antes de
 escribir SQL contra wolff.`. Sin una línea ahí, la fábrica no usa una habilidad aunque exista. Lo
-crea la aplicación de compañía con la memoria y lo escribe una persona.
+crea la aplicación con la memoria y lo escribe una persona.
 
 - Las corridas que lanza la aplicación le dan a cada etapa con habilidades un agente con ellas ya
   cargadas (`skills:` en `--agents`), con el nombre `fabrica-hab-<rol>`: una copia del agente que
@@ -183,7 +183,7 @@ crea la aplicación de compañía con la memoria y lo escribe una persona.
   `etapas` y `cuando` en el frontmatter y los archivos en `## Archivos`. No la crea si su nombre ya
   es una habilidad del proyecto o ya se propuso, ni si le falta el `SKILL.md`, su `description` o
   una etapa válida, ni si copia el texto del issue de donde vino el pedido.
-- **Pantalla.** En la aplicación de compañía, la pantalla Memoria tiene la pestaña Habilidades:
+- **Pantalla.** En la aplicación, la pantalla Memoria tiene la pestaña Habilidades:
   lo que usa cada etapa, las que existen y no se usan (para asignarlas a una etapa), en cuántas
   tareas de la bitácora estuvo cada una, y el catálogo para escribirlo a mano. Una propuesta de
   habilidad se ve con sus archivos enteros; si trae scripts (lo que no es `.md` ni `.txt`), no se
@@ -193,7 +193,7 @@ crea la aplicación de compañía con la memoria y lo escribe una persona.
 ## Los procesos de la línea
 
 `factory/procesos/<id>.md` dice cómo se publica lo que la fábrica termina, paso a paso. Los corre
-el código de la aplicación de compañía, con un clic de la persona (o solo al integrar, si lo
+el código de la aplicación, con un clic de la persona (o solo al integrar, si lo
 encendió), no un modelo. Corren los `comando`, los `salud`, el `push` con su PR, el `ci`, el
 `aprobacion` (que espera el clic de la persona), el `vulnerabilidades` y el `evaluacion`; un `tarea` suelto todavía
 no: al llegar a uno, el proceso se detiene ahí. La fábrica sigue sin empujar a `main`.
@@ -224,7 +224,7 @@ borrador: si                 # mientras esté, no corre
 - Un `comando` declara siempre cómo se deshace; `deshacer: —` dice que no cambia nada de afuera, y
   con un paso así producción nunca sale sola. Corre sin shell: nada de `|`, `&&`, `;`, `>` ni `$`
   (eso va en un script del repositorio). El código pone `{commit}`, `{anterior}` y `{rama}`.
-- La aplicación de compañía los muestra en Configuración, con lo que no cumple y su línea, y crea
+- La aplicación los muestra en Configuración, con lo que no cumple y su línea, y crea
   `publicar.md` desde una plantilla, como borrador.
 - **Correrlos.** «Correrlo ahora», en Configuración. Antes de empezar se revisa todo, y si algo
   falta no corre nada: que no haya otra ejecución ni una corrida en esa línea, que la raíz no tenga
@@ -333,14 +333,14 @@ borrador: si                 # mientras esté, no corre
   aplicación, y solo a ese paso. Todo lo que se guarda va con las claves tapadas.
 - **Registro.** Una línea por vez que corrió en `factory/procesos/registro/AAAA-MM.md`, en el
   repositorio: fecha, proceso, commit entero, cómo terminó y dónde falló. Nada de lo que dijeron
-  los comandos: eso va entero a `comun/fabrica/procesos/<linea>/<id>.log`, fuera del repositorio.
+  los comandos: eso va entero a `datos/procesos/<linea>/<id>.log`, fuera del repositorio.
 - **Guardia.** Ningún subagente escribe en `factory/procesos/` (el mod lo frena con Edit y Write);
   el hilo principal sí.
 
 ## config.md
 
 El frontmatter de `factory/config.md` es plano, una clave por línea. La configuración de la
-aplicación de compañía lo edita sin tocar el resto: comandos, rama base, reglas (quién aprueba,
+aplicación lo edita sin tocar el resto: comandos, rama base, reglas (quién aprueba,
 integración, vueltas, UI, Jev, lint por archivos, `sql`, worktrees), agentes, paralelo, modelos y
 las notas para los agentes. A mano sigue valiendo. Las que más importan:
 
@@ -403,7 +403,7 @@ rama_base: main                   # respaldo para las tareas que no tienen rama 
 ## Ramas e integración
 
 - **Rama de origen.** Al entrar a construcción, el worktree sale de la rama de trabajo
-  (`rama_trabajo` de config, que se elige desde la aplicación de compañía) o, sin ella, de la que
+  (`rama_trabajo` de config, que se elige desde la aplicación) o, sin ella, de la que
   está activa en la raíz en ese momento (`rama_origen` en la tarea), con lo que ya se integró antes.
   No se pisa en el retrabajo. `rama_base` queda solo para las tareas de antes que no la tienen. Si
   la raíz está en «detached HEAD», la tarea espera a un humano.
@@ -592,27 +592,43 @@ veredicto, cómo encolar tareas y cómo recibir cada evento por HTTP.
 
 ## Instalar
 
-Desde una terminal de Claude Code:
+**Con la aplicación no hace falta instalarlo.** Las corridas que lanza la aplicación de este
+repositorio (`npm run dev`) cargan esta carpeta solas. Instálalo solo si quieres usarlo también
+en tus sesiones de Claude Code: `/fabrica:correr` a mano, `/tablero` y la línea de estado.
 
-```
-/plugin install fabrica --marketplace fcanalesS/Factory-IA
-```
+1. En el bloque `env` de `~/.claude/settings.json`, `"CLAUDE_CODE_ENABLE_FUNCTION_HOOKS": "1"`.
+   El tablero, la línea de estado y las herramientas `mcp__fabrica__*` son hooks de función (un
+   mod): sin eso cargan los comandos y los agentes, pero no el mod, y la cadena no puede mover
+   ninguna tarea.
+2. Agrega el marketplace de este repositorio y el plugin. Desde una terminal:
 
-O desde la shell:
+   ```
+   claude plugin marketplace add <la carpeta de este repositorio, o su dirección en GitHub o GitLab>
+   claude plugin install fabrica@factoria
+   ```
 
-```
-claude plugin install fabrica --marketplace fcanalesS/Factory-IA
-```
+   En la app de escritorio, donde `/plugin` no corre: **+** junto al prompt → Plugins → Add
+   marketplace → Add plugin.
+3. Reinicia Claude Code.
 
-En la app de escritorio, donde `/plugin` no corre: **+** junto al prompt → Plugins → Add
-marketplace con `fcanalesS/Factory-IA` → Add plugin.
+Una corrida de la aplicación apaga la copia instalada (`enabledPlugins` en sus `--settings`):
+corre la de la aplicación, y así no hay dos copias del mismo mod. Para usar una copia de trabajo
+en vez de la instalada, nómbrala en `CLAUDE_CODE_PLUGIN_DIRS`, en ese mismo bloque `env`.
 
-El tablero, la línea de estado y las herramientas `mcp__fabrica__*` son hooks de función (mods):
-hace falta `CLAUDE_CODE_ENABLE_FUNCTION_HOOKS=1` en el bloque `env` de `~/.claude/settings.json`.
-Sin eso cargan los comandos y los agentes, pero no el mod.
+### Sin la aplicación
 
-Para usar una copia de trabajo (por ejemplo este repo clonado) en vez de la instalada, nómbrala en
-`CLAUDE_CODE_PLUGIN_DIRS` en ese mismo bloque `env`.
+El plugin hace la misma cadena con sus agentes de siempre. Lo que solo trae una corrida de la
+aplicación, y sin ella no está:
+
+- el agente de cada etapa con sus habilidades ya cargadas (`fabrica-hab-<rol>`): sin él, la etapa
+  usa su agente de siempre y el catálogo `factory/habilidades.md` no se aplica;
+- Label (`fabrica-anuncio`), el retrabajo (`fabrica-retrabajo`) y el agente de salida: sin ellos
+  no se escribe lo que se lee de cada tarea aprobada, y el retrabajo lo hace el constructor;
+- el vault de la planta (`FABRICA_MEMORIA_PLANTA`): la memoria de cada proyecto
+  (`factory/memoria/`) sí se lee;
+- Codex y Antigravity (`FABRICA_CODEX_BIN`, `FABRICA_ANTIGRAVITY_BIN`): sus etapas las hace Claude.
+
+Jev funciona igual si `TYPESAFE_AI_KEY` está en el entorno de Claude Code.
 
 ## Desarrollo
 

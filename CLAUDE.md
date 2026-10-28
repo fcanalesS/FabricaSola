@@ -24,6 +24,9 @@ que llevarlo al otro.
   origen, donde va solo por su ruta exacta: `gh`, `glab`, Codex y Antigravity siguen por la suya.
   Las pruebas no miran el PATH de quien las corre (`fijarClaudeEnElPath(null)`, en
   `src/pruebas/entorno.ts`).
+- **El plugin se instala desde este repositorio** (`.claude-plugin/marketplace.json`, `fabrica@factoria`),
+  y una corrida apaga esa copia (`PLUGIN_INSTALADO`, en `corridas.ts`): corre la de `fabrica/`.
+  Si cambia el nombre del marketplace, cambia también ahí y en `scripts/fabrica/`.
 - **`.env.local` no se lee ni se copia.** Si hace falta saber qué hay, se pregunta por el nombre
   de la variable.
 - **`datos/` no entra al repositorio.** Es lo de cada equipo.

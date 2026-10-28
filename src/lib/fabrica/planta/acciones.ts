@@ -3,11 +3,12 @@ import { corridaActual } from "../motor/corridas.ts";
 import { historialDeLaTarea, type HistorialDeTarea } from "../motor/informes.ts";
 import { lineaPorId, mismaRaiz, type Linea } from "../motor/lineas.ts";
 import { esModeloDeRol, type ModeloDeRol } from "../modelos.ts";
-import { cambiosDeLaTarea, descartarTarea, escribirRespuesta, escribirVeredicto, fijarModeloDeConstruccionDeTarea, fijarModeloDeRol, fijarModeloDeSpecDeTarea, leerAjustes, marcarDebioEsperar, lineasDeLaFabrica, seccionesDeLaTarea, type CambiosDeTarea, type SeccionesDeTarea } from "../motor/proyecto.ts";
+import { cambiosDeLaTarea, descartarTarea, elegirProyecto, escribirRespuesta, escribirVeredicto, fijarModeloDeConstruccionDeTarea, fijarModeloDeRol, fijarModeloDeSpecDeTarea, leerAjustes, marcarDebioEsperar, lineasDeLaFabrica, seccionesDeLaTarea, type CambiosDeTarea, type SeccionesDeTarea } from "../motor/proyecto.ts";
 
 /**
- * Lo que él hace con una tarea desde la pantalla de una línea: contestarle, aprobarla, rechazarla o
- * descartarla. Cada acción lleva su línea, y una línea que no existe es un error, nunca otra.
+ * Lo que se hace desde la pantalla de una línea: correr su cola o detener su corrida, y con una
+ * tarea, contestarle, aprobarla, rechazarla o descartarla. Cada acción lleva su línea, y una línea
+ * que no existe es un error, nunca otra. Correr una línea la deja como la activa: corre una a la vez.
  *
  * En la línea activa, la acción va por el mismo camino que la columna de ella (`hacerEnLaFabrica`):
  * después del veredicto, la fábrica sigue sola con esa tarea. En otra línea, la acción queda
@@ -26,7 +27,11 @@ export type AccionDeLinea =
   /** Con qué modelo se construye esa tarea; `null`, el de la línea. */
   | { accion: "modelo_construccion"; linea: string; tarea: string; modelo: ModeloDeRol | null }
   /** «Debió esperarme»: Jev la dejó entrar sola y tenía que esperarlo. `false` lo quita. */
-  | { accion: "debio_esperar"; linea: string; tarea: string; marcar: boolean };
+  | { accion: "debio_esperar"; linea: string; tarea: string; marcar: boolean }
+  /** Correr la cola de la línea; con `tareas`, solo esas. */
+  | { accion: "correr"; linea: string; tareas: string[] }
+  /** Detener la corrida que trabaja en la línea. */
+  | { accion: "detener"; linea: string };
 
 const ID_DE_TAREA = /^F-\d{1,6}$/;
 const ID_DE_LINEA = /^[a-z0-9][a-z0-9-]{0,39}$/;
@@ -34,6 +39,13 @@ const ID_DE_LINEA = /^[a-z0-9][a-z0-9-]{0,39}$/;
 /** Lo que llegó del navegador, revisado. Lo que no tenga la forma, `null`. Es lógica pura. */
 export function accionDeLinea(dato: unknown): AccionDeLinea | null {
   const d = (dato && typeof dato === "object" ? dato : {}) as Record<string, unknown>;
+  if (typeof d.linea === "string" && ID_DE_LINEA.test(d.linea)) {
+    if (d.accion === "detener") return { accion: "detener", linea: d.linea };
+    if (d.accion === "correr") {
+      if (d.tareas === undefined) return { accion: "correr", linea: d.linea, tareas: [] };
+      return Array.isArray(d.tareas) && d.tareas.length <= 50 && d.tareas.every((t) => typeof t === "string" && ID_DE_TAREA.test(t)) ? { accion: "correr", linea: d.linea, tareas: d.tareas as string[] } : null;
+    }
+  }
   if (typeof d.linea !== "string" || !ID_DE_LINEA.test(d.linea) || typeof d.tarea !== "string" || !ID_DE_TAREA.test(d.tarea)) return null;
   const escrito = (v: unknown) => (typeof v === "string" && v.trim() && v.length <= 4000 ? v.trim() : null);
   const base = { linea: d.linea, tarea: d.tarea };
@@ -71,9 +83,40 @@ async function laLinea(id: string): Promise<Linea | { motivo: string }> {
   }
 }
 
+/**
+ * Correr la cola de una línea o detener su corrida. Corre una corrida a la vez en toda la planta:
+ * con otra en marcha, se dice en cuál. Correr una línea que no es la activa la deja como activa.
+ */
+async function correrODetener(a: Extract<AccionDeLinea, { accion: "correr" | "detener" }>, linea: Linea, contexto: { origen?: string | null }): Promise<HechoEnLaLinea> {
+  const c = await corridaActual();
+  const enMarcha = c?.estado === "corriendo";
+  const aqui = enMarcha && mismaRaiz(c.proyecto, linea.raiz);
+  if (a.accion === "detener") {
+    if (!aqui) return { hecho: false, motivo: `No hay ninguna corrida trabajando en ${linea.nombre}.` };
+    const r = await hacerEnLaFabrica({ accion: "detener" }, contexto);
+    return r.hecho ? { hecho: true, nota: "La corrida se detuvo. Lo que estaba a medias queda para retomarse." } : r;
+  }
+  if (enMarcha) {
+    const otra = (await lineasDeLaFabrica()).find((l) => mismaRaiz(l.raiz, c.proyecto));
+    return { hecho: false, motivo: aqui ? `Ya hay una corrida en ${linea.nombre}.` : `Hay una corrida en ${otra?.nombre ?? "otra línea"}: espera a que termine o detenla.` };
+  }
+  if ((await leerAjustes()).lineaActiva !== linea.id) {
+    try {
+      await elegirProyecto(linea.raiz);
+    } catch (e) {
+      return { hecho: false, motivo: e instanceof Error ? e.message : String(e) };
+    }
+  }
+  const r = await hacerEnLaFabrica({ accion: "correr", tareas: a.tareas }, contexto);
+  if (!r.hecho) return r;
+  return { hecho: true, nota: r.nota ?? (a.tareas.length ? `La fábrica empezó con ${a.tareas.join(", ")}.` : `La fábrica empezó a correr la cola de ${linea.nombre}.`) };
+}
+
 export async function hacerEnLaLinea(a: AccionDeLinea, contexto: { origen?: string | null } = {}): Promise<HechoEnLaLinea> {
   const linea = await laLinea(a.linea);
   if ("motivo" in linea) return { hecho: false, motivo: linea.motivo, desconocida: true };
+
+  if (a.accion === "correr" || a.accion === "detener") return correrODetener(a, linea, contexto);
 
   // Elegir el modelo de la spec o de la construcción no sigue con nada: queda escrito en la tarea, sea o no la activa.
   if (a.accion === "modelo_spec" || a.accion === "modelo_construccion") return elegirModeloDeTarea(a.accion, linea, a.tarea, a.modelo);

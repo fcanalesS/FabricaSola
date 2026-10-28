@@ -62,7 +62,7 @@ test("en una línea que no es la activa, contestar, aprobar, rechazar y descarta
   assert.equal(respuesta.estado, 200);
   assert.match(respuesta.nota ?? "", /sigue cuando corra/);
   const escrita = JSON.parse(readFileSync(path.join(a.raiz, "factory", "respuestas", "F-001.json"), "utf8")) as { texto: string; por: string };
-  assert.deepEqual([escrita.texto, escrita.por], ["Con punto y coma.", "persona, desde la aplicación de compañía"]);
+  assert.deepEqual([escrita.texto, escrita.por], ["Con punto y coma.", "persona, desde la aplicación"]);
 
   const aprobada = await hacer({ accion: "aprobar", linea: a.id, tarea: "F-002" });
   assert.equal(aprobada.estado, 200);
@@ -364,5 +364,44 @@ test("leer una tarea trae lo que escribió Label: el texto del PR y lo que se pr
   const s = r.detalle?.secciones as unknown as { probarAMano: string; paraElPR: string };
   assert.match(s.probarAMano, /El total tiene que ser 950/);
   assert.equal(s.paraElPR, "");
+  assert.ok(nadaSalio());
+});
+
+test("correr la cola de una línea la deja como la activa y le pide la corrida al motor; detener sin corrida lo dice", async () => {
+  const { leerAjustes } = await import("../../../../lib/fabrica/motor/proyecto.ts");
+  const a = await linea("cola");
+  const b = await linea("activa");
+  assert.equal((await leerAjustes()).lineaActiva, b.id);
+  red.fabrica = ({ ruta }) => (ruta === "/api/ajustes" ? { estado: 200, datos: { corridaConNikke: false } } : ruta === "/api/corridas" ? { estado: 200, datos: {} } : null);
+
+  const r = await hacer({ accion: "correr", linea: a.id });
+  assert.equal(r.estado, 200);
+  assert.match(r.nota ?? "", /empezó a correr la cola de cola-/);
+  assert.equal((await leerAjustes()).lineaActiva, a.id);
+  assert.deepEqual(red.aLaFabrica.find((p) => p.ruta === "/api/corridas")?.cuerpo, { accion: "iniciar" });
+
+  // Solo esas tareas.
+  red.aLaFabrica.length = 0;
+  assert.equal((await hacer({ accion: "correr", linea: b.id, tareas: ["F-003"] })).estado, 200);
+  assert.deepEqual(red.aLaFabrica.find((p) => p.ruta === "/api/corridas")?.cuerpo, { accion: "iniciar", tareas: ["F-003"] });
+  assert.equal((await leerAjustes()).lineaActiva, b.id);
+
+  // Lo que el motor no lanza vuelve con su motivo.
+  red.fabrica = ({ ruta }) => (ruta === "/api/ajustes" ? { estado: 200, datos: { corridaConNikke: false } } : ruta === "/api/corridas" ? { estado: 409, datos: { error: "No encontré Claude Code." } } : null);
+  const no = await hacer({ accion: "correr", linea: a.id });
+  assert.equal(no.estado, 409);
+  assert.match(no.error ?? "", /No encontré Claude Code/);
+
+  // Detener sin una corrida en esa línea no le pide nada al motor.
+  red.aLaFabrica.length = 0;
+  const detener = await hacer({ accion: "detener", linea: a.id });
+  assert.equal(detener.estado, 409);
+  assert.match(detener.error ?? "", /No hay ninguna corrida trabajando en cola-/);
+  assert.equal(red.aLaFabrica.length, 0);
+
+  // Una tarea con otra forma, o una línea que no existe, no corren nada.
+  assert.equal((await hacer({ accion: "correr", linea: a.id, tareas: ["../x"] })).estado, 400);
+  assert.equal((await hacer({ accion: "correr", linea: "no-existe" })).estado, 400);
+  assert.equal(red.aLaFabrica.length, 0);
   assert.ok(nadaSalio());
 });

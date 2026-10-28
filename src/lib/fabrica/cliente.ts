@@ -585,7 +585,7 @@ export async function hacerConSesion(a: AccionDeSesion): Promise<{ hecho: true }
 }
 
 /** Quién firma lo que sale de aquí: lo decidió una persona, desde esta aplicación. */
-export const FIRMA = "persona, desde la aplicación de compañía";
+export const FIRMA = "persona, desde la aplicación";
 
 export type Accion =
   /** `seguir`: después, la fábrica sigue con esa tarea como después de un veredicto. Solo lo pide la conversación. */

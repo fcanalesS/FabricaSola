@@ -614,6 +614,13 @@ export function entornoDeLaCorrida(base: Record<string, string | undefined>): No
   return env as NodeJS.ProcessEnv;
 }
 
+/**
+ * El plugin instalado desde el marketplace de este repositorio (`.claude-plugin/marketplace.json`).
+ * Una corrida lo apaga: va con la copia de la aplicación (--plugin-dir), y dos copias del mismo mod
+ * registrarían dos veces cada herramienta.
+ */
+export const PLUGIN_INSTALADO = "fabrica@factoria";
+
 /** La ruta de Claude Code en este equipo (la de la variable, o la del PATH), o `null`: sin ella no hay corridas. */
 export const claudeCode = (entorno: NodeJS.ProcessEnv = process.env) => claudeCodeDeEsteEquipo(entorno)?.ruta ?? null;
 
@@ -692,9 +699,10 @@ export async function iniciarCorrida(opciones: { tareas?: string[]; modelo?: str
   if (destino) for (const k of VARIABLES_CON_CONTENIDO) delete env[k];
   // La variable sola no alcanza: Claude Code aplica el `env` de ~/.claude/settings.json encima del
   // del proceso, y nikke volvería. --settings tiene más prioridad que el settings.json del usuario.
-  // Lo mismo con la telemetría, y con los hooks de función, que el plugin necesita.
+  // Lo mismo con la telemetría, y con los hooks de función, que el plugin necesita. Y la copia
+  // instalada del plugin, si la hay, va apagada: la de la aplicación es la que corre.
   const encima = { CLAUDE_CODE_PLUGIN_DIRS: env.CLAUDE_CODE_PLUGIN_DIRS ?? "", CLAUDE_CODE_ENABLE_FUNCTION_HOOKS: "1", ...telemetria };
-  args.push("--settings", JSON.stringify({ env: encima }));
+  args.push("--settings", JSON.stringify({ env: encima, enabledPlugins: { [PLUGIN_INSTALADO]: false } }));
   const meta: Meta = {
     id,
     proyecto,

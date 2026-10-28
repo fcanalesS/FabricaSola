@@ -808,7 +808,7 @@ export async function inicializarFabrica(): Promise<FabricaCreada> {
   const cuerpo = `
 # Fábrica de este proyecto
 
-Creada desde la aplicación de compañía. ${sinComandos ? "No se reconocieron los comandos de build, test y lint: escríbelos arriba o en la configuración de la aplicación. Sin ellos la verificación no puede correr." : "Los comandos de build, test y lint se detectaron solos: revísalos y pruébalos en la configuración de la aplicación."}
+Creada desde la aplicación. ${sinComandos ? "No se reconocieron los comandos de build, test y lint: escríbelos arriba o en la configuración de la aplicación. Sin ellos la verificación no puede correr." : "Los comandos de build, test y lint se detectaron solos: revísalos y pruébalos en la configuración de la aplicación."}
 
 Notas para los agentes: convenciones, carpetas que no se tocan, skills del proyecto.
 `;
@@ -1112,7 +1112,7 @@ export async function crearTareas(documento: { titulo: string; texto: string }, 
   await fs.writeFile(path.join(dirReq, nombreDoc), documento.texto.trim() + "\n");
   const refDoc = `factory/requerimientos/${nombreDoc}`;
   const conDocumento = planeadas.map((t) => ({ ...t, pedido: `${t.pedido.trim()}\n\n_Documento de requerimientos: \`${refDoc}\`_` }));
-  const creadas = await escribirTareas(r, conDocumento, ts, "la aplicación de compañía");
+  const creadas = await escribirTareas(r, conDocumento, ts, "la aplicación");
   return { documento: refDoc, creadas };
 }
 
@@ -1175,7 +1175,7 @@ export const TITULO_MAX = 80;
 export async function crearTareaEn(
   linea: string,
   tarea: { titulo: string; pedido: string; dependeDe?: readonly string[]; origenEntrada?: string; tituloAjeno?: boolean; modeloSpec?: ModeloDeRol; modeloConstruccion?: ModeloDeRol },
-  origen = "la aplicación de compañía",
+  origen = "la aplicación",
 ) {
   // Una sola línea: el título va al frontmatter, al nombre del archivo y a la rama.
   const titulo = tarea.titulo.replace(/\s+/g, " ").trim();
@@ -1216,6 +1216,6 @@ export async function crearTareaDeDeuda(hallazgo: string) {
   if (h.convertidoEn) throw new Error(`Ese hallazgo ya es la tarea ${h.convertidoEn}.`);
   const { titulo, pedido } = pedidoDeDeuda(h);
   const planeadas = await planearTareas(i.raiz, [{ titulo, pedido, dependeDe: [] }]);
-  const [creada] = await escribirTareas(i.raiz, planeadas.map((t) => ({ ...t, origenHallazgo: h.id })), new Date().toISOString(), "la aplicación de compañía, desde la deuda");
+  const [creada] = await escribirTareas(i.raiz, planeadas.map((t) => ({ ...t, origenHallazgo: h.id })), new Date().toISOString(), "la aplicación, desde la deuda");
   return { id: creada!.id, titulo, hallazgo: h.id };
 }

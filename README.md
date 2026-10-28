@@ -6,39 +6,105 @@ revisión, verificación y aprobación, con agentes de Claude Code que corren en
 sesión (tu suscripción), en worktrees aparte. Nada se integra a la rama principal sin que lo
 decidas tú, salvo lo que tú mismo dejes integrarse solo.
 
-> Estado: en construcción. Este repositorio sale de la fábrica de otra aplicación y se está
-> preparando para compartir (ver «Lo que falta», abajo).
-
 ## Lo que necesitas
 
-- Node 22.5 o más nuevo (usa `node:sqlite`).
-- git.
-- Claude Code, con tu sesión iniciada.
+- **Node 22.18 o más nuevo.** Usa `node:sqlite`, y las pruebas cargan TypeScript sin compilar.
+  Con `node --version` lo ves.
+- **git.**
+- **Claude Code, con tu sesión iniciada.** Las corridas usan tu suscripción, no una clave de la
+  API. Si `claude` no te abre una sesión en la terminal, inicia sesión con `claude auth login`.
 
-Ninguna variable de entorno hace falta para empezar. Las que suman algo están en `.env.example`,
-con lo que permite cada una.
+Ninguna variable de entorno hace falta para empezar.
 
-## Levantarla
+## Instalarla
 
 ```bash
+git clone <la dirección de este repositorio> fabrica
+cd fabrica
 npm install
-npm run dev     # http://127.0.0.1:3000
-npm test        # las pruebas, con el corredor de Node: sin red y sin claves de verdad
-npm run test:vacio   # las mismas, como en un equipo sin ninguna variable (tampoco Jev)
+npm run dev
 ```
 
-Las corridas usan el `claude` del PATH de la terminal desde donde levantas la aplicación. Si
-quieres otro, o no está en el PATH, pon su ruta en `COMPANIA_CLAUDE_CODE_BIN`, en `.env.local`.
-**Este equipo** (en el menú) dice qué encontró, si tu sesión de Claude Code está iniciada, y qué
-más puede usar la fábrica: `gh` y `glab`, Jev, los tokens de las fuentes, el teléfono, Codex y
-Antigravity, con qué agregar si falta.
+Abre <http://127.0.0.1:3000>. La aplicación escucha solo en este equipo: nadie más en tu red la ve.
+
+Levántala desde una terminal donde `claude` funcione. La fábrica usa ese Claude Code, el del PATH.
+Si quieres otro, pon su ruta en `COMPANIA_CLAUDE_CODE_BIN`, en un archivo `.env.local` en esta
+carpeta (copia `.env.example`), y reinicia.
+
+## Los primeros pasos
+
+1. **Este equipo** (en el menú): mira que Claude Code, tu sesión y git digan «Lista». Lo demás es
+   opcional, y ahí dice qué agrega cada cosa y cómo ponerla.
+2. **Configuración:** escribe la carpeta de un repositorio tuyo (o **Buscar la carpeta**), **Usar
+   este proyecto** y después **Crear factory/ básica**. La fábrica reconoce los comandos de build,
+   test y lint del proyecto: revísalos y pruébalos ahí mismo. Sin ninguno, cada tarea termina
+   esperándote.
+3. **Nueva petición:** escribe lo que quieres, en palabras, y **Crear la tarea**.
+4. **Líneas**, en tu proyecto: **Correr la cola**. La tarea avanza por las etapas en la misma
+   pantalla. Si un agente pregunta algo, o la aprobación es tuya, la tarjeta dice «Te espera», y
+   la planta la junta con las demás en «Te esperan».
+
+## Lo que hay que saber antes
+
+- **Gasta de tu suscripción.** Cada tarea pasa por cinco a siete agentes. En Configuración puedes
+  poner un tope por día: al llegar, la corrida se detiene y no se lanza otra.
+- **Nunca hace push por su cuenta.** Cada tarea se integra en tu rama de trabajo, en este equipo.
+  Empujar, abrir un PR o desplegar lo hacen solo los procesos que tú escribas en `factory/procesos/`,
+  y producción espera tu clic.
+- **Corre una línea a la vez.** Correr otra espera a que termine la que está corriendo.
+- **Una tarea ambigua se detiene y pregunta.** Es a propósito: contesta en su tarjeta y sigue.
+- **Lo de este equipo queda en `datos/`** (tus líneas, las corridas, los registros), fuera del
+  repositorio. Las tareas y la memoria de cada proyecto quedan en su `factory/`, en su repositorio.
+
+## Lo que se agrega después
+
+Todo es opcional, y **Este equipo** dice qué falta y qué permite. Van en `.env.local`;
+`.env.example` las explica una por una. Después de cambiarlo, reinicia la aplicación.
+
+| Qué | Para qué |
+| --- | --- |
+| `gh` o `glab` (`COMPANIA_GH_BIN`, `COMPANIA_GLAB_BIN`) | Que un proceso abra el PR, espere la integración continua y fusione |
+| Jev (`TYPESAFE_AI_KEY`) | Gastar menos: decide qué pruebas y revisores necesita cada tarea, y revisa los issues de otras personas |
+| Un token por fuente (`COMPANIA_FUENTE_<NOMBRE>_TOKEN`) | Traer issues de GitHub o GitLab a la Bandeja, en solo lectura |
+| Telnyx (`COMPANIA_TELNYX_…`, `COMPANIA_TELEFONO`) | Que la fábrica te llame cuando una tarea te espera |
+| Codex o Antigravity (`COMPANIA_CODEX_BIN`, `COMPANIA_ANTIGRAVITY_BIN`) | Que revisen el código o escriban la spec con su propia suscripción |
+
+Las variables se llaman `COMPANIA_…` porque el código viene de otra aplicación y sigue igual en
+las dos.
+
+## Si algo falla
+
+- **Este equipo** dice si falta algo.
+- Una página que falla muestra un código: búscalo en la terminal donde corre la aplicación.
+- Un proceso dice antes de correr qué pasos no van a poder en este equipo.
+
+## El plugin
+
+Las corridas usan el plugin de Claude Code que está en `fabrica/`, y lo cargan solas. Si quieres
+usarlo también en tus sesiones de Claude Code (`/fabrica:correr` a mano, el tablero), se instala
+desde este repositorio: ver «Instalar» en [fabrica/README.md](fabrica/README.md).
+
+## Para desarrollar
+
+```bash
+npm test             # las pruebas, con el corredor de Node: sin red y sin claves de verdad
+npm run test:vacio   # las mismas, como en un equipo sin ninguna variable (tampoco Jev)
+npx tsc --noEmit     # la primera vez, después de npm run dev (o npx next typegen): usa los tipos de las rutas
+npm run lint
+```
+
+`npm install` puede avisar que `unrs-resolver` trae un script de instalación sin aprobar: es del
+lint, y la aplicación y las pruebas corren igual sin él.
+
+`npm run fabrica:e2e` y `npm run fabrica:corrida-real` corren la fábrica de punta a punta con
+sesiones de verdad de Claude Code en un repositorio desechable: gastan.
 
 ## Qué hay
 
 | Dónde | Qué es |
 | --- | --- |
-| `src/app/fabrica/` | Las pantallas: la planta, las líneas, las tareas, la Bandeja, la nueva petición, las fuentes y la memoria |
-| `src/app/configuracion/` | La configuración: las líneas, los agentes y sus modelos, el gasto, las tareas y los avisos |
+| `src/app/fabrica/` | Las pantallas: la planta, las líneas, las tareas, la Bandeja, la nueva petición, las fuentes, la memoria y este equipo |
+| `src/app/configuracion/` | La configuración: las líneas, los agentes y sus modelos, el gasto, los procesos y los avisos |
 | `src/app/api/fabrica/` | Las rutas que usan esas pantallas |
 | `src/lib/fabrica/motor/` | El motor: lee el `factory/` de cada línea, lanza las corridas con Claude Code y lleva el vigía |
 | `src/lib/fabrica/procesos/` | Los procesos: comandos, salud, push con su PR, integración continua, fusión, producción, el vigía de vulnerabilidades y la evaluación |
@@ -49,14 +115,8 @@ Antigravity, con qué agregar si falta.
 | `src/lib/datos.ts` | La carpeta `datos/` de este equipo y su base SQLite |
 | `src/proxy.ts` y `src/lib/servidor/` | El guardia de quién puede llamar a las rutas |
 | `src/pruebas/` | Las pruebas de las rutas: una carpeta aparte, claves de mentira y una red de mentira que anota qué le llegó a quién |
-| `fabrica/` | El plugin de Claude Code que usan las corridas: sus agentes, sus comandos y el mod que cuida cada paso. Ver `fabrica/README.md` |
+| `fabrica/` | El plugin de Claude Code que usan las corridas: sus agentes, sus comandos y el mod que cuida cada paso |
 | `datos/` | Lo de este equipo: ajustes, corridas, registros de los procesos y el vault de la planta. No entra al repositorio |
 
-## Lo que falta
-
-1. **El plugin solo,** instalable desde el repositorio.
-2. **Instalarla:** este README para quien la reciba, y una prueba de punta a punta en un equipo sin
-   ninguna variable.
-
 Los documentos de `fabrica/docs/` son los planes con que se construyó la fábrica en la aplicación
-de origen: cuentan por qué es como es.
+de origen: cuentan por qué es como es, y todavía hablan de ella.

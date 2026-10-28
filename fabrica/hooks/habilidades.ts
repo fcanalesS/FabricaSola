@@ -1,6 +1,6 @@
 /**
  * Las habilidades de la línea, para el plugin: el catálogo `factory/habilidades.md` (lo crea la
- * aplicación de compañía y lo escribe una persona) dice qué habilidad de Claude Code usa cada etapa
+ * aplicación y lo escribe una persona) dice qué habilidad de Claude Code usa cada etapa
  * y cuándo. Las corridas que lanza la aplicación le dan a cada etapa un agente con esas habilidades
  * ya cargadas (`skills:`), con un nombre fijo (`fabrica-hab-<rol>`), que el orquestador prueba
  * primero. En una corrida lanzada a mano ese agente no existe y la etapa usa el de siempre. Un

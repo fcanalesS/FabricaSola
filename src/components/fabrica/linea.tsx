@@ -95,6 +95,14 @@ export function LineaVista({ inicial, linea: id, tareaInicial }: { inicial: Plan
       <div className="flex flex-wrap items-center gap-3">
         <EstadoDeLaLinea estado={l.estado} />
         <AlDia segundos={segundos} sinRespuesta={sinRespuesta} />
+        <CorrerLaLinea
+          linea={l.id}
+          corriendo={l.estado === "corriendo"}
+          otra={planta.lineas.find((o) => o.id !== l.id && o.estado === "corriendo")?.nombre ?? null}
+          sinComandos={!!c && !c.build && !c.test && !c.lint}
+          abiertas={n?.abiertas ?? 0}
+          alHacer={leer}
+        />
       </div>
       {l.error && <p className={`rounded-[22px] bg-ficha p-4 text-sm ${l.estado === "error" ? "text-peligro" : ""}`}>{l.error}</p>}
 
@@ -318,6 +326,44 @@ function FichaDelModelo({ rol, linea, modelo, alCambiar }: { rol: keyof typeof F
         </span>
       )}
     </section>
+  );
+}
+
+/**
+ * Correr la cola de la línea o detener su corrida. Corre una corrida a la vez en toda la planta:
+ * con otra en marcha, dice en cuál. Correrla la deja como la línea activa.
+ */
+function CorrerLaLinea({ linea, corriendo, otra, sinComandos, abiertas, alHacer }: { linea: string; corriendo: boolean; otra: string | null; sinComandos: boolean; abiertas: number; alHacer: () => Promise<void> }) {
+  const [ocupada, setOcupada] = useState(false);
+  const [hecho, setHecho] = useState<Hecho>(null);
+  const hacer = async (accion: "correr" | "detener") => {
+    setOcupada(true);
+    setHecho(null);
+    const r = await enLaLinea({ accion, linea });
+    setHecho({ texto: r.texto, malo: !r.ok });
+    await alHacer();
+    setOcupada(false);
+  };
+  const porQueNo = otra ? `Corre ${otra}: espera a que termine.` : sinComandos ? "Faltan build, test y lint en la configuración." : abiertas === 0 ? "No hay tareas en la cola." : null;
+  return (
+    <div className="flex flex-wrap items-center gap-2 sm:ml-auto sm:justify-end">
+      {hecho ? (
+        <span role={hecho.malo ? "alert" : "status"} className={`text-sm font-bold ${hecho.malo ? "text-peligro" : ""}`}>
+          {hecho.texto}
+        </span>
+      ) : (
+        !corriendo && porQueNo && <span className="text-sm text-tenue">{porQueNo}</span>
+      )}
+      {corriendo ? (
+        <button type="button" disabled={ocupada} onClick={() => void hacer("detener")} className="min-h-11 rounded-full bg-relieve px-4 text-sm font-bold disabled:opacity-45">
+          Detener la corrida
+        </button>
+      ) : (
+        <button type="button" disabled={ocupada || porQueNo !== null} onClick={() => void hacer("correr")} className="min-h-11 rounded-full bg-acento px-4 text-sm font-extrabold text-papel disabled:opacity-45">
+          {ocupada ? "Lanzando…" : "Correr la cola"}
+        </button>
+      )}
+    </div>
   );
 }
 

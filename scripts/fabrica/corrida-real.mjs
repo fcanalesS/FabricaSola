@@ -178,7 +178,8 @@ function argumentos(archivoAgentes) {
   const args = ["-p", "/fabrica:correr F-001 F-002", "--output-format", "stream-json", "--verbose", "--plugin-dir", PLUGIN, "--model", "sonnet", "--agents", archivoAgentes];
   const modo = process.env.COMPANIA_FABRICA_MODO_PERMISOS?.trim();
   if (modo) args.push("--permission-mode", modo);
-  args.push("--settings", JSON.stringify({ env: { CLAUDE_CODE_PLUGIN_DIRS: "", CLAUDE_CODE_ENABLE_FUNCTION_HOOKS: "1" } }));
+  // Sin otra copia del plugin: ni la de CLAUDE_CODE_PLUGIN_DIRS ni la instalada desde el marketplace.
+  args.push("--settings", JSON.stringify({ env: { CLAUDE_CODE_PLUGIN_DIRS: "", CLAUDE_CODE_ENABLE_FUNCTION_HOOKS: "1" }, enabledPlugins: { "fabrica@factoria": false } }));
   return args;
 }
 

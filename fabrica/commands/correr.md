@@ -117,7 +117,7 @@ Resuélvelo una vez al arrancar y di en una línea qué agente quedó en cada ro
 | `aprobacion` | veredicto final |
 
 El primero de cada lista es `fabrica-hab-<rol>`: el agente de esa etapa con sus habilidades
-cargadas, que existe solo cuando la corrida la lanza la aplicación de compañía y la línea tiene
+cargadas, que existe solo cuando la corrida la lanza la aplicación y la línea tiene
 habilidades para esa etapa. Si no está, sigue con el siguiente. **Si está, es ese**: lanzar el de
 siempre teniéndolo, el mod lo frena y te dice cuál usar.
 El último de cada lista es siempre un agente del plugin (`fabrica:…`), así que siempre hay uno.

@@ -1,0 +1,16 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "factoria",
+  "description": "La fábrica de software: tareas en Markdown que pasan por spec, construcción, revisión, verificación y aprobación, con tu sesión de Claude Code.",
+  "owner": {
+    "name": "fcanales"
+  },
+  "plugins": [
+    {
+      "name": "fabrica",
+      "description": "Orquesta la cola de tareas de factory/: spec, construcción, revisión (código, seguridad e interfaz), verificación y aprobación, en paralelo con worktrees. Nunca hace push.",
+      "source": "./fabrica",
+      "category": "development"
+    }
+  ]
+}

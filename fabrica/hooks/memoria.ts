@@ -1,6 +1,6 @@
 /**
  * La memoria del proyecto, para el plugin: el vault de archivos Markdown en factory/memoria/ (lo
- * crea la aplicación de compañía; ver su LEEME.md) y, si la corrida lo trae, el de la planta
+ * crea la aplicación; ver su LEEME.md) y, si la corrida lo trae, el de la planta
  * (FABRICA_MEMORIA_PLANTA). Las dos fichas entran enteras a cada tarea, y si un pedido nombra algo
  * que una ficha prohíbe (una regla `NO:`), se anota la sospecha para el agente de spec. Decide él,
  * no el plugin.

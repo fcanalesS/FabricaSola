@@ -174,8 +174,10 @@ echo '{"type":"result","subtype":"success","is_error":false,"total_cost_usd":0.4
   const argumentos = readFileSync(path.join(fuera, "argumentos.txt"), "utf8").split("\n");
   assert.equal(argumentos[1], "/fabrica:correr F-001");
   assert.equal(argumentos[argumentos.indexOf("--plugin-dir") + 1], path.join(process.cwd(), "fabrica"));
-  const ajustes = JSON.parse(argumentos[argumentos.indexOf("--settings") + 1]) as { env: Record<string, string> };
+  const ajustes = JSON.parse(argumentos[argumentos.indexOf("--settings") + 1]) as { env: Record<string, string>; enabledPlugins: Record<string, boolean> };
   assert.equal(ajustes.env.CLAUDE_CODE_ENABLE_FUNCTION_HOOKS, "1");
+  // La copia instalada desde el marketplace del repositorio va apagada: corre la de la aplicación.
+  assert.deepEqual(ajustes.enabledPlugins, { "fabrica@factoria": false });
   assert.equal(ajustes.env.OTEL_EXPORTER_OTLP_ENDPOINT, "http://127.0.0.1:3211/api/fabrica/telemetria");
   const entorno = readFileSync(path.join(fuera, "entorno.txt"), "utf8");
   assert.doesNotMatch(entorno, /^COMPANIA_|^TYPESAFE_AI_KEY=/m);
