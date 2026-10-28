@@ -22,9 +22,13 @@ tu cuenta de GitHub necesita acceso.
 ```bash
 git clone https://github.com/fcanalesS/FabricaSola.git fabrica
 cd fabrica
-npm install
+npm ci
 npm run dev
 ```
+
+`npm ci` instala exactamente las versiones de `package-lock.json`, el que está en el repositorio:
+todos los equipos corren lo mismo. Para subir una dependencia, `npm install <paquete>@<versión>`,
+y el lock cambiado entra con el commit.
 
 Abre <http://127.0.0.1:3000>. La aplicación escucha solo en este equipo: nadie más en tu red la ve.
 
@@ -94,7 +98,7 @@ npx tsc --noEmit     # la primera vez, después de npm run dev (o npx next typeg
 npm run lint
 ```
 
-`npm install` puede avisar que `unrs-resolver` trae un script de instalación sin aprobar: es del
+`npm ci` puede avisar que `unrs-resolver` trae un script de instalación sin aprobar: es del
 lint, y la aplicación y las pruebas corren igual sin él.
 
 `npm run fabrica:e2e` y `npm run fabrica:corrida-real` corren la fábrica de punta a punta con
