@@ -7,6 +7,7 @@ import { LIMITES } from "@/lib/entrada/peticion";
 import type { ModeloDeRol } from "@/lib/fabrica/modelos";
 import { MODELOS_DE_LA_CONSTRUCCION, MODELOS_DE_LA_SPEC, opcionDeLaLinea } from "../fabrica/piezas";
 import { BOTON, CAMPO, enLaEntrada, ETIQUETA, PRINCIPAL } from "./pedir";
+import { nuevoLote, Referencias } from "./referencias";
 
 /**
  * El formulario de petición: lo que él escribe es el pedido de la tarea, tal
@@ -33,6 +34,7 @@ export function Peticion({ lineas, desde, lineaElegida = null }: { lineas: Linea
   const [destino, setDestino] = useState<"cola" | "bandeja">("cola");
   const [modelo, setModelo] = useState<ModeloDeRol | "linea">("linea");
   const [modeloConstruccion, setModeloConstruccion] = useState<ModeloDeRol | "linea">("linea");
+  const [lote, setLote] = useState(nuevoLote);
   const [errores, setErrores] = useState<Errores>({});
   const [ocupada, setOcupada] = useState(false);
   const [hecho, setHecho] = useState<{ texto: string; malo: boolean } | null>(null);
@@ -52,7 +54,7 @@ export function Peticion({ lineas, desde, lineaElegida = null }: { lineas: Linea
     ev.preventDefault();
     setOcupada(true);
     setHecho(null);
-    const r = await enLaEntrada({ accion: "peticion", linea, titulo, que, criterios, fueraDeAlcance: fuera, archivos, dependeDe: deps, destino, ...(desde && destino === "cola" ? { desde: desde.id } : {}), ...(destino === "cola" && modelo !== "linea" ? { modeloSpec: modelo } : {}), ...(destino === "cola" && modeloConstruccion !== "linea" ? { modeloConstruccion } : {}) });
+    const r = await enLaEntrada({ accion: "peticion", linea, titulo, que, criterios, fueraDeAlcance: fuera, archivos, dependeDe: deps, destino, lote, ...(desde && destino === "cola" ? { desde: desde.id } : {}), ...(destino === "cola" && modelo !== "linea" ? { modeloSpec: modelo } : {}), ...(destino === "cola" && modeloConstruccion !== "linea" ? { modeloConstruccion } : {}) });
     setOcupada(false);
     setErrores((r.errores ?? {}) as Errores);
     if (!r.ok) {
@@ -68,6 +70,8 @@ export function Peticion({ lineas, desde, lineaElegida = null }: { lineas: Linea
     setDeps([]);
     setModelo("linea");
     setModeloConstruccion("linea");
+    // Las referencias pasaron a la tarea (o al borrador): la próxima petición empieza con un lote nuevo.
+    setLote(nuevoLote());
   }
 
   if (!lineas.length)
@@ -122,6 +126,8 @@ export function Peticion({ lineas, desde, lineaElegida = null }: { lineas: Linea
           <span className="font-normal text-tenue">Para quién es y para qué. El cómo lo decide la fábrica, salvo que importe.</span>
           {fallo("que")}
         </label>
+
+        <Referencias key={lote} destino={{ lote }} textoDelPedido={que} />
 
         <fieldset className="flex flex-col gap-2">
           <legend className="mb-1 text-sm font-bold">Criterios de aceptación</legend>

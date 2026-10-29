@@ -26,6 +26,8 @@ export type Peticion = {
   modeloSpec?: ModeloDeRol;
   /** Con qué modelo se construye, si él eligió uno para esta tarea. Sin él, el de la línea, y Jev puede abaratarlo. Solo con destino `cola`. */
   modeloConstruccion?: ModeloDeRol;
+  /** El lote de referencias que se agregó mientras se escribía: pasa a la tarea, o al borrador. */
+  lote?: string;
 };
 
 export type CampoDePeticion = "linea" | "titulo" | "que" | "criterios" | "fueraDeAlcance" | "archivos" | "dependeDe" | "destino" | "modeloSpec" | "modeloConstruccion";
@@ -80,7 +82,8 @@ export function peticionDesde(dato: unknown): { peticion: Peticion } | { errores
 
   if (Object.keys(errores).length) return { errores };
   const desde = destino === "cola" && Number.isInteger(d.desde) && (d.desde as number) > 0 ? (d.desde as number) : undefined;
-  return { peticion: { linea, titulo, que, criterios, fueraDeAlcance, archivos, dependeDe, destino: destino as Peticion["destino"], ...(desde ? { desde } : {}), ...modelos } };
+  const lote = typeof d.lote === "string" && /^[a-f0-9]{32}$/.test(d.lote) ? d.lote : undefined;
+  return { peticion: { linea, titulo, que, criterios, fueraDeAlcance, archivos, dependeDe, destino: destino as Peticion["destino"], ...(desde ? { desde } : {}), ...modelos, ...(lote ? { lote } : {}) } };
 }
 
 /** El pedido de la tarea, con las secciones que leen la spec y los revisores. */

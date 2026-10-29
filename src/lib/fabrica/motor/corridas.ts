@@ -19,12 +19,14 @@ import { promises as fs } from "node:fs";
 import path from "node:path";
 import { cerrarProceso } from "../../servicios/procesos.ts";
 import { vaultDeLaPlanta } from "../memoria/vault.ts";
+import { referenciasDeLaLinea } from "../referencias/almacen.ts";
+import { mismaRaiz } from "./lineas.ts";
 import { SIN_COMANDOS, sinComandos } from "../verificacion.ts";
 import { habilidadesDeLaCorrida } from "../habilidades/disco.ts";
 import { habilidadesConHuella } from "../habilidades/formato.ts";
 import { AGENTE_DE_ANUNCIO, AGENTE_DE_RETRABAJO, agenteDeAnuncio, agenteDeRetrabajo, agenteDesde, agentesConHabilidades, agentesParaInyectar, archivoDelAgenteDeAnuncio, archivoDelAgenteDeRetrabajo, carpetasDePlugins, definicionesDisponibles, textosDeOficios } from "./agentes.ts";
 import { configDesde } from "./formato.ts";
-import { agentesDelProyecto, agentesDeEsteEquipo, anotarPorRetomar, carpetaDeLaFabrica, esModeloDeClaude, esRamaProtegida, instantanea, leerAjustes, liberarTomadasPor, modeloDeLaCorrida, raiz, ramaActual, tomarPorRetomar } from "./proyecto.ts";
+import { agentesDelProyecto, agentesDeEsteEquipo, anotarPorRetomar, carpetaDeLaFabrica, esModeloDeClaude, esRamaProtegida, instantanea, leerAjustes, liberarTomadasPor, lineasDeLaFabrica, modeloDeLaCorrida, raiz, ramaActual, tomarPorRetomar } from "./proyecto.ts";
 import { destinoDeTelemetria, entornoDeTelemetria, VARIABLES_CON_CONTENIDO } from "./telemetria.ts";
 import { claudeCodeDeEsteEquipo, SIN_CLAUDE_CODE } from "./claude-code.ts";
 
@@ -645,6 +647,13 @@ export async function iniciarCorrida(opciones: { tareas?: string[]; modelo?: str
   if (modelo) args.push("--model", modelo);
   const modoPermisos = process.env.FACTORIA_FABRICA_MODO_PERMISOS?.trim();
   if (modoPermisos) args.push("--permission-mode", modoPermisos);
+  // Las referencias de sus tareas viven fuera del proyecto: la carpeta de su línea se suma al espacio de la corrida, para leerlas.
+  const deLaLinea = (await lineasDeLaFabrica()).find((l) => mismaRaiz(l.raiz, proyecto));
+  const referencias = deLaLinea ? referenciasDeLaLinea(deLaLinea.id) : null;
+  if (referencias) {
+    await fs.mkdir(referencias, { recursive: true });
+    args.push("--add-dir", referencias);
+  }
 
   const plugins = await pluginsDeCorrida();
   const id = new Date().toISOString().replace(/[-:]/g, "").replace(/\..+/, "");
@@ -684,6 +693,8 @@ export async function iniciarCorrida(opciones: { tareas?: string[]; modelo?: str
     ...entornoDeLaCorrida(process.env),
     CLAUDE_CODE_PLUGIN_DIRS: "",
     FABRICA_MEMORIA_PLANTA: vaultDeLaPlanta(),
+    // Dónde están las referencias de las tareas de esta línea: el mod las pasa a los agentes y frena a quien las escriba.
+    ...(referencias ? { FABRICA_REFERENCIAS: referencias } : {}),
     ...(conHuella ? { FABRICA_HABILIDADES: JSON.stringify(conHuella) } : {}),
     // El mod le dice al orquestador que lance al de las notas después de clasificar cada tarea aprobada.
     ...(inyectados[AGENTE_DE_ANUNCIO as keyof typeof inyectados] ? { FABRICA_ANUNCIO: "1" } : {}),

@@ -5,6 +5,7 @@ import {
   unir, veredictoDesde, vigente, type Datos, seccion, ponerSeccion, masBarato, notaDelModeloDeSpec, specElegidaPorEl, construccionElegidaPorEl, yaAnotado, PARA_LA_MEMORIA_VACIA,
   aCrlf, archivosQueGitProtege, archivosQueToca, archivosSql, baseDeComparacion, choquesDe, cicloDeDependencias, comandoDeLint,
   conArchivos, conHallazgoDeConflicto, decidirIntegracion, enComun, enlaceDeNodeModules, esLockfile, esRamaProtegida, extensiones, protegidaSinWorktree, ramaDeOrigen, ramaParaLaTarea,
+  frenaReferencias, REFERENCIAS_SOLO_LECTURA, referenciasDesde,
   archivarHallazgos, bloqueantesEn, CONFIG_SOLO_EL_USUARIO, esConfigDeLaFabrica, frenaConfig, esDeLaMemoria, frenaHabilidades, frenaMemoria, frenaProcesos, PLAN_DE_VUELTA, salidaEnLaTarea, HABILIDADES_SOLO_EL_USUARIO, PROCESOS_SOLO_EL_USUARIO, MEMORIA_SOLO_EL_USUARIO, rutaNormal, liberadaPor, reintentoDeIntegracion, revisarDependencias, rutasDePorcelain, tieneMarcadores, tieneWorktreePropio, tomadaPorOtra, usaCrlf, TOMA_MS,
 } from './tareas'
 import { cambiosDeNumstat, decidirCodigo, decidirModelo, decidirSpec, delProyecto, decidirPruebas, decidirSeguridad, decidirUi, estadoParaJev, PREGUNTA_DE_INTEGRACION, reutilizaCodigo, soloSinLogica, UMBRALES } from './jev'
@@ -836,6 +837,35 @@ describe('La memoria no la escribe un agente', () => {
     expect(frenaMemoria('C:/Users/el/factoria/datos/memoria-otra/ficha.md', 'agente-1', planta)).toBeNull()
     expect(frenaMemoria('C:/Users/el/factoria/datos/ajustes.json', 'agente-1', planta)).toBeNull()
     expect(esDeLaMemoria('C:/x/ficha.md', '  ')).toBe(false)
+  })
+})
+
+describe('las referencias de una tarea', () => {
+  const carpeta = 'C:/Users/ana/factoria/datos/referencias/lineas/tienda'
+
+  test('nadie de la corrida las escribe, tampoco el hilo principal', () => {
+    expect(frenaReferencias(`${carpeta}/F-001/1.png`, carpeta)).toBe(REFERENCIAS_SOLO_LECTURA)
+    expect(frenaReferencias('c:\\users\\ana\\factoria\\datos\\referencias\\lineas\\tienda\\F-002\\INDICE.md', `${carpeta}/`)).toBe(REFERENCIAS_SOLO_LECTURA)
+    expect(frenaReferencias(`${carpeta}/../tienda/F-001/2.txt`, carpeta)).toBe(REFERENCIAS_SOLO_LECTURA)
+    expect(frenaReferencias('C:/Users/ana/factoria/datos/referencias/lineas/tienda-2/F-001/1.png', carpeta)).toBeNull()
+    expect(frenaReferencias('C:/p/Repo/src/a.ts', carpeta)).toBeNull()
+    // Sin la carpeta (una corrida a mano), no hay nada que frenar.
+    expect(frenaReferencias(`${carpeta}/F-001/1.png`, null)).toBeNull()
+  })
+
+  test('del índice cuentan solo las que pasaron: sus imágenes y si hay un PDF', () => {
+    const indice = JSON.stringify({
+      referencias: [
+        { n: 1, tipo: 'imagen', archivo: '1.png', texto: null, revision: 'suyo' },
+        { n: 2, tipo: 'word', archivo: '2.docx', texto: '2.txt', revision: 'limpio' },
+        { n: 3, tipo: 'texto', archivo: null, texto: null, revision: 'con_instrucciones' },
+        { n: 4, tipo: 'imagen', archivo: '../../secreto.png', texto: null, revision: 'suyo' },
+      ],
+    })
+    expect(referenciasDesde(indice)).toEqual({ cuantas: 3, imagenes: ['1.png'], pdf: false })
+    expect(referenciasDesde(JSON.stringify({ referencias: [{ tipo: 'pdf', archivo: '1.pdf', revision: 'suyo' }] })).pdf).toBe(true)
+    expect(referenciasDesde('no es json')).toEqual({ cuantas: 0, imagenes: [], pdf: false })
+    expect(referenciasDesde(undefined).cuantas).toBe(0)
   })
 })
 

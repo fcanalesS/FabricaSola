@@ -1,5 +1,6 @@
 import type { DatabaseSync } from "node:sqlite";
 import { crearTareaEn, TITULO_MAX } from "../fabrica/motor/proyecto.ts";
+import { pasarReferencias } from "../fabrica/referencias/almacen.ts";
 import { bajarTitulos } from "../fabrica/motor/requerimientos.ts";
 import { esPedidoDeUnProceso } from "../fabrica/procesos/ejecucion.ts";
 import { citar } from "../texto/citas.ts";
@@ -61,6 +62,8 @@ export async function pasarALinea(db: DatabaseSync, id: number, datos: { linea: 
     creada = await crearTareaEn(datos.linea, { titulo, pedido, dependeDe: datos.dependeDe, origenEntrada: origen, tituloAjeno }, "la aplicación, desde la Bandeja");
   }
   marcarPasado(db, id, { tarea: creada.id, linea: creada.linea });
+  // Las referencias de un borrador suyo van con él. Si no se pueden pasar, la tarea queda igual.
+  if (e.fuente === null && e.esSuyo) await pasarReferencias({ borrador: id }, { linea: creada.linea, tarea: creada.id }).catch(() => undefined);
   return creada;
 }
 

@@ -16,7 +16,7 @@ import {
   seccion, ponerSeccion, masBarato, notaDelModeloDeSpec, specElegidaPorEl, construccionElegidaPorEl, yaAnotado, AGENTE_DE_SALIDA, salidaEnLaTarea, AGENTE_DE_ANUNCIO, anuncioEnLaTarea, sinLoDeLabel, anotarVeredicto,
   aCrlf, archivarHallazgos, archivosQueGitProtege, archivosQueToca, archivosSql, baseDeComparacion, bloqueantesEn, choquesDe, cicloDeDependencias, comandoDeLint,
   conArchivos, conHallazgoDeConflicto, decidirIntegracion, dependenciasDe, enComun, enlaceDeNodeModules, esDeTexto, esLockfile,
-  esBloqueo, frenaConfig, frenaHabilidades, frenaMemoria, frenaProcesos, idsEn, liberadaPor, reintentoDeIntegracion, type Bloqueo, ramaDeOrigen, revisarDependencias, rutasDePorcelain, protegidaSinWorktree, ramaParaLaTarea, tieneMarcadores, tieneWorktreePropio, usaCrlf,
+  esBloqueo, frenaConfig, frenaHabilidades, frenaMemoria, frenaProcesos, frenaReferencias, referenciasDesde, idsEn, liberadaPor, reintentoDeIntegracion, type Bloqueo, ramaDeOrigen, revisarDependencias, rutasDePorcelain, protegidaSinWorktree, ramaParaLaTarea, tieneMarcadores, tieneWorktreePropio, usaCrlf,
   type Datos, type EstadoDeDependencia, type Movimiento,
 } from './tareas'
 import {
@@ -442,7 +442,10 @@ async function hEstado($: EngineInterface, _e: Record<string, unknown>): Promise
   const anuncio = (await $.env.get('FABRICA_ANUNCIO').catch(() => undefined)) === '1' ? AGENTE_DE_ANUNCIO : null
   // Si la corrida trae el agente de retrabajo (Arreglo de raíz y Pruebas): la aplicación lo arma en cada corrida.
   const retrabajo = (await $.env.get('FABRICA_RETRABAJO').catch(() => undefined)) === '1' ? AGENTE_DE_RETRABAJO : null
-  return { result: JSON.stringify({ raiz, config: cfg, roles, memoria, habilidades, salida, anuncio, retrabajo, resumen: contar(tareas), tareas }, null, 2) }
+  // Las referencias de las tareas abiertas que tienen: su carpeta, fuera del proyecto, y su índice.
+  const conReferencias = await Promise.all(tareas.filter(t => t.estado !== 'hecho' && t.estado !== 'descartada').map(async t => [t.id, await referenciasDeLaTarea($, t.id)] as const))
+  const referencias = Object.fromEntries(conReferencias.flatMap(([id, r]) => (r ? [[id, { carpeta: r.carpeta, paraLosAgentes: r.indice }]] : [])))
+  return { result: JSON.stringify({ raiz, config: cfg, roles, memoria, habilidades, referencias, salida, anuncio, retrabajo, resumen: contar(tareas), tareas }, null, 2) }
 }
 
 /**
@@ -560,6 +563,24 @@ async function anotarModeloDeSpec($: EngineInterface, e: Record<string, unknown>
 }
 
 const carpetaDeLaPlanta = async ($: EngineInterface) => ((await $.env.get('FABRICA_MEMORIA_PLANTA').catch(() => undefined)) ?? '').trim() || null
+
+/** La carpeta de las referencias de las tareas de la línea, que pasa la aplicación (`FABRICA_REFERENCIAS`); `null` en una corrida a mano. */
+const carpetaDeReferencias = async ($: EngineInterface) => ((await $.env.get('FABRICA_REFERENCIAS').catch(() => undefined)) ?? '').trim() || null
+
+/**
+ * Las referencias de una tarea, si las tiene: su carpeta, su índice para los agentes (`INDICE.md`,
+ * que escribe la aplicación), sus imágenes con su ruta y si trae un PDF. Solo lee.
+ */
+async function referenciasDeLaTarea($: EngineInterface, id: string): Promise<{ carpeta: string; indice: string; imagenes: string[]; pdf: boolean } | null> {
+  const base = await carpetaDeReferencias($)
+  if (!base || !/^F-\d+$/.test(id)) return null
+  const carpeta = unirRuta(base, id)
+  const indice = (await leer($, unirRuta(carpeta, 'INDICE.md')))?.trim()
+  if (!indice) return null
+  const r = referenciasDesde(await leer($, unirRuta(carpeta, 'indice.json')))
+  if (!r.cuantas) return null
+  return { carpeta, indice, imagenes: r.imagenes.map(a => unirRuta(carpeta, a)), pdf: r.pdf }
+}
 
 async function memoriaDe($: EngineInterface, raiz: string) {
   const vault = unirRuta(raiz, CARPETA_DE_LA_MEMORIA)
@@ -1493,6 +1514,8 @@ async function hSpecConAntigravity($: EngineInterface, e: Record<string, unknown
   if (cfg.escritorSpec !== 'antigravity') return { deny: 'Antigravity está apagado para este proyecto (escritor_spec: claude): lanza el agente de spec.' }
   const dir = unirRuta(await carpetaDePaso($, raiz), 'trabajos', `antigravity-${id}`)
   if ((await leerTrabajo($, dir)).estado === 'ninguno') {
+    // Las referencias las recibe el agente de spec de Claude; a Antigravity no se le pasan.
+    if (await referenciasDeLaTarea($, id)) return { result: `${id}: trae referencias, que Antigravity no recibe. Lanza el agente de spec de Claude en su lugar.` }
     const notas = partir((await leer($, rutas(raiz).config)) ?? '').cuerpo
     const bin = await rutaDeAntigravity($)
     if (!bin) return { result: `${id}: Antigravity no está configurado en este equipo (falta FACTORIA_ANTIGRAVITY_BIN, su ruta exacta). Lanza el agente de spec de Claude en su lugar.` }
@@ -1668,6 +1691,9 @@ export const register: Register = on => {
     // Ni los procesos: lo que corre al publicar lo decide una persona.
     const procesos = frenaProcesos(e.file_path, e.agentId)
     if (procesos) return { deny: procesos }
+    // Ni las referencias de una tarea: las agregó una persona, y se leen.
+    const referencias = frenaReferencias(e.file_path, await carpetaDeReferencias($))
+    if (referencias) return { deny: referencias }
     if (!esArchivoDeTarea(e.file_path)) return next(e)
     if (editaCamposDelMod(e.old_string, e.new_string)) return { deny: SOLO_EL_MOD }
     if (!/depende_de:/.test(`${e.old_string}\n${e.new_string}`)) return next(e)
@@ -1728,6 +1754,8 @@ export const register: Register = on => {
     // Ni los procesos: lo que corre al publicar lo decide una persona.
     const procesos = frenaProcesos(e.file_path, e.agentId)
     if (procesos) return { deny: procesos }
+    const referencias = frenaReferencias(e.file_path, await carpetaDeReferencias($))
+    if (referencias) return { deny: referencias }
     if (!esArchivoDeTarea(e.file_path)) return next(e)
     const antes = await leer($, e.file_path)
     if (escribeCamposDelMod(antes, e.content)) return { deny: SOLO_EL_MOD }

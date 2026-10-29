@@ -39,6 +39,16 @@ Es un proyecto independiente: no depende de otro repositorio ni se sincroniza co
   faltando, y el vigía lo registra en vez de lanzarlo. Una página que falla muestra `error.tsx`.
 - **Una página que lee datos llama a `connection()`**: sin eso, `next build` la deja fija con lo
   que había al compilar.
+- **Las referencias de una tarea viven fuera del repositorio, y los agentes leen una copia**
+  (`src/lib/fabrica/referencias/`, en `datos/referencias/`).
+  - Se aceptan imágenes, PDF, texto, Word y Excel. El tipo se mira por los bytes, y Word y Excel
+    se pasan a texto en el equipo, sin dependencias.
+  - Un link lo lee la aplicación una vez (`leerPagina`): solo `https`, nunca hacia una dirección
+    privada, de Tailscale o del equipo, tampoco por una redirección. Los agentes no abren internet.
+  - El texto de un documento o de una página pasa por `traeInstrucciones`. Si le habla a un
+    asistente, o nadie lo pudo revisar, no se guarda ni llega a los agentes.
+  - A los agentes les llegan como cita (`INDICE.md`), sin direcciones web. Nadie de la corrida
+    escribe esa carpeta (`frenaReferencias`), y se cambian solo mientras la tarea está pendiente.
 - Las reglas de la fábrica (la Entrada solo lee, nada pasa a una línea sin su clic, la memoria de
   la fábrica la escribe la persona, los procesos los corre el código, la fusión, producción con su
   clic, los tokens solo se nombran) están en los comentarios de cada módulo y en

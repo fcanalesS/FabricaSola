@@ -2,6 +2,7 @@ import type { DatabaseSync } from "node:sqlite";
 import type { ModeloDeRol } from "../fabrica/modelos.ts";
 import { configDeLinea, crearTareaEn, lineasDeLaFabrica, tareasAbiertasDe } from "../fabrica/motor/proyecto.ts";
 import { baseDeDatos } from "../datos.ts";
+import { pasarReferencias } from "../fabrica/referencias/almacen.ts";
 import { cuentas, descartar, elemento, elementos, guardarBorrador, ignorarCambio, loAgregado, marcarPasado, type ElementoDeBandeja, type EstadoEnBandeja } from "./bandeja.ts";
 import { agregarFuente, cambiarFuente, datosDeFuente, encenderFuente, fuentes, quitarFuente, reintentarFuente, variablesDeFuente, vistaDeFuentes, type FuenteALaVista } from "./fuentes.ts";
 import { vueltaDelLector } from "./lector.ts";
@@ -111,6 +112,9 @@ export type HechoEnLaEntrada =
 
 const motivoDe = (e: unknown) => (e instanceof Error ? e.message : "No se pudo.");
 
+/** Cómo quedaron las referencias que traía: cuántas pasaron, o que no se pudieron pasar (`-1`). */
+const notaDeReferencias = (n: number) => (n < 0 ? ", pero sus referencias no se pudieron pasar: agrégalas de nuevo en su panel" : n === 0 ? "" : `, con ${n === 1 ? "1 referencia" : `${n} referencias`}`);
+
 /** Hace lo que él pidió. Nunca lanza: un error vuelve como motivo que se puede mostrar. */
 export async function hacerEnLaEntrada(a: AccionDeEntrada, db: DatabaseSync = baseDeDatos()): Promise<HechoEnLaEntrada> {
   try {
@@ -122,8 +126,9 @@ export async function hacerEnLaEntrada(a: AccionDeEntrada, db: DatabaseSync = ba
         const pedido = pedidoDeLaPeticion(p);
         if (p.destino === "bandeja") {
           if (!(await lineasDeLaFabrica()).some((l) => l.id === p.linea)) return { hecho: false, motivo: "Revisa lo marcado.", errores: { linea: "Esa línea no existe." } };
-          guardarBorrador(db, { linea: p.linea, titulo: p.titulo, pedido, ahora: Date.now() });
-          return { hecho: true, nota: "Quedó en la Bandeja como borrador tuyo." };
+          const borrador = guardarBorrador(db, { linea: p.linea, titulo: p.titulo, pedido, ahora: Date.now() });
+          const refs = p.lote ? await pasarReferencias({ lote: p.lote }, { borrador }).catch(() => -1) : 0;
+          return { hecho: true, nota: `Quedó en la Bandeja como borrador tuyo${notaDeReferencias(refs)}.` };
         }
         // «Reescribirlo con mis palabras»: el pedido es suyo, pero la tarea recuerda de qué issue salió, y el issue
         // sale de la Bandeja. Solo uno que todavía espera ahí.
@@ -132,7 +137,9 @@ export async function hacerEnLaEntrada(a: AccionDeEntrada, db: DatabaseSync = ba
         const origenEntrada = deUnIssue ? origenDe(db, deUnIssue).origen : "formulario";
         const tarea = await crearTareaEn(p.linea, { titulo: p.titulo, pedido, dependeDe: p.dependeDe, origenEntrada, modeloSpec: p.modeloSpec, modeloConstruccion: p.modeloConstruccion }, "la aplicación, desde el formulario");
         if (deUnIssue) marcarPasado(db, deUnIssue.id, { tarea: tarea.id, linea: tarea.linea });
-        return { hecho: true, nota: `Quedó en la cola de ${tarea.linea} como ${tarea.id}.`, tarea };
+        // La tarea queda creada aunque sus referencias no se puedan pasar: se dice, y se pueden agregar mientras siga pendiente.
+        const refs = p.lote ? await pasarReferencias({ lote: p.lote }, { linea: tarea.linea, tarea: tarea.id }).catch(() => -1) : 0;
+        return { hecho: true, nota: `Quedó en la cola de ${tarea.linea} como ${tarea.id}${notaDeReferencias(refs)}.`, tarea };
       }
       case "pasar": {
         const tarea = await pasarALinea(db, a.id, { linea: a.linea, titulo: a.titulo, dependeDe: a.dependeDe });

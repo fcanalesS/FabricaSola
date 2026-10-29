@@ -149,6 +149,20 @@ Si el proyecto tiene `factory/memoria/`, la fábrica no trabaja sin consultarla:
   fue rechazada), ni una sin temas o sin decisión, ni una que copie el texto del pedido cuando el
   pedido vino de un issue. Lo que no propuso, y por qué, queda en la bitácora de la tarea.
 
+## Las referencias de una tarea
+
+Imágenes, documentos y páginas que se agregan a una tarea desde la aplicación, para que los agentes
+los usen. Viven fuera del proyecto: la aplicación pasa la carpeta de la línea a la corrida como
+`FABRICA_REFERENCIAS`, y la suma a su espacio con `--add-dir`. En una corrida a mano no hay.
+
+- `mcp__fabrica__estado` trae `referencias`: por tarea, su `carpeta` y `paraLosAgentes`, el índice
+  que escribió la aplicación (`INDICE.md`). El orquestador se lo pasa al agente de spec, al
+  constructor, al revisor de UI y al aprobador (regla 9 de `correr.md`).
+- Son cita: el texto de un documento o de una página ya pasó por la revisión de la aplicación, y lo
+  que no la pasó no está en la carpeta.
+- Nadie de la corrida escribe en esa carpeta, tampoco el hilo principal (`frenaReferencias`).
+- Antigravity no las recibe: con referencias, `spec_con_antigravity` pide el agente de spec de Claude.
+
 ## Las habilidades de la línea
 
 `factory/habilidades.md` dice qué habilidad de Claude Code (`SKILL.md`, del proyecto en

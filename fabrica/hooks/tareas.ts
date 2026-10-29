@@ -778,6 +778,49 @@ export const HABILIDADES_SOLO_EL_USUARIO =
   'Las habilidades (factory/habilidades.md y .claude/skills/) no las escribe un agente: son instrucciones que siguen ' +
   'todos los agentes, y eso lo decide una persona. Si hace falta una, dilo en tu entrega.'
 
+/**
+ * Si una ruta está en la carpeta de las referencias de la corrida (`FABRICA_REFERENCIAS`): lo que él
+ * agregó a sus tareas, fuera del proyecto. Sin esa carpeta (una corrida a mano), nada lo es.
+ */
+export function esDeLasReferencias(ruta: string, carpeta?: string | null): boolean {
+  if (!carpeta?.trim()) return false
+  const r = rutaNormal(ruta).toLowerCase()
+  const c = rutaNormal(carpeta.trim()).replace(/\/+$/, '').toLowerCase()
+  return r === c || r.startsWith(`${c}/`)
+}
+
+export const REFERENCIAS_SOLO_LECTURA =
+  'Las referencias de una tarea las agregó una persona y se leen, nunca se escriben: ni el orquestador ni un agente ' +
+  'cambian esa carpeta. Si a una le falta algo, dilo en tu entrega.'
+
+/** Si un Edit o un Write sobre esa ruta se frena: las referencias, desde cualquiera de la corrida, también el hilo principal. */
+export const frenaReferencias = (ruta: string, carpeta?: string | null) => (esDeLasReferencias(ruta, carpeta) ? REFERENCIAS_SOLO_LECTURA : null)
+
+/**
+ * De `indice.json`, el índice de las referencias de una tarea que escribe la aplicación: cuántas
+ * llegan a los agentes, cuáles son imágenes (su archivo, para Codex) y si hay un PDF. Lo que no pasó
+ * la revisión no cuenta. Un índice que no se entiende es como no tener.
+ */
+export function referenciasDesde(indiceJson: string | undefined): { cuantas: number; imagenes: string[]; pdf: boolean } {
+  let refs: unknown[] = []
+  try {
+    const d = JSON.parse(indiceJson ?? '') as { referencias?: unknown }
+    if (Array.isArray(d.referencias)) refs = d.referencias
+  } catch {
+    // Sin índice, ninguna.
+  }
+  const llegan = refs.flatMap(x => {
+    const r = (x && typeof x === 'object' ? x : {}) as Record<string, unknown>
+    const pasa = r.revision === 'suyo' || (r.revision === 'limpio' && typeof r.texto === 'string')
+    return pasa ? [{ tipo: String(r.tipo ?? ''), archivo: typeof r.archivo === 'string' && /^\d+\.[a-z]+$/.test(r.archivo) ? r.archivo : null }] : []
+  })
+  return {
+    cuantas: llegan.length,
+    imagenes: llegan.flatMap(r => (r.tipo === 'imagen' && r.archivo ? [r.archivo] : [])),
+    pdf: llegan.some(r => r.tipo === 'pdf'),
+  }
+}
+
 /** Si un Edit o un Write sobre esa ruta se frena: el catálogo o una habilidad, desde un subagente. El hilo principal sí puede. */
 export const frenaHabilidades = (ruta: string, agentId: string | undefined) => (esDeLasHabilidades(ruta) && agentId ? HABILIDADES_SOLO_EL_USUARIO : null)
 

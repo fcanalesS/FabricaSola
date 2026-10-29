@@ -1023,6 +1023,14 @@ export async function seccionesDeLaTarea(id: string, linea?: string): Promise<Se
   return { pedido: de("Pedido"), spec: de("Spec"), hallazgos: de("Hallazgos de revisión"), respuesta: de("Respuesta del humano"), paraElPR: de("Para el PR"), probarAMano: de("Para probar a mano") };
 }
 
+/** En qué etapa está una tarea de una línea, o `null` si no existe. Solo lee. */
+export async function estadoDeLaTarea(id: string, linea: string): Promise<string | null> {
+  if (!/^F-\d+$/.test(id)) return null;
+  const archivo = await archivoDe(await raizDeLinea(linea), id);
+  if (!archivo) return null;
+  return partir((await leer(archivo)) ?? "").datos.estado ?? null;
+}
+
 /**
  * Las etapas desde las que él puede descartar una tarea desde la aplicación: las mismas desde las que
  * el mod deja pasar a `descartada` (sus SALIDAS). Desde revisión en adelante se rechaza o se le

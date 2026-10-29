@@ -8,6 +8,7 @@ import { ETAPAS_DE_LA_PLANTA, NOMBRE_DE_ETAPA, pideSuVeredicto, type TarjetaDeLa
 import type { CambiosDeTarea } from "@/lib/fabrica/motor/proyecto";
 import type { ModeloDeRol } from "@/lib/fabrica/modelos";
 import { EstadoDeLaLinea, hace, MODELOS_DE_LA_APROBACION, MODELOS_DE_LA_CONSTRUCCION, MODELOS_DE_LA_SPEC, opcionDeLaLinea, pieDeTarjeta, TarjetaChica, usd } from "./piezas";
+import { Referencias } from "../entrada/referencias";
 import { AlDia, usePlanta } from "./use-planta";
 
 /**
@@ -524,6 +525,8 @@ function PanelDeTarea({ linea, t, pideVeredicto, ahora, modelosDeLaLinea, alCerr
       )}
       {t.eligeModeloDeSpec && <ModeloDeLaTarea rol="spec" linea={linea} t={t} modeloDeLaLinea={modelosDeLaLinea.spec} alCambiar={alHacer} />}
       {t.eligeModeloDeConstruccion && <ModeloDeLaTarea rol="construccion" linea={linea} t={t} modeloDeLaLinea={modelosDeLaLinea.construccion} alCambiar={alHacer} />}
+      {/* Se cambian solo mientras está pendiente; después quedan fijas, como su pedido. */}
+      <Referencias key={t.id} destino={{ linea, tarea: t.id }} editable={t.estado === "pendiente"} textoDelPedido={s?.pedido ?? ""} />
 
       {hecho && (
         <p role={hecho.malo ? "alert" : "status"} className={`text-sm font-bold ${hecho.malo ? "text-peligro" : ""}`}>

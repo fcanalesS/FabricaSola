@@ -124,6 +124,7 @@ sesiones de verdad de Claude Code en un repositorio desechable: gastan.
 | `src/lib/fabrica/memoria/` | La memoria de la fábrica: el vault de cada línea (`factory/memoria/`, en su repositorio) y el de la planta (`datos/memoria/`) |
 | `src/lib/fabrica/habilidades/` | Las habilidades y especialidades de cada línea |
 | `src/lib/entrada/` | La Entrada: el formulario de petición, la Bandeja y las fuentes (GitHub y GitLab, en solo lectura) |
+| `src/lib/fabrica/referencias/` y `/api/fabrica/referencias` | Las referencias de una tarea: imágenes, PDF, texto, Word, Excel y links que la aplicación lee una vez. Viven en `datos/referencias/`, fuera del repositorio, y los agentes leen esa copia como cita |
 | `src/lib/fabrica/equipo.ts` | «Este equipo»: qué piezas tiene este equipo, qué permite cada una y qué agregar |
 | `src/lib/datos.ts` | La carpeta `datos/` de este equipo y su base SQLite |
 | `src/proxy.ts` y `src/lib/servidor/` | El guardia de quién puede llamar a las rutas |
